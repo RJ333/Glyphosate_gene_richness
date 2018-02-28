@@ -42,27 +42,30 @@ for line in phntmp_filename:
     if search_string in line_split[3]:
         contig_name = line_split[0]
         contig_length = d[contig_name]
-        start = line_split[1]
-        end = line_split[2]
+        start = int(line_split[1])
+        end = int(line_split[2])
         gene_name = re.findall(search_string, line_split[3])[0]
         gene_name = gene_name.split("gene=")[1]
 
-
-        if contig_length < 20000:
+        if contig_length <= 20000:
             output_filename.write(write_output_to_file(contig_name, start, end, gene_name))
         else:
             index = 0
-            while contig_length > 20000:
-                contig_length = contig_length - 10000
-                contig_name_new = contig_name + "." + str(index)
-                if index != 0:
-                    start = str(int(start) - 10000)
-                    end = str(int(end) - 10000)
-                if int(start) > 0 and int(start) < 10000:
-                    output_filename.write(write_output_to_file(contig_name_new, start, end, gene_name))
+            current_contig_length = contig_length
+            current_contig_end = 10000
+            stop_condition = False
+            while True:
+                current_contig_name = contig_name + "." + str(index)
+                if current_contig_length > 20000:
+                    current_contig_length -= 10000
+                    current_start = start - 10000 * index
+                    current_end = end - 10000 * index
+                else:
+                    current_contig_end = current_contig_length
+                    stop_condition = True
+                # write output
+                if current_start > 0 and current_start <= current_contig_end:
+                    output_filename.write(write_output_to_file(current_contig_name, current_start, current_end, gene_name))
+                if stop_condition:
+                    break
                 index += 1
-            contig_name_new = contig_name + "." + str(index)
-            start = str(int(start) - 10000)
-            end = str(int(end) - 10000)
-            if int(start) > 0 and int(start) < 10000:
-                output_filename.write(write_output_to_file(contig_name_new, start, end, gene_name))

@@ -24,7 +24,7 @@ EOF
 GENE_NAME="phnM"
 BED_FILENAME=intersect.bed
 
-while getopts ":i:o:" o; do
+while getopts ":i:o:g:b:" o; do
     case "${o}" in
         i)
             INPUT_DIR=${OPTARG}
@@ -54,17 +54,18 @@ then
     exit 1
 fi
 
-if [ -d $OUTPUT_DIR ]; then
-  echo Output directory already exists. Aborting to avoid overriding. Exit code: 2. Exiting ...
-  echo -en "\n"
-  usage
-  echo -en "\n"
-  exit 2
+if [ -d $OUTPUT_DIR ]
+then
+    echo Output directory already exists. Aborting to avoid overriding. Exit code: 2. Exiting ...
+    echo -en "\n"
+    usage
+    echo -en "\n"
+    exit 2
 else
-  mkdir $OUTPUT_DIR
+    mkdir $OUTPUT_DIR
 fi
 
-SCRIPT_FOLDER=/data/projects/scripts/parse_prokka_genes_to_bed
+SCRIPT_FOLDER=/data/projects/scripts/Glyphosate_gene_richness/parse_prokka_genes_to_bed
 PARSE_PHN_TMP_SCRIPT=${SCRIPT_FOLDER}/parse_annotation.py
 PHN_TMP_FILE=${OUTPUT_DIR}/prokka_annotation.txt
 CONTIG_LENGTH_FILE=${OUTPUT_DIR}/contig_lengths.txt
