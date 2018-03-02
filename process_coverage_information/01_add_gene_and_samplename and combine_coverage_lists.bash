@@ -1,6 +1,8 @@
 #!/bin/bash
 
-#this script combines the output of the script "xy?" to one list for all genes in a folder
+#this script combines the output of the script "xy" 
+#(is there are script that contains the "samtools depth" step?) 
+#to one list for all genes in a folder
 #and sorts it by coverage
 
 PATH_TO_DATA=/drives/d/1_Fachliches/Doktorarbeit/1\.\ Glyphosat/Glyphosat\ omics/gene_richness_selected_genes 
