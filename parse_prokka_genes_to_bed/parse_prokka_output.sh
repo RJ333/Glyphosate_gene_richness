@@ -6,14 +6,13 @@ usage()
 {
 cat << EOF
 usage:
-$0 -i <INPUT_DIR> -o <OUTPUT_DIR> [-g <GENE_NAME>] [-b <BED_FILE>]
+$0 -i <INPUT_DIR> -o <OUTPUT_DIR> [-b <BED_FILE>]
 
 The script creates a bed file based on prokka annotations.
 
 OPTIONS:
    -i          Input directory (prokka annotation directory, mandatory)
    -o          Output directory (mandatory)
-   -g          Gene name to parse for (default: phnM)
    -b          Output bed file (default: intersect.bed)
 
    -h/--help   Show this message
@@ -21,19 +20,15 @@ OPTIONS:
 EOF
 }
 
-GENE_NAME="phnM"
 BED_FILENAME=intersect
 
-while getopts ":i:o:g:b:" o; do
+while getopts ":i:o:b:" o; do
     case "${o}" in
         i)
             INPUT_DIR=${OPTARG}
             ;;
         o)
             OUTPUT_DIR=${OPTARG}
-            ;;
-        g)
-            GENE_NAME=${OPTARG}
             ;;
         b)
             BED_FILE=${OPTARG}
@@ -72,9 +67,12 @@ cd $BASE_DIR
 for SAMPLE_FOLDER in *
 do
     cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
-    # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
-    grep $GENE_NAME annotation.filt.gff | \
-      awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
-      > ${BED_FILE}_${SAMPLE_FOLDER}.bed
+    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC
+    do
+        # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
+        grep $GENE_NAME annotation.filt.gff | \
+          awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
+          > ${BED_FILE}_${GENE_NAME}_${SAMPLE_FOLDER}.bed
+    done
     cd ../../../..
 done
