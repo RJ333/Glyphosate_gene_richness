@@ -6,32 +6,26 @@ usage()
 {
 cat << EOF
 usage:
-$0 -i <INPUT_DIR> -o <OUTPUT_DIR> [-b <BED_FILE>]
+$0 -i <INPUT_DIR> -o <OUTPUT_DIR>
 
 The script creates a bed file based on prokka annotations.
 
 OPTIONS:
    -i          Input directory (prokka annotation directory, mandatory)
    -o          Output directory (mandatory)
-   -b          Output bed file (default: intersect.bed)
 
    -h/--help   Show this message
 
 EOF
 }
 
-BED_FILENAME=intersect
-
-while getopts ":i:o:b:" o; do
+while getopts ":i:o:" o; do
     case "${o}" in
         i)
             INPUT_DIR=${OPTARG}
             ;;
         o)
             OUTPUT_DIR=${OPTARG}
-            ;;
-        b)
-            BED_FILE=${OPTARG}
             ;;
         *)
             # usage
@@ -59,7 +53,7 @@ then
     echo -en "\n"
     exit 2
 else
-    mkdir $OUTPUT_DIR
+    mkdir -p ${OUTPUT_DIR}/bed
 fi
 
 cd $BASE_DIR
@@ -69,10 +63,14 @@ do
     cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
     for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC
     do
+        BED_FILENAME=${OUTPUT_DIR}/bed/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
         # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
         grep $GENE_NAME annotation.filt.gff | \
           awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
-          > ${BED_FILE}_${GENE_NAME}_${SAMPLE_FOLDER}.bed
+          > ${BED_FILENAME}
+        samtools view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
+          sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
+          > ${OUTPUT_DIR}/read_counts_per_gene/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv
     done
     cd ../../../..
 done
