@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BASE_DIR=/data_bio/jwerner/glyphosate/A1/output_IMP/Analysis/annotation
+BASE_DIR=/data_bio/jwerner/glyphosate/IMP
 
 usage()
 {
@@ -22,7 +22,7 @@ EOF
 }
 
 GENE_NAME="phnM"
-BED_FILENAME=intersect.bed
+BED_FILENAME=intersect
 
 while getopts ":i:o:g:b:" o; do
     case "${o}" in
@@ -67,6 +67,14 @@ else
     mkdir $OUTPUT_DIR
 fi
 
-# get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
-grep $GENE_NAME ${INPUT_DIR}/annotation.filt.gff | \
-  awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}'  > ${BED_FILE}
+cd $BASE_DIR
+
+for SAMPLE_FOLDER in *
+do
+    cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
+    # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
+    grep $GENE_NAME annotation.filt.gff | \
+      awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
+      > ${BED_FILE}_${SAMPLE_FOLDER}.bed
+    cd ../../../..
+done
