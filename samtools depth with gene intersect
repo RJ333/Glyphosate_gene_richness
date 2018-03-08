@@ -1,0 +1,7 @@
+## this loop extracts the coverage information for all samples in the loop and for all bases described by the intersect file
+
+for i in *.bam
+do
+    echo $i
+    samtools depth -b intersect_phnM.bed $i > ${i}.cov.tmp
+done
