@@ -11,10 +11,10 @@ $0 -i <INPUT_DIR> -o <OUTPUT_DIR> [-g <GENE_NAME>] [-b <BED_FILE>]
 The script creates a bed file based on prokka annotations.
 
 OPTIONS:
-   -i          Input directory (raw fastq files, mandatory)
+   -i          Input directory (prokka annotation directory, mandatory)
    -o          Output directory (mandatory)
    -g          Gene name to parse for (default: phnM)
-   -b          Output bed file
+   -b          Output bed file (default: intersect.bed)
 
    -h/--help   Show this message
 
@@ -45,6 +45,8 @@ while getopts ":i:o:g:b:" o; do
 done
 shift $((OPTIND-1))
 
+BED_FILE=${OUTPUT_DIR}/${BED_FILENAME}
+
 if [[ -z $INPUT_DIR ]] && [[ -z $OUTPUT_DIR ]]
 then
     echo Parameter -i and or -o is not set. These parameters are required. Exit code: 1. Exiting ...
@@ -65,11 +67,6 @@ else
     mkdir $OUTPUT_DIR
 fi
 
-SCRIPT_FOLDER=/data/projects/scripts/Glyphosate_gene_richness/parse_prokka_genes_to_bed
-PARSE_PHN_TMP_SCRIPT=${SCRIPT_FOLDER}/parse_annotation.py
-OUTPUT_FILE=${OUTPUT_DIR}/prokka_annotation.txt
-BED_FILE=${OUTPUT_DIR}/${BED_FILENAME}
-
 # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
-awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' ${INPUT_DIR}/annotation.filt.gff > ${OUTPUT_FILE}.txt
-# cut -f 1,4,5,9 ${INPUT_DIR}/annotation.filt.gff > ${OUTPUT_FILE}
+grep $GENE_NAME ${INPUT_DIR}/annotation.filt.gff | \
+  awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}'  > ${BED_FILE}
