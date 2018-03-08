@@ -70,7 +70,7 @@ do
           > ${BED_FILENAME}
         samtools view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
           sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
-          > ${OUTPUT_DIR}/read_counts_per_gene/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv
+          > ${OUTPUT_DIR}/results/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv
     done
     cd ../../../..
 done
