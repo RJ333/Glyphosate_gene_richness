@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-BASE_DIR=/data/IOW/BIO/Environmental_Microbiology/Glyphosate/schweden17/prokka
+BASE_DIR=/data_bio/jwerner/glyphosate/A1/output_IMP/Analysis/annotation
 
 usage()
 {
@@ -67,15 +67,9 @@ fi
 
 SCRIPT_FOLDER=/data/projects/scripts/Glyphosate_gene_richness/parse_prokka_genes_to_bed
 PARSE_PHN_TMP_SCRIPT=${SCRIPT_FOLDER}/parse_annotation.py
-PHN_TMP_FILE=${OUTPUT_DIR}/prokka_annotation.txt
-CONTIG_LENGTH_FILE=${OUTPUT_DIR}/contig_lengths.txt
+OUTPUT_FILE=${OUTPUT_DIR}/prokka_annotation.txt
 BED_FILE=${OUTPUT_DIR}/${BED_FILENAME}
 
 # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
-find ${INPUT_DIR} -regextype sed -regex ".*/PROKKA[0-9].gff" -exec cat {} \; | grep "Prodigal" | cut -f 1,4,5,9 \
-  > ${PHN_TMP_FILE}
-
-# create contig_length.txt
-cat ${INPUT_DIR}/prokka*/PROKKA*.gff | grep "^##" > ${CONTIG_LENGTH_FILE}
-
-python $PARSE_PHN_TMP_SCRIPT --input_file $PHN_TMP_FILE --contig_length $CONTIG_LENGTH_FILE --gene_name $GENE_NAME --output_file $BED_FILE
+awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' ${INPUT_DIR}/annotation.filt.gff > ${OUTPUT_FILE}.txt
+# cut -f 1,4,5,9 ${INPUT_DIR}/annotation.filt.gff > ${OUTPUT_FILE}
