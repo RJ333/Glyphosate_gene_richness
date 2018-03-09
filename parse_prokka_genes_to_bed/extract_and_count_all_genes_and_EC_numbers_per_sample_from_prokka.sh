@@ -1,5 +1,5 @@
 #!bin/sh
-# extract_all_per_sample_from_prokka
+# extract and count all genes and ec numbers per sample from prokka
 
 # this script looks for the column that contains "gene" and takes it and the previous one, which is either "eC_number=..." or "ID=PROKKA..."
 # the file gets cleaned up so that the numbers as phnM_1 are removed, the "gene=" is removed, all ID=PROKKA is removed. It counts the
