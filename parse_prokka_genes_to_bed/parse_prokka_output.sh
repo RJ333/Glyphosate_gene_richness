@@ -34,8 +34,6 @@ while getopts ":i:o:" o; do
 done
 shift $((OPTIND-1))
 
-BED_FILE=${OUTPUT_DIR}/${BED_FILENAME}
-
 if [[ -z $INPUT_DIR ]] && [[ -z $OUTPUT_DIR ]]
 then
     echo Parameter -i and or -o is not set. These parameters are required. Exit code: 1. Exiting ...
@@ -54,6 +52,7 @@ then
     exit 2
 else
     mkdir -p ${OUTPUT_DIR}/bed
+    mkdir -p ${OUTPUT_DIR}/results
 fi
 
 cd $BASE_DIR
@@ -68,9 +67,19 @@ do
         grep $GENE_NAME annotation.filt.gff | \
           awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
           > ${BED_FILENAME}
+    done
+    cd ../../../..
+done
+
+for SAMPLE_FOLDER in *
+do
+    cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
+    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC
+    do
+        BED_FILENAME=${OUTPUT_DIR}/bed/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
         samtools view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
           sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
-          > ${OUTPUT_DIR}/results/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv
+          > ${OUTPUT_DIR}/results/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv &
     done
     cd ../../../..
 done
