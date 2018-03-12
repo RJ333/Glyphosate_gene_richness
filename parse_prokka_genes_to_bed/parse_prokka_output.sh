@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-BASE_DIR=/data_bio/jwerner/glyphosate/IMP
+BASE_DIR=/data/jwerner/glyphosate/IMP
+SAMTOOLS_BIN=/data/jwerner/tools/samtools-1.7/samtools # path on bio-49
 
 usage()
 {
@@ -51,8 +52,12 @@ then
     echo -en "\n"
     exit 2
 else
-    mkdir -p ${OUTPUT_DIR}/bed
-    mkdir -p ${OUTPUT_DIR}/results
+    BED_DIR=${OUTPUT_DIR}/bed
+    RESULTS_DIR=${OUTPUT_DIR}/results
+    TMP_DIR=${OUTPUT_DIR}/tmp
+    mkdir -p $BED_DIR
+    mkdir -p $RESULTS_DIR
+    mkdir -p $TMP_DIR
 fi
 
 cd $BASE_DIR
@@ -60,27 +65,33 @@ cd $BASE_DIR
 for SAMPLE_FOLDER in *
 do
     cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
-    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC
+    for GENE_NAME in gyrA gyrB gox phnA phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnX phnW phnR \
+      phnS phnT phnU phnP pspE pstC purU purB pphA phoR phoB phoP soxA soxB thiO recA rpoC ktrB ydiF nuoF mntB araD \
+      tfdB artI arfA malF qedA mlhB uvrB fdhA fdm recG
     do
-        BED_FILENAME=${OUTPUT_DIR}/bed/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
+        GREP_GENE_NAME="${GENE_NAME}_"
+        BED_FILENAME=${BED_DIR}/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
         # get all lines which carry a phn gene and keep only the columns with contig name, start, stop and gene name
-        grep $GENE_NAME annotation.filt.gff | \
-          awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' \
-          > ${BED_FILENAME}
+        if [ $GENE_NAME == "pphA" ]
+        then
+            grep $GREP_GENE_NAME annotation.filt.gff | grep "3.11.1.3" > ${TMP_DIR}/tmp.gff
+        elif [ $GENE_NAME == "soxA" ] || [ $GENE_NAME == "soxB" ]
+        then
+            grep $GREP_GENE_NAME annotation.filt.gff | grep "1.5.3.1" > ${TMP_DIR}/tmp.gff
+        else
+            grep $GREP_GENE_NAME annotation.filt.gff > ${TMP_DIR}/tmp.gff
+        fi
+
+        cat ${TMP_DIR}/tmp.gff | \
+          awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^gene=/){column=$i}} print $1,$4,$5,$5-$4,column}' > ${BED_FILENAME}
+
+        $SAMTOOLS_BIN view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
+          sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
+          > ${RESULTS_DIR}/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv &
+
+        rm ${TMP_DIR}/tmp.gff
     done
     cd ../../../..
 done
 
-for SAMPLE_FOLDER in *
-do
-    cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
-    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC ktrB ydiF \
-      nuoF mntB araD tfdB artI arfA malF qedA mlhB purB
-    do
-        BED_FILENAME=${OUTPUT_DIR}/bed/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
-        samtools view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
-          sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
-          > ${OUTPUT_DIR}/results/mg.reads.per.gene_${GENE_NAME}_${SAMPLE_FOLDER}.tsv &
-    done
-    cd ../../../..
-done
+rmdir -p ${OUTPUT_DIR}/tmp
