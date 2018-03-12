@@ -74,7 +74,8 @@ done
 for SAMPLE_FOLDER in *
 do
     cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
-    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC
+    for GENE_NAME in gyrA gyrB phnC phnD phnE phnF phnG phnH phnI phnJ phnK phnL phnM phnN phnP recA rpoC ktrB ydiF \
+      nuoF mntB araD tfdB artI arfA malF qedA mlhB purB
     do
         BED_FILENAME=${OUTPUT_DIR}/bed/intersect_${GENE_NAME}_${SAMPLE_FOLDER}.bed
         samtools view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
