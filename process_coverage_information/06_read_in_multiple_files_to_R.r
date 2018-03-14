@@ -37,7 +37,7 @@ import.multiple.table.files <- function(mypath, mypattern, sep, header_read, ...
 {
 tmp.list.1 <- list.files(mypath, pattern = mypattern, recursive = TRUE)
 tmp.list.2 <- list(length = length(tmp.list.1))
-for (i in 1:length(tmp.list.1)){tmp.list.2[[i]]<-read.table(tmp.list.1[i], sep = sep, header = header_read, ...)}
+  for (i in 1:length(tmp.list.1)){tmp.list.2[[i]]<-read.table(tmp.list.1[i], sep = sep, header = header_read, ...)}
 names(tmp.list.2)<-basename(list.files(mypath, pattern = mypattern, recursive = TRUE))
 tmp.list.2
 }
