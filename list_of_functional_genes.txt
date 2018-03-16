@@ -1,0 +1,30 @@
+# nitrogen related genes
+norB
+nirS
+nosZ
+
+# sulfur related genes
+soxR
+soxS
+soxC
+
+# catalase gene
+katG*
+katE
+
+# metal related genes
+czcD
+merA
+
+#  monooxygenase
+tmoS
+
+# chitinases
+chiA*
+chtA
+
+# glycosyl hydrolases
+xynB
+bcsZ
+celB
+cenC
