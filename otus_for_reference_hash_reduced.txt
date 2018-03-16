@@ -1,0 +1,37 @@
+OTU	
+Ferrovibrio	
+Hoeflea	
+uncultured	Rhodospirillaceae
+Pseudomonas	
+Blastomonas	
+Rhodobacter	
+Limnohabitans	
+Rhizobium	
+Massilia	
+uncultured	Rhodobacteraceae
+Methylotenera	
+Cupriavidus	
+uncultured	Caulobacteraceae
+NS11-12-marine-group	Sphingobacteriales
+Acinetobacter	
+Flavobacterium	
+Oceanisphaera	
+Polaribacter-2	
+Psychrobacter	
+Shewanella	
+uncultured	Cryomorphaceae
+Gallaecimonas	
+Hot-Creek-32	Betaproteobacteria
+Acidovorax	
+Aeromonas	
+Arcobacter	
+Balneola	
+Idiomarina	
+Loktanella	
+Marinomonas	
+Owenweeksia	
+Pseudoalteromonas	
+Roseivirga	
+Terrimonas	
+Thalassobaculum	
+uncultured	Comamonadaceae
