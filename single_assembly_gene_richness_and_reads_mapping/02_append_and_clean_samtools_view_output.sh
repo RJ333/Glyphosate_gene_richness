@@ -17,7 +17,7 @@ echo "cleaning up table"
 
 awk 'BEGIN { OFS = "\t" ; print "contig\tgene\tsample\treads_per_gene"}
   {
-  split ($1, a, "_") 
+  split ($1, a, "_|__") 
   split (a[3], b, "\\.") 
   print $2, a[2], b[1], $3
   }' appended_genes*tsv > contig_gene_sample_reads.tsv
