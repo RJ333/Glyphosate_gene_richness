@@ -24,23 +24,43 @@ gene_richness <- setDT(gene_richness)
 gene_richness[,gene_richness_relative := gene_richness/gene_richness[days == 0]*100, by = .(gene,treatment)]
 
 # create subsets with and without glyphosate related genes
+
+phnM_like <- subset(gene_richness, grepl("phnM|ktrB|ydiF|nuoF|mntB|araD|tfdB|artI|arfA|malF|qedA|mlhB|purB", gene))
+
+
 phn_operon_richness_subset <- subset(gene_richness, grepl("phn[C-P]", gene))
 phn_operon_richness_subset_glyph <- subset(gene_richness, grepl("phn[C-P]", gene) & treatment == "glyph")
 sox_richness_subset <- subset(gene_richness, grepl("sox[A-Z]", gene))
 ref_richness_subset <- subset(gene_richness, !grepl("phn[C-P]|sox[A-B]", gene))
 ref_richness_subset_glyph <- subset(gene_richness, !grepl("phn[C-P]|sox[A-B]", gene) & treatment == "glyph")
-
+housekeeping_richness <- subset(gene_richness, grepl("gyrA|gyrB|rpoC|recG", gene))
 nitrogen_rich_subset <- subset(gene_richness, grepl("nirS|norB|nosZ|nuoF", gene))
+p_starve_rich_subset <- subset(gene_richness, grepl("pho|pst|psp", gene))
 
 # plot subsets
+ggplot(p_starve_rich_subset, aes(x = days, y = gene_richness, group = gene, colour = gene)) +
+  geom_line(size = 1.2) +
+  geom_text(aes(label = gene), show.legend = FALSE, size = 2.5) +
+  facet_grid(~ treatment)
+
+ggplot(phnM_like, aes(x = days, y = gene_richness, group = gene, colour = gene)) +
+  geom_line(size = 1.2) +
+  geom_text(aes(label = gene), show.legend = FALSE, size = 2.5) +
+  facet_grid(~ treatment)  
+  
+ggplot(housekeeping_richness, aes(x = days, y = gene_richness_relative, group = gene, colour = gene)) +
+  geom_line(size = 2) +
+  geom_text(aes(label = gene), show.legend = FALSE) +
+  facet_grid(~ treatment)
+
 ggplot(nitrogen_rich_subset, aes(x = days, y = gene_richness, group = gene, colour = gene)) +
   geom_line(size = 2) +
   geom_text(aes(label = gene), show.legend = FALSE) +
   facet_grid(~ treatment)
 
-ggplot(phn_operon_richness_subset, aes(x = days, y = gene_richness_relative, group = gene, colour = gene)) +
-  geom_line(size = 2) +
-  geom_text(aes(label = gene), show.legend = FALSE) +
+ggplot(phn_operon_richness_subset, aes(x = days, y = gene_richness, group = gene, colour = gene)) +
+  geom_line(size = 1.2) +
+  geom_text(aes(label = gene), show.legend = FALSE, size = 3) +
   facet_grid(~ treatment)
 
 ggplot(sox_richness_subset, aes(x = days, y = gene_richness_relative, group = gene, colour = gene)) +
