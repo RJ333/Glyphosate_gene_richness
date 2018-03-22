@@ -1,9 +1,10 @@
 #!/bin/sh
 
-# BEGIN adds table header and sets Output field sep to tab
-# split adresses specific column and splits on "_", storing the pieces in array a
-# from this leftover, another split is performed to remove the ".tsv", stored in array b
+# BEGIN adds table header and sets output field sep to tab
+# split() adresses specific column and splits on "_", storing the pieces in array a
+# from this leftover a[3], another split is performed to remove the ".tsv", stored in array b
 # the respective fields are printed
+
 awk 'BEGIN { OFS = "\t" ; print "contig\tgene\tsample\treads_per_gene"}
   {
   split ($1, a, "_") 
