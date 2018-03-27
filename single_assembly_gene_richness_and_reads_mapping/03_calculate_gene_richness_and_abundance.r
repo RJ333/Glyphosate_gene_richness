@@ -1,3 +1,9 @@
+# this script uses the reads per gene data, which has been processed before
+# it generates richness and abundance data from it and,also relation to day 0
+# and plots it. 
+# gene richness should be at least above 5 once to be taken into account
+# mapped reads are not normalized by length of gene nor sequencing depth yet 
+
 library(ggplot2)
 library(data.table)
 
@@ -142,7 +148,7 @@ ggplot(ref_richness_subset_glyph, aes(x = days, y = gene_richness, group = gene,
 # reads are not normalized against sequencing depth yet!!!
 
 gene_abundance <- aggregate( . ~  gene + sample + days + treatment, data = gene_reads2, sum)
-gene_abundance <- gene_abundance[,c(1:4,6)]
+gene_abundance <- gene_abundance[,c(1:4, 6)]
 gene_abundance <- gene_abundance[with(gene_abundance, order(gene)), ]
 
 # add column with relative richness values
@@ -164,7 +170,7 @@ ggplot(sox_abundance_subset, aes(x = days, y = reads_per_gene, group = gene, col
   
   
 ggplot(ref_abundance_subset, aes(x = days, y = reads_per_gene_relative, group = gene, colour = gene)) +
-  coord_cartesian(ylim = c(0,400)) +
+  coord_cartesian(ylim = c(0, 400)) +
   geom_line(size = 1.5) +
   geom_text(aes(label = gene), show.legend = FALSE) +
   facet_grid(~ treatment)

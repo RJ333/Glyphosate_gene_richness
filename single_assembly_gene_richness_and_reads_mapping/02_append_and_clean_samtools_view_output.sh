@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# BEGIN adds table header and sets output field sep to tab
+# split() adresses specific column and splits on "_", storing the pieces in array a
+# from this leftover a[3], another split is performed to remove the ".tsv", stored in array b
 # puts all single files into one file
 
 for nfiles in named_*.tsv
