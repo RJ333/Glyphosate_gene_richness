@@ -42,6 +42,7 @@ fi
 
 if [ -d $OUTPUT_DIR ]
 then
+	echo -en "\n"
     echo Output directory already exists. Aborting to avoid overriding. Exit code: 2. Exiting ...
     echo -en "\n"
     usage
@@ -86,16 +87,18 @@ cd $BASE_DIR
 for SAMPLE_FOLDER in *
 do
     cd ${SAMPLE_FOLDER}/output_IMP/Analysis/annotation
-    for PRODUCT_NAME in "Sarcosine oxidase subunit beta" "Sarcosine oxidase%2C gamma subunit family" "Sarcosine oxidase%2C delta subunit family"
+    # for loops not recommended to read lines from file, set IFS= for while loop, if you have e.g. spaces per line
+	cat /data/Rene/test_products.tsv | while read PRODUCT_NAME_NO_SPACES 
     do
-	PRODUCT_NAME_NO_SPACES=`echo ${PRODUCT_NAME} | tr " " "-"`
+	# tr only works on single characters. use echo '§' | xxd -c 1 to check possible delimiter
+	PRODUCT_NAME=`echo ${PRODUCT_NAME_NO_SPACES} | tr "@" " "`
         BED_FILENAME=${BED_DIR}/intersect_${PRODUCT_NAME_NO_SPACES}_${SAMPLE_FOLDER}.bed
         grep "$PRODUCT_NAME" annotation.filt.gff > ${TMP_DIR}/tmp.gff
 
         cat ${TMP_DIR}/tmp.gff | \
           awk -F '\t|;' '{for(i=9;i<=NF;i++){if($i~/^product=/){column=$i}} print $1,$4,$5,$5-$4,column}' > ${BED_FILENAME}
 
-        $SAMTOOLS_BIN view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
+        parallel -j 25 -k $SAMTOOLS_BIN view -L ${BED_FILENAME} ../../Assembly/mg.reads.sorted.bam | grep -v -P "^\@" | cut -f 1,3 | \
           sort | uniq | cut -f 2  | sort | uniq -c | perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; ' \
           > ${RESULTS_DIR}/mg.reads.per.gene_${PRODUCT_NAME_NO_SPACES}_${SAMPLE_FOLDER}.tsv &
           ### TODO (WARNING): currently all processes are forked at the same time. this needs to be resolved. limit to a certain number of processes.
@@ -104,6 +107,9 @@ do
     done
     cd ../../../..
 done
+
+### TODO: to map product name back to genes: all lower case, unify white spaces, dashes and  !!  
+
 
 rmdir -p ${OUTPUT_DIR}/tmp
 
