@@ -1,4 +1,19 @@
 # issue #23 script for gene abundance normalization 
+ls /data/jwerner/glyphosate/IMP/*
+cd /data/jwerner/glyphosate/IMP/A1/output_IMP/Analysis/annotation
+
+# table with sequencing depth per sample
+seq_depth.tsv
+
+
+
+
+
+
+
+
+
+
 
 # contig_gene_sample_reads.tsv sums multiple genes on the same contig
 
