@@ -10,9 +10,9 @@ do
     awk -v SAMPLE=$sample\
 	  '\
 	  BEGIN { FS = "\t|;"; OFS = "\t"}\
-	  {match($0,/product=[^;]*/); product_value=substr($0,RSTART,RLENGTH); gsub(" ","@",product_value); {print product_value, SAMPLE}}'\
-	  $prokka_annot >> /data/Rene/unique_products_per_sample.tsv
+	  {match($0,/product=[^;]*/); product_value=substr($0,RSTART,RLENGTH); gsub(" ","@",product_value); {print product_value, SAMPLE}}' $prokka_annot |\
+	  awk '{gsub("/","@")} 1' >> /data/Rene/unique_products_per_sample.tsv
   done
 done
 cd /data/Rene/
-sort unique_products_per_sample.tsv| uniq | cut -f 1 | sort| uniq -c| awk '$1 > 6 {print $0}' | awk '{split($2,a,"="); print a[2]}' > unique_products_greater_6_all_samples.tsv
+sort unique_products_per_sample.tsv| tr "/" "@" | uniq | cut -f 1 | sort| uniq -c| awk '$1 > 6 {print $0}' | awk '{split($2,a,"="); print a[2]}' > unique_products_greater_6_all_samples.tsv
