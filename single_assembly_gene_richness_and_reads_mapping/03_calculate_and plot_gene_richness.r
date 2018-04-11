@@ -4,6 +4,8 @@
 # gene richness should be at least above 5 once to be taken into account
 # mapped reads are not normalized by length of gene nor sequencing depth yet 
 
+# workspace is gene_richness_single.RData
+
 library(ggplot2)
 library(data.table)
 library(scales)
