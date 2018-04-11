@@ -1,0 +1,52 @@
+zu jedem skript:
+
+input, output, position in workflow, repo, issue
+
+Code_development/taxonomy_analysis (master)
+- processing_output
+-- calculating_tax_rel_abundance.txt #6
+# this script will be used to calculate the absolute abundance based on taxonomically annotated
+# reads. Taking contig length and sequencing depth into account, a normalised relative abundance
+# will be calculated. Goal is to specify different taxonomic levels to be plotted in R
+-- fasta_to_one_line_and_contig_length.sh #6
+# to get contig id and fasta in the same line (better I guess), prokka.fna as input
+# generate contig id <tab> contig length table (first line is empty, therefore ignoring it by NR > 1)
+# also contains loop for all metagenomes (not tested) 
+# generates a list with contig lengths for each metagenome
+-- get_contig_length_from_prokkafna.sh #6
+# I guess the ready version from above? output contig_length.tsv, including sample column
+-- merging_taxonomy_with_prokka_data.txt #7
+# this script should manage the linking of each contig's taxonomic annotation (if present)
+# to the functional annotation from prokka. One goal is to check specifically for a certain gene
+# e.g. phn genes and to be able to extract all taxonomy related to this gene.
+-- testfna.fna: 100 lines of contigs with newlines
+
+- mapping: Johannes'' part
+-- download database
+-- generate reference hash
+-- add taxID to header
+-- create R plots
+
+
+Glyphosate_gene_richness (master)
+- parse_prokka_genes_to_bed
+-- extract_and_count_all_genes_and_EC_numbers_per_sample_from_prokka.sh #21
+# extract and count all genes and previous column (ec numbers) per sample from prokka
+# input prokka.annotation, output e.g. A1_gene_list
+# better version available with awk "match"?
+-- generate_all_products_from_prokka.sh #20
+# get all product names from all annotation.filt.gffs
+# replace whitespace and / with @
+# set optional threshold for product appearances
+# output is "unique_products_greater_6_all_samples.tsv"
+-- parse_annotation.py #10
+# old script for 10000 bp cut up contigs
+-- parse_prokka_output.sh #10
+# main script to check via bed.file how many reads cover a certain gene/ec_number/product region
+# input are bam files and the list of target genes/etc
+
+# multiple versions, one with gnu parallel for all products: bio-49: /data/Rene/parallel_test_per_sample.sh
+
+-- missing: map product names back gen names, assign random name such as gen1, gen2 etc to products without gene name
+
+- process_coverage_information
