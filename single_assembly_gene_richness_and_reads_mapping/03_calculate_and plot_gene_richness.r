@@ -103,6 +103,8 @@ sox_richness_subset <- subset(gene_richness, grepl("sox[AB]|Sarc", gene))
 
 deg_richness <- subset(gene_richness, grepl("phn[C-N]|soxA|soxB|Sarc", gene))
 
+phn_operon_richness <- subset(gene_richness, grepl("phn[C-N]", gene))
+
 housekeeping_richness <- subset(gene_richness, grepl("gyrA|gyrB|purB|rpoC|recG|gap|dnaJ|dnaK|dmlR|ftsY|ftsZ|rplB|polA|sdhA", gene))
 
 p_starve_rich <- subset(gene_richness, grepl("pho|pst|psp", gene))
@@ -153,6 +155,7 @@ housekeeping_richness[is.na(housekeeping_richness)] <- 0
 deg_richness[is.na(deg_richness)] <- 0
 not_phn_rich[is.na(not_phn_rich)] <- 0
 p_starve_rich[is.na(p_starve_rich)] <- 0
+phn_operon_richness[is.na(phn_operon_richness)] <- 0
 
 # creating statistical data based on script summarySE, it does not understand "NA"! dataframe[is.na(dataframe)] <- 0
 housekeeping_richness_summary <- summarySE(housekeeping_richness, measurevar = "gene_richness_relative", groupvars = c("days" ,"treatment")) 
@@ -166,44 +169,50 @@ not_phn_rich_summary["group"] <- fuck
 
 p_starve_rich_summary <- summarySE(p_starve_rich, measurevar = "gene_richness_relative", groupvars = c("days" ,"treatment")) 
 p_starve_rich_summary["group"] <- fuck 
+
+phn_operon_richness_summary <- summarySE(phn_operon_richness, measurevar = "gene_richness_relative", groupvars = c("days" ,"treatment")) 
+phn_operon_richness_summary["group"] <- fuck 
+
 # plot the averaged subset with confidence interval
 
 #my_y_title <- expression(paste("not ",italic("phn"), " operon and species richness in relation to day 0 [%]"))
 #my_legend <- expression(paste("not ",italic("phn"), " operon richness"))
 
-my_y_title <- expression(paste("P-sensing genes and species richness in relation to day 0 [%]"))
-my_legend <- expression(paste("P-sensing genes richness"))
+my_y_title <- expression(atop("functional gene and species richness","in relation to day 0 [%]"))
+my_legend <- expression(paste(italic("phn"),"-operon gene richness"))
 
-p_starve_rich_mean_ci <- ggplot(p_starve_rich_summary, aes(x = days, y = gene_richness_relative, group = treatment, colour = treatment))+
+phn_operon_richness_mean_ci <- ggplot(phn_operon_richness_summary, aes(x = days, y = gene_richness_relative, group = treatment, colour = treatment))+
 geom_line(aes(linetype = group), size = 2)+
 geom_ribbon(aes(ymax = gene_richness_relative + ci, ymin = gene_richness_relative - ci), alpha = 0.1, colour = NA)+
 geom_line(data = tax_rich_omics, aes(y = richness_rel, linetype = group), size = 1.5)+
 #geom_point(data = more_cell_counts_0, aes(x = new_days, y = cells_rel, group = treatment), size = 3, alpha = 0.8)+
-scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"),
+scale_colour_manual(values = c("glyph" = "black", "control" = "grey70"),
 						name = "  ",
 						breaks = c("glyph", "control"),
 						labels = c("Treatment", "Control"))+
 scale_linetype_manual(values = c("group_func" = 1, "group_tax" = 3),
 						name = "",
 						breaks = c("group_func", "group_tax"),
-						labels = c(my_legend, "16S rRNA genes richness"))+								
+						labels = c(my_legend, "16S rRNA gene richness"))+								
 theme_bw()+
 	theme(panel.grid.major=element_line(colour = NA, size = 0.2))+
 	theme(panel.grid.minor=element_line(colour = NA, size = 0.5))+
 	scale_x_continuous(breaks = scales::pretty_breaks(n = 10))+
-	theme(axis.title = element_text(size=20))+
-	theme(axis.text.x = element_text(angle=0,vjust=0.5))+
-	theme(axis.title.y = element_text(angle=90,vjust=0.5))+
-	theme(axis.text=element_text(size=17))+
+	theme(axis.title = element_text(size = 25))+
+	theme(axis.text.x = element_text(angle = 0))+
+	theme(axis.title.y = element_text(angle = 90, hjust = 0.5))+
+	theme(axis.text=element_text(size = 20))+
 	theme(legend.position="right")+
 	theme(strip.background = element_blank(),
 		strip.text.x = element_blank())+
 	xlab("Days after glyphosate addition")+
 	ylab(my_y_title)+
-	guides(lty = guide_legend(keywidth = 1.5, keyheight = 1))+
-	coord_cartesian(ylim = c(50, 260)) 
-p_starve_rich_mean_ci
-ggsave(file = "p_starve_rich_and_tax.png", width = 14, height = 12)
+	guides(lty = guide_legend(keywidth = 2, keyheight = 1))+
+	coord_cartesian(ylim = c(50, 280)) 
+phn_operon_richness_mean_ci
+ggsave(file = "phn_operon_richness_and_tax.png", width = 12, height = 10)
+ggsave(file = "phn_operon_richness_and_tax.pdf", width = 12, height = 10)
+ggsave(file = "phn_operon_richness_and_tax.eps", width = 12, height = 10)
   
   
 ########
