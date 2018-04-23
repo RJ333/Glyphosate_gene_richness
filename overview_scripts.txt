@@ -49,4 +49,40 @@ Glyphosate_gene_richness (master)
 
 -- missing: map product names back gen names, assign random name such as gen1, gen2 etc to products without gene name
 
-- process_coverage_information
+- process_coverage_information (Master) # this is basically all for the old co-assembled data
+-- 01_add_samplename_and_combine_coverage_lists.sh
+# OLD CO-ASSEMBLY DATA: takes the coverage information per each base for each sample in a folder called e.g. "phnC", containing all areas on contigs carrying "phnC"
+# combines coverage information from 10 samples into one lists and adds a column "sample" 
+-- 02_remove_coverage_below_threshold.sh
+# removes entries from the coverage list which are below a certain per-base coverage
+-- 03_add_genes_to_coverage.sh
+# adds a column with the gene, so that lists for different genes can be combined. each gene occurence is numbered, so two genes on one contig can be distuingished
+-- 04_generate_gene_length_and_merge_with_contig_length_per_gene.sh
+# first part extracts gene length from prokka annotation > gene_length_${var2}.txt
+# this works only for genes which have an annotated ec number, otherwise it picks the wrong column
+# then contig_length from file contig_lengths_cut.txt is combined with gene_length > ${var2}_contig_and_gene_length.txt
+-- 05_filter_gene_contig_length.sh
+# this gives us the oppurtunity, to also filter by minimum contig length and gene length
+-- 06/07 
+# R scripts in different versions to display coverage information
+# generates plots for bases per gene per sample and richness per gene per sample
+
+
+- read_abundance (Master)
+# data and R script to perfom a mann-whitney test to test for statistical significance of sequencing influence on gene richness
+
+
+- single_assembly_gene_richness_and_reads_mapping (Master)
+-- 01_combine_samtools_view_files
+# data from parse prokka output generates tables per gene/product and per sample, but table name contains sample and gene
+# this script adds a column consisting of the tablename   unnamed_file > named_file
+-- 02_append_and_clean_samtools_view_output
+# takes all the named_files and merges them to one huge list
+# splits table name into separate columns for sample and gene
+# removes old files
+-- 03_calculate_and_plot_gene_richness.R
+# this script uses the reads per gene data, which has been processed before
+# it generates richness and abundance data from it and,also relation to day 0
+# and plots it. 
+# gene richness should be at least above 5 once to be taken into account
+# mapped reads are not normalized by length of gene nor sequencing depth yet
