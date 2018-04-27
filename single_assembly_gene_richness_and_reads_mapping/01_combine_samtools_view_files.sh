@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # adds the name of the file in folder "unnamed" as first column and copies to "named" folder 
-cd unnamed_reads_per_gene
+cd /data/Rene/glyph/renamed
 for files in *.tsv
 do	
   echo $files
