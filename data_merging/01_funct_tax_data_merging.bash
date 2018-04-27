@@ -171,3 +171,5 @@ sum(subset(prokka_all,sample == "A7")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B8")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B9")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B10")$rpm)  # 1e+06
+
+# now only tax information and read normalization for that data is missing
