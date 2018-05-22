@@ -90,10 +90,12 @@ nrow(prokka_all_2)  # 544.955
 nrow(prokka_all)  # 1.244.955
 
 
-# use contig length file for merging (version already exists, "get_contig_length_from_prokkafna.sh" in taxonomy analysis repo)
+# use contig length file for merging 
+# script already exists: list_contig_length_IMP.sh in glyphosate/data_merging
+# or "get_contig_length_from_prokkafna.sh" in taxonomy analysis repo)
 # and adjust for merging
 contig_length <- read.delim(file.choose(), header = FALSE)
-names (contig_length) <- c("contig_id", "contig_length", "sample")
+names (contig_length) <- c("contig_id", "contig_length", "sample")  # order depending on the script you used
 contig_length$sample_contig_id <- do.call(paste, c(contig_length[c("sample", "contig_id")], sep = "_")) 
 contig_length <- contig_length[c(4,2)]
 prokka_all <- merge(prokka_all, contig_length, by = "sample_contig_id")
