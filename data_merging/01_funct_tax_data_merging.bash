@@ -175,10 +175,14 @@ sum(subset(prokka_all,sample == "B9")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B10")$rpm)  # 1e+06
 
 # now only tax information and read normalization for that data is missing
-kaiju_75_20 <- read.delim(file.choose(), header = TRUE)
+kaiju_50_20 <- read.delim(file.choose(), header = TRUE)
 # remove some columns which are probably not important
-prokka_all_shorter <- prokka_all[,c(1,4,7,8,9,11,12,13,19)]
-kaiju_shorter <- kaiju_75_20[,c(1:10)]
+# relative values for order, class and phylum removed
+kaiju_shorter <- kaiju_50_20[,c(1:11)]
+# calculation columns for rpm and other unimportant columns removed
+prokka_all_shorter <- prokka_all[,c(1,4,7,8,9,11,13,19)]
+
+# merge shortened data
 prokka_all_tax <- merge(prokka_all_shorter, kaiju_shorter, by = c("sample", "contig_id"), all.x = TRUE)
 
 write.table(prokka_all_tax, file = "prokka_tax_glyph.tsv", sep = "\t")
