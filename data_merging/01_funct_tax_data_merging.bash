@@ -1,25 +1,26 @@
 # list prokka files with sample name
 
 # path to prokka files:
-/data/jwerner/glyphosate/IMP/*/output_IMP/Analysis/annotation
+#/data/jwerner/glyphosate/IMP/*/output_IMP/Analysis/annotation
 
 # create output folder
-mkdir -p /data/Rene/glyph
+#mkdir -p /data/Rene/glyph/prokka
 
 # go to folder with the different samples
-cd /data/jwerner/glyphosate/IMP
+#cd /data/jwerner/glyphosate/IMP
 
 # put for loop in a function to simply copy into the terminal
 # function adds a column with the sample name and saves the modified file somewhere else
-function hihi {
-for sample in *
-do
-  echo $sample
-  cd /data/jwerner/glyphosate/IMP/$sample/output_IMP/Analysis/annotation
-  awk -v sample=$sample '{a=sample;}{print a"\t"$0}' annotation.filt.gff > /data/Rene/glyph/${sample}_prokka.gff
-done
-}
-
+#function hihi {
+#for sample in *
+#do
+#  echo $sample
+#  cd /data/jwerner/glyphosate/IMP/$sample/output_IMP/Analysis/annotation
+#  awk -v sample=$sample '{a=sample;}{print a"\t"$0}' annotation.filt.gff > /data/Rene/glyph/prokka/${sample}_prokka.gff
+#done
+#}
+dieser schritt muss angepasst werden, nachdem ich prokka daten verändere 
+--> parse_prokka_genes_to_bed/* inkl der GNU parallel version des Skriptes checken
 
 # run function
 hihi
@@ -39,7 +40,8 @@ done
 # run function
 hoho
 
-
+die folgenden Schritte sollten nicht mehr in Excel durchgeführt werden, 
+viele Ersetzungen werden nun vorher schon durchgeführt
 
 # resulting prokka file with more than 1.200.000 lines is to big for excel. for convenience, some cleaning tasks should be tested in excel
 # before writing code. So, the file is split roughly in half, creating two new files (xaa and xab)
