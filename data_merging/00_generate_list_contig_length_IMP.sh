@@ -1,21 +1,16 @@
 #!/bin/sh
 
-# this script combines the output of the script "xy" 
-# (is there are script that contains the "samtools depth" step?) 
-# to one list for all genes in a folder
-# and sorts it by coverage
-
 PATH_TO_DATA=/data/jwerner/glyphosate/IMP/ 
+OUTPUT_DIR=/data/Rene/glyph/
 
-cd $PATH_TO_DATA
-# find only directories
-for sample in $(find . -mindepth 1 -maxdepth 1 -type d) 
+# delete older files
+rm $OUTPUT_DIR/contig_length.tsv
+
+for name in A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 
 do 
-  name=$(echo $sample | cut -c 3-)
-  cd $sample/output_IMP/Analysis
-  echo $sample
+  cd $PATH_TO_DATA/$name/output_IMP/Analysis
   echo $name
   # add all 10 samples to one list and add a column with the sample name  
-  awk -v name="$name" 'BEGIN{FS = OFS = "\t"}{print name, $0}' mg.assembly.length.txt >> /data/Rene/contig_length.tsv 
-  cd $PATH_TO_DATA 
+  awk -v name="$name" 'BEGIN{FS = OFS = "\t"}{print name, $0}' mg.assembly.length.txt >> $OUTPUT_DIR/contig_length.tsv 
+  cd $PATH_TO_DATA
 done
