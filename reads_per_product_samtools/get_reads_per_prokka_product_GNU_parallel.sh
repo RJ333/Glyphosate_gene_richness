@@ -54,7 +54,7 @@ do
     awk -v SAMPLE=$sample \
 	  '\
 	  BEGIN { FS = "\t|;"; OFS = "\t"}\
-	  {match($0,/product=[^;]*/); product_value=substr($0,RSTART,RLENGTH); {print tolower(product_value), SAMPLE}}' $prokka_annot | tr '/()[:blank:]-' '@@@@@@@'  > $OUTPUT_DIR/unified_${sample}.tsv
+	  {match($0,/product=[^;]*/); product_value=substr($0,RSTART,RLENGTH); {print tolower(product_value), SAMPLE}}' $prokka_annot | tr '/()[:blank:]-_' '@@@@@@'  > $OUTPUT_DIR/unified_${sample}.tsv
 	  # pasting the modified products column to the original prokka file
 	  paste -d '\t' $prokka_annot $OUTPUT_DIR/unified_${sample}.tsv > $OUTPUT_DIR/${sample}/${sample}_prokka_modified.tsv
 	  cat $OUTPUT_DIR/unified_${sample}.tsv >> $OUTPUT_DIR/unified_all_samples.tsv
