@@ -153,7 +153,7 @@ sum(subset(prokka_all,sample == "B10")$rpk)  # 126025571
 # add column to meta_omics_small
 meta_omics_small$scale_factor <- c(104241798, 88531948, 123148955, 113719110, 76706929, 93840142, 142089935, 134019320, 87025821, 126025571)
 
-# check how sum of reads per kilobase correlate to sequencing depth (in read pairs)
+# checkhow sum of reads per kilobase correlate to sequencing depth (in read pairs)
 library(ggplot2)
 ggplot(meta_omics_small, aes( x = new_day, group = treatment, lty = treatment)) +
   geom_line(aes(y = total_reads, colour = "total paired reads"))+
@@ -175,6 +175,13 @@ sum(subset(prokka_all,sample == "A7")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B8")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B9")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B10")$rpm)  # 1e+06
+
+# another value, the average coverage, is created by  #35, bbmap
+# it can be found under /data/jwerner/glyphosate/IMP/${i}/metagenome_coverage/covstats.txt 
+# and needs to be merged by contig_id and sample 
+
+
+
 
 # now only tax information and read normalization for that data is missing
 kaiju_50_20 <- read.delim(file.choose(), header = TRUE)
