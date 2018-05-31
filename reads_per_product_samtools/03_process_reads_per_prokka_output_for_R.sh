@@ -1,18 +1,26 @@
 #!/bin/sh
 
-# BEGIN adds table header and sets output field sep to tab
-# split() adresses specific column and splits on "_", storing the pieces in array a
-# from this leftover a[3], another split is performed to remove the ".tsv", stored in array b
-# puts all single files into one file
-cd /data/Rene/glyph/named_reads_per_gene
+OUTPUT_DIR=/data/Rene/glyph/prokka 
+mkdir -p $OUTPUT_DIR/named
+
+# adds the name of the file in folder "unnamed" as first column and copies to "named" folder 
+cd $OUTPUT_DIR/renamed
+for files in *.tsv
+do	
+  awk '{a=FILENAME;}{print a"\t"$0}' $files > $OUTPUT_DIR/named/named_${files}
+done
+
+rm -r $OUTPUT_DIR/renamed
+
+cd $OUTPUT_DIR/named
 
 for nfiles in named_*.tsv
 do	
   cat $nfiles >> appended_genes.tsv
-  echo "appending $nfiles done"
 done
 
-echo "cleaning up table"
+echo "all information appended into appended_genes.tsv"
+echo "cleaning up appended_genes.tsv"
 
 # BEGIN adds table header and sets Output field sep to tab
 # split adresses specific column and splits on "_", storing the pieces in array a
