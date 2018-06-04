@@ -5,15 +5,19 @@ mkdir -p $OUTPUT_DIR/named
 
 # adds the name of the file in folder "unnamed" as first column and copies to "named" folder 
 cd $OUTPUT_DIR/renamed
+echo "adding file name as column to files"
 for files in *.tsv
 do	
   awk '{a=FILENAME;}{print a"\t"$0}' $files > $OUTPUT_DIR/named/named_${files}
 done
 
+
+echo "removing folder renamed"
 rm -r $OUTPUT_DIR/renamed
 
 cd $OUTPUT_DIR/named
 
+echo "appending genes"
 for nfiles in named_*.tsv
 do	
   cat $nfiles >> appended_genes.tsv
@@ -26,6 +30,8 @@ echo "cleaning up appended_genes.tsv"
 # split adresses specific column and splits on "_", storing the pieces in array a
 # from this leftover, another split is performed to remove the ".tsv", stored in array b
 # the respective fields are printed
+
+echo "formatting appended genes with awk"
 
 awk 'BEGIN { OFS = "\t" ; print "contig\tgene\tsample\treads_per_gene"}
   {
