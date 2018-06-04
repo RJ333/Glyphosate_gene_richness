@@ -64,6 +64,17 @@ do
   done
 done
 
+# generate a combined prokka modified output for all samples
+cd $OUTPUT_DIR
+for prokka_table in *_prokka_modified.tsv
+do
+  sample=$(echo $prokka_table | sed "s/_.*$//")
+  awk -v sample=$sample '{a = sample;} {print a"\t"$0}' $prokka_table >> $OUTPUT_DIR/all_prokka_modified.gff
+  echo "$sample appended"
+done
+cat $OUTPUT_DIR/all_prokka_modified.gff | rev | sed 's/^@//' | rev > $OUTPUT_DIR/all_prokka_modified2.gff
+rm $OUTPUT_DIR/all_prokka_modified.gff
+
 # use the list of products from all samples as list of queries for samtools. remove duplicates and set minimum threshold
 cd $OUTPUT_DIR
 sort unified_all_samples.tsv| rev | sed 's/@/\t/' | rev | cut -f 1 |\
