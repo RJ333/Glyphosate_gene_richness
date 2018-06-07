@@ -31,16 +31,7 @@ TMP_DIR=${OUTPUT_DIR}/tmp
 
 mkdir -p $BED_DIR
 mkdir -p $RESULTS_DIR
-mkdir -p $TMP_DIR
 
-cd ${ORIGINAL_BASE_DIR}
-for sample in $(find . -mindepth 1 -maxdepth 1 -type d | sed "s|^\./||")
-do
-  for prokka_annot in ${ORIGINAL_PROKKA_DIR}/annotation.filt.gff
-  mkdir -p ${OUTPUT_DIR}/$sample
-  cp $prokka_annot $OUTPUT_DIR/$sample/
-  echo "prokka annotation of sample $sample copied"
-done
 
 
 
