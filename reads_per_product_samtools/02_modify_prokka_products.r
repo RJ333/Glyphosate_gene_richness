@@ -22,7 +22,8 @@ args <- parser$parse_args()
 
 # read in the combined prokka data from all samples 
 print("reading prokka data ...")
-prokka_tables <- fread(args$prokka_file, 
+#prokka_tables <- fread(args$prokka_file, 
+prokka_tables <- fread("./omics/prokka/prokka_all_modified.tsv", 
   col.names = c("sample", "contig_id", "gene_start", "gene_end", "annotation"),
   colClasses = c("factor", "factor", "integer", "integer", "character"))
 
@@ -34,8 +35,20 @@ prokka_neat <- prokka_tables %>%
   select(-Key) %>% 
   filter(!(is.na(Col) & is.na(Value))) %>% 
   spread(Col, Value)
+
   
   
+## combine "note" and "product"
+
+full <- prokka_neat
+full$product2 <- ifelse(full$product == "hypothetical protein" & !is.na(full$note), full$note, full$product)
+
+
+
+
+
+
+
   
 # generate output
 # prokka files for further merging
@@ -55,7 +68,7 @@ sessionInfo()
 
 ## name new columns correctly
 
-## combine "note" and "product"
+
 
 ## calculate gene length
 
