@@ -32,7 +32,8 @@ TMP_DIR=${OUTPUT_DIR}/tmp
 mkdir -p $BED_DIR
 mkdir -p $RESULTS_DIR
 
-
+## include sample vector?
+## include unique list argument?
 
 
 # get all product names from annotation in lower case and combine them with the original prokka file:
@@ -72,7 +73,7 @@ sort unified_all_samples.tsv| rev | sed 's/@/\t/' | rev | cut -f 1 |\
 sort| uniq -c| awk -v THRESHOLD=$THRESHOLD '$1 > THRESHOLD {print $0}' |\
 awk '{split($2,a,"="); print a[2]}' > unified_unique_prokka_products_greater_${THRESHOLD}.tsv
 
-
+## sam_parallel shouldn't use original prokka tables anymore --> R modified ones
 sam_parallel() {
 	SAMPLE="$1"
 	cd $OUTPUT_DIR
