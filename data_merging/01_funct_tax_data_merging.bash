@@ -3,76 +3,61 @@
 # what files do we need?
 
 # taxonomy/processing_kaiju/quality_check_kaiju_output.sh
-kaiju output --> ready
+kaiju output : taxonomic output per contig : ready
 
 # Glyphosate_gene_richness/data_merging/00_generate_list_contig_length_coverage_bbtools.sh
-bbmap output --> ready
+bbmap output : reads per contig, average coverage and contig length : ready
 
+prokka output : prokka table with adjusted product names, fitting to samtools used names : in prep 
 
-prokka output 
-samtools gene richness output --> ready
-binning output?
+samtools gene richness output : reads per product per sample : ready
+
+concoct binning output?
+
 meta_data for samples --> ready
 
+# what to do with merged output?
+--> calculate normalized reads per contig and per product (for tax and gene abundance)
+--> GC content biplot length of contigs, phn genes marked
+--> script for abundance data
+--> script for richness data
+important genes and taxonomic annotation, abundance in 16S data
 
 
-  
-# preparing gene richness data to be merged within R (single_assembly_gene_richness... repo)
-mkdir /data/Rene/glyph/unnamed_reads_per_gene
-mkdir /data/Rene/glyph/named_reads_per_gene
-
-for file in ../test_folder/results/*; do cp "$file" unnamed_reads_per_gene; done
-
-# IMPORTANT: substitute "_" with "@" in product names, which will be used as separator later
-# use rename.sh
-# https://stackoverflow.com/questions/50039463/replace-substitute-a-list-of-substrings-in-a-list-of-filenames-in-bash-with-awk
-
-# if you want to run it only on e.g. the files that have more than the two "_", move those to another folder "renamed"
-find ../unnamed_reads_per_gene/ -mindepth 1 -maxdepth 1 -type f -name '*_*_*_*'
+library(data.table)
+library(argparse)
+library(tidyverse)
 
 
-running 01_combine_samtools_view_files.sh  # starting from folder "renamed"
-running 02_append_and_clean_samtools_view_output.sh  # output file contig_gene_sample_reads.tsv
+parser <- ArgumentParser()
 
-# in R
-# put both large prokka files together
-prokka_all_1 <- read.delim(file.choose(), header = TRUE)  # all_prokkas_part1_cleaned.gff
-prokka_all_2 <- read.delim(file.choose(), header = TRUE)  # all_prokkas_part2_cleaned.gff
-prokka_all <- rbind(prokka_all_1, prokka_all_2)
-nrow(prokka_all_1)  # 700.000
-nrow(prokka_all_2)  # 544.955
-nrow(prokka_all)  # 1.244.955
+parser$add_argument("-p", "--prokka_file", default = NULL,
+                    dest = "prokka_file", required = TRUE,
+                    help = "file containing modified and combined prokka files")
+parser$add_argument("-t", "--threshold_richness", default = NULL,
+                    dest = "threshold", required = TRUE, type= "integer",
+                    help = "threshold defining on how many contigs a product \
+							has to be found to be included in further analysis")
+					
+parser$add_argument("-o", "--output_dir", default = NULL,
+                    dest = "output_dir", required = TRUE,
+                    help = "directory to store processed prokka data")					
+args <- parser$parse_args()
 
 
-# use contig length file for merging 
-# script already exists: list_contig_length_IMP.sh in glyphosate/data_merging
-# or "get_contig_length_from_prokkafna.sh" in taxonomy analysis repo)
-# and adjust for merging
-contig_length <- read.delim(file.choose(), header = FALSE)
-names (contig_length) <- c("contig_id", "contig_length", "sample")  # order depending on the script you used
+prokka_all <- fread(...)
+kaiju <-
+bbmap <-
+gene_reads <-
+concoct <- 
+
+names (file) <- c("contig_id", "contig_length", "sample")  # order depending on the script you used
 contig_length$sample_contig_id <- do.call(paste, c(contig_length[c("sample", "contig_id")], sep = "_")) 
 contig_length <- contig_length[c(4,2)]
 prokka_all <- merge(prokka_all, contig_length, by = "sample_contig_id")
 
-# if substitution forgotten:
-# prokka_all$adjusted_products <- as.factor(gsub("-|'| |/", "@", prokka_all$adjusted_products))
-# prokka_all$sample_contig_id_product <- as.factor(gsub("-|'| |/", "@", prokka_all$sample_contig_id_product))
-
-# check if adjusted product names reduced ambiguity
-str(prokka_all)
-prokka_all$adjusted_products <- as.factor(prokka_all$adjusted_products)
-length(levels(prokka_all$adjusted_products))  # 9810
-length(levels(prokka_all$product))  # 10234
 
 # add data from read mappings on genes/products
-product_map <- read.delim(file.choose(), header = TRUE)  # contig_gene_sample_reads.tsv
-nrow(product_map)  # 1191982
-# adjust product names similar to adjusted_products
-product_map$gene <- as.factor(gsub("-|'| |/", "@", product_map$gene))
-product_map$gene <- tolower(product_map$gene)
-product_map$sample_contig_id_product <- do.call(paste, c(product_map[c("sample", "contig","gene")], sep = "_"))
-product_map2 <- product_map[c(5,4)]
-product_map2$sample_contig_id_product <- as.factor(product_map2$sample_contig_id_product)
 
 # after string adjustments for products, some read entries are duplicates (same product on same contig in same sample).
 # they have to be summed up using plyr

@@ -1,5 +1,14 @@
 #!/usr/bin/env Rscript
 
+
+##  TODO:
+
+## compare with 01_get_reads_per... what is now überflüssig and can be removed from there
+
+## when is table ready for data merging? make sure same characters were substitued by "@"
+## in available data and change for future runs
+
+
 library(argparse)
 library(data.table)
 library(tidyverse)
@@ -104,9 +113,4 @@ print("all done")
 
 sessionInfo()
   
-##  TODO:
-
-## compare with 01_get_reads_per... what is now überflüssig and can be removed from there
-
-## when is table ready for data merging?
 
