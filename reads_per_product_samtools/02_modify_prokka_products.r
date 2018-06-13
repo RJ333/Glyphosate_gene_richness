@@ -1,9 +1,8 @@
 #!/usr/bin/env Rscript
 
-
 ##  TODO:
 
-## compare with 01_get_reads_per... what is now überflüssig and can be removed from there
+## compare with 04_get_reads_per... what is now überflüssig and can be removed from there
 
 ## when is table ready for data merging? make sure same characters were substitued by "@"
 ## in available data and change for future runs
@@ -19,7 +18,7 @@ parser <- ArgumentParser()
 parser$add_argument("-p", "--prokka_file", default = NULL,
                     dest = "prokka_file", required = TRUE,
                     help = "file containing modified and combined prokka files")
-parser$add_argument("-t", "--threshold_richness", default = NULL,
+parser$add_argument("-t", "--threshold_richness", default = 1,
                     dest = "threshold", required = TRUE, type= "integer",
                     help = "threshold defining on how many contigs a product \
 							has to be found to be included in further analysis")
@@ -34,10 +33,16 @@ args <- parser$parse_args()
 # time Rscript 02_modify_prokka_products.r \
 # -p="/data/Rene/glyph/prokka/prokka_all_modified.tsv" -o="/data/Rene/glyph/prokka/"
 
+
+# read in contig_gene_sample_reads 
+contig_gene_sample_reads <- fread("./omics/prokka/contig_gene_sample_reads.tsv")
+contig_gene_sample_reads$gene <- gsub("_|-|'| |/|:|\\.|\\(|\\)|\\|", "@", contig_gene_sample_reads$gene)  
+
+
 # read in the combined prokka data from all samples 
 print("reading prokka data ...")
 #prokka_tables <- fread(args$prokka_file, 
-prokka_tables <- fread("./prokka_all_modified.tsv", 
+prokka_tables <- fread("./omics/prokka/prokka_all_modified.tsv", 
   col.names = c("sample", "contig_id", "gene_start", "gene_end", "annotation"),
   colClasses = c("factor", "factor", "integer", "integer", "character"))
 
@@ -50,9 +55,11 @@ prokka_neat <- prokka_tables %>%
   filter(!(is.na(Col) & is.na(Value))) %>% 
   spread(Col, Value)
 
-  
-full <- prokka_neat  # keep this during devel, if something fails
- 
+# keep this during devel, if something fails 
+full <- prokka_neat  
+# prokka_neat <- full
+
+
 # combine "note" and "product"
 print("combining columns product and note")
 prokka_neat$product2 <- ifelse(prokka_neat$product == "hypothetical protein" & !is.na(prokka_neat$note), prokka_neat$note, prokka_neat$product)
@@ -72,9 +79,8 @@ print("unifying product annotations")
 prokka_select$product2 <- tolower(prokka_select$product2)
 
 ## replace white lines and special characters in product names with "@"
-prokka_select$product2 <- gsub("-|'| |/|:", "@", prokka_select$product2)  
-# is "|" a problem?
-prokka_select$product2 <- gsub("|","@", fixed = TRUE)
+prokka_select$product2 <- gsub("_|-|'| |/|:|\\(|\\.|\\)|\\|", "@", prokka_select$product2)  
+
 
 # unify gene numbering e.g. genE_01, genE_02 etc --> genE
 print("unifying gene names")
@@ -87,30 +93,45 @@ prokka_select$gene <- as.factor(prokka_select$gene)
 prokka_select$locus_tag <- as.factor(prokka_select$locus_tag)
 
 # create table with all products across all samples and their global richness
-all_unique_products_with_count <- as.data.frame(table(prokka_select$product2))
+all_unique_products_with_count <- as.data.frame(table(droplevels(prokka_select$product2)))
 
 # generate vector of unique products with defined threshold
 unique_products_selected <- all_unique_products_with_count %>%
 filter(Freq > args$threshold) %>%
 select(Var1)
 
+unique_products_selected <- all_unique_products_with_count %>%
+filter(Freq > 1) %>%
+select(Var1)
+
+
+# unique products for samtools script
+print("writing unique products across all samples ...")
+write.table(unique_products_selected , sep = "\t", 
+  file = paste0(args$output_dir, "/unified_unique_prokka_products_greater_",args$threshold,".tsv"))
+print("all done")
+
+# unique products for samtools script
+print("writing unique products across all samples ...")
+write.table(unique_products_selected , sep = "\t", 
+  file = paste0("./omics/prokka", "/unified_unique_prokka_products_greater_",1,".tsv"))
+print("all done")
+
+
 # generate prokka output for samtools to create bed.files
 prokka_bed  <- setDT(prokka_select)
 prokka_bed[, fwrite(.SD, sep = "\t", paste0(args$output_dir, "/prokka_for_bed_", sample,".tsv")), by = sample]
 
-# unique products for samtools script
-print("writing unique products across all samples ...")
-write.table(unique_products_selected , sep = "\t", file = paste0(args$output_dir, "/unified_unique_prokka_products_greater_",args$threshold,".tsv"))
-print("all done")
+prokka_bed[, fwrite(.SD, sep = "\t", paste0("./omics/prokka", "/prokka_for_bed_", sample,".tsv")), by = sample]
 
-# prokka files for further merging
+# remove gene start/end from this file (column 3 and 4)
+prokka_processed <- prokka_select[, c("sample", "contig_id", "gene_length",
+								 "eC_number", "gene", "product2", "locus_tag")]
 
-# remove gene start/end from this file
-
-print("writing processed prokka file as xxx ...")
-write.table(xxx , sep = "\t", file = paste0(args$output_dir, "/xxx_uniq"))
+# write prokka files for further merging
+print("writing processed prokka file ...")
+write.table(prokka_processed , sep = "\t", file = paste0(args$output_dir, "/prokka_processed.tsv"))
+write.table(prokka_processed , sep = "\t", file = paste0("./omics/prokka", "/prokka_processed.tsv"))
 print("all done")
 
 sessionInfo()
-  
-
