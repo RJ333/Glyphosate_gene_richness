@@ -8,7 +8,7 @@ These first script copies the prokka annotation, modifies the product annotation
 
 ```
 conda activate Renv
-time Rscript 02_modify_prokka_products.r -p="/data/Rene/glyph/prokka/prokka_all_modified.tsv" -o="/data/Rene/glyph/prokka/"
+time Rscript 02_modify_prokka_products.r -p="/data/Rene/glyph/prokka/prokka_all_modified.tsv" -t=1 -o="/data/Rene/glyph/prokka/"
 ```
 
 Based on the unique product list a bed file
