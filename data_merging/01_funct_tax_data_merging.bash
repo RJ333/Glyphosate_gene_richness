@@ -46,12 +46,48 @@ parser$add_argument("-o", "--output_dir", default = NULL,
                     help = "directory to store merged input data")					
 args <- parser$parse_args()
 
+# reading in prokka data
+print("reading prokka data ...")
+prokka <- fread(args$input/"prokka_processed.tsv",
+  colClasses = c("factor", "factor", "integer", "factor", "factor", "factor", "factor"))
+prokka <- fread("./prokka_processed.tsv",
+  colClasses = c("factor", "factor", "integer", "factor", "factor", "factor", "factor"))
 
-prokka_all <- fread(...)
-kaiju <-
-bbmap <-
-gene_reads <-
-concoct <- 
+  # reading in kaiju data
+# we can't set the colClasses directly, as we read info about 15 files and then drop the first
+# this is fixed in kaiju script, row names are dropped in future
+print("reading kaiju data ...")
+kaiju <- fread(args$input/"filtered_kaiju_output.tsv", drop = 1)
+kaiju <- fread("./filtered_kaiju_output.tsv", drop = 1)
+# so we do it afterwards by specifying a vector with the columns that should be a factor
+kaiju_factor_cols <- c(1,2,5:9)
+setDT(kaiju)[, (kaiju_factor_cols):= lapply(.SD, factor), .SDcols=kaiju_factor_cols]
+
+# reading in bbmap data
+print("reading bbmap data ...")
+bbmap <- fread(args$input/"contig_length_coverage.tsv",
+  col.names = c("sample", "contig_id", "average_coverage", "contig_length"),
+  colClasses = c("factor", "factor", "double", "integer"))
+bbmap <- fread("./contig_length_coverage.tsv",
+  col.names = c("sample", "contig_id", "average_coverage", "contig_length"),
+  colClasses = c("factor", "factor", "double", "integer"))
+
+# reading in reads per product data
+print("reading reads per product data ...")
+product_reads <- fread(args$input/"contig_gene_sample_reads.tsv", header = TRUE)
+  col.names = c("contig_id", "product2", "sample", "reads_per_product"),
+  colClasses = c("factor", "factor", "factor", "integer"))
+product_reads <- fread("./contig_gene_sample_reads.tsv", header = TRUE,
+  col.names = c("contig_id", "product2", "sample", "reads_per_product"),
+  colClasses = c("factor", "factor", "factor", "integer"))
+
+# reading in concoct binning data
+# print("reading concoct binning data ...")
+# concoct <-
+
+# reading in checkm binning quality data
+# print("reading checkM binning QC data ...")
+# checkm <-
 
 names (file) <- c("contig_id", "contig_length", "sample")  # order depending on the script you used
 contig_length$sample_contig_id <- do.call(paste, c(contig_length[c("sample", "contig_id")], sep = "_")) 
