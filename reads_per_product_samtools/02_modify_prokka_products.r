@@ -1,11 +1,6 @@
 #!/usr/bin/env Rscript
 
-##  TODO:
-
-## compare with 04_get_reads_per... what is now überflüssig and can be removed from there
-
-## when is table ready for data merging? make sure same characters were substitued by "@"
-## in available data and change for future runs
+# NOT TESTED as Rscript yet
 
 
 library(argparse)
@@ -86,11 +81,16 @@ all_unique_products_with_count <- as.data.frame(table(droplevels(prokka_select$p
 # generate vector of unique products with defined threshold
 unique_products_selected <- all_unique_products_with_count %>%
 filter(Freq > args$threshold) %>%
-select(Var1)
+select(as.factor("Var1"))
+
+unique_products_selected <- all_unique_products_with_count %>%
+filter(Freq > 1) %>%
+select(as.factor(Var1))
 
 # unique products for samtools script
 print("writing unique products across all samples ...")
 write.table(unique_products_selected , sep = "\t", 
+  quote = FALSE, row.names = FALSE, col.names = FALSE,
   file = paste0(args$output_dir, "/unified_unique_prokka_products_greater_",args$threshold,".tsv"))
 print("all done")
 
@@ -104,7 +104,8 @@ prokka_processed <- prokka_select[, c("sample", "contig_id", "gene_length",
 
 # write prokka files for further merging
 print("writing processed prokka file ...")
-write.table(prokka_processed , sep = "\t", file = paste0(args$output_dir, "/prokka_processed.tsv"))
+write.table(prokka_processed, row.names = FALSE, quote = FALSE,
+  sep = "\t", file = paste0(args$output_dir, "/prokka_processed.tsv"))
 print("all done")
 
 sessionInfo()
