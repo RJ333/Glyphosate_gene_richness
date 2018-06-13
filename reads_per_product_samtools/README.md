@@ -1,9 +1,18 @@
 # README.md
 
 These first script copies the prokka annotation, modifies the product annotations within and uses the modified products to generate a list of unique products across all samples with a given threshold
-"Modified" means that the product descriptions are adjusted to decrease redundancy (e.g. for protein_A, Protein_A, Protein-A and protein a) and substitute problematic characters ("/", "_", ...). Based on the unique product list a bed file
+"Modified" means that the product descriptions are adjusted to decrease redundancy (e.g. for protein_A, Protein_A, Protein-A and protein a) and substitute problematic characters ("/", "_", ...). 
+
+
+## How to run the script
+
+```
+conda activate Renv
+time Rscript 02_modify_prokka_products.r -p="/data/Rene/glyph/prokka/prokka_all_modified.tsv" -o="/data/Rene/glyph/prokka/"
+```
+
+Based on the unique product list a bed file
  is created to perform an intersect between the mapped reads and the products (with samtools). As this is a very computational extensive task, GNU parallel was implemented for full use of cores.
- 
  If anything goes wrong regarding the name of the results files (e.g. you forgot to substitute / or _) the `rename.sh` script helps you. 
  Important: this script moves the files to ./renamed. If you don't use it, set the input folder correct in the later scripts 
 
