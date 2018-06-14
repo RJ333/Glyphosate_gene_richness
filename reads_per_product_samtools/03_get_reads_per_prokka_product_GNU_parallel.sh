@@ -37,7 +37,7 @@ samtools_view_parallel() {
 	PRODUCT_NAME="$2"
 	BED_FILENAME=${BED_DIR}/intersect_${PRODUCT_NAME}_${SAMPLE}.bed
 
-	grep "$PRODUCT_NAME" $PROKKA_DIR/prokka_for_bed_{SAMPLE}.tsv \
+	grep "$PRODUCT_NAME" $PROKKA_DIR/prokka_for_bed_${SAMPLE}.tsv \
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
 
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
