@@ -74,5 +74,5 @@ export OUTPUT_DIR
 export RESULTS_DIR
 export SAMTOOLS_BIN
 export ORIGINAL_BASE_DIR
-
+export PROKKA_DIR
 parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/test_products.tsv
