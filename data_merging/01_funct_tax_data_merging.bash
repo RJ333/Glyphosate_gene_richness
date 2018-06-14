@@ -1,20 +1,8 @@
-# list prokka files with sample name
 
-# what files do we need?
 
-# taxonomy/processing_kaiju/quality_check_kaiju_output.sh
-kaiju output : taxonomic output per contig : ready
+#### problem: prokka output does not contain all products > 1, running samtools again
 
-# Glyphosate_gene_richness/data_merging/00_generate_list_contig_length_coverage_bbtools.sh
-bbmap output : reads per contig, average coverage and contig length : ready
 
-prokka output : prokka table with adjusted product names, fitting to samtools used names : in prep 
-
-samtools gene richness output : reads per product per sample : ready
-
-concoct binning output?
-
-meta_data for samples --> ready
 
 # what to do with merged output?
 --> calculate normalized reads per contig and per product (for tax and gene abundance)
@@ -99,6 +87,13 @@ product_reads <- fread("./omics/merge_input/contig_gene_sample_reads.tsv", heade
 # print("reading checkM binning QC data ...")
 # checkm <-
 
+# rechecking character substition before merging
+product_reads$product2 <- gsub("_|-|'| |/|:|\\(|\\.|\\)|\\|", "@", product_reads$product2
+prokka$product2 <- gsub("_|-|'| |/|:|\\(|\\.|\\)|\\|", "@", prokka$product2)
+product_reads$product2 <- as.factor(product_reads$product2)
+prokka$product2 <- as.factor(prokka$product2)
+# ' was not replaced to @ in product_reads, resulted in 36673 NAs
+
 # merging data.tables
 prokka_bbmap <- merge(prokka, bbmap, 
   by.x = c("sample", "contig_id"), 
@@ -150,11 +145,18 @@ ggplot(meta_data_omics_small, aes( x = new_day, group = treatment, lty = treatme
 
 # without merging both data.tables?
 
-prokka_all <- merge(prokka_all, meta_omics_small[ , c("sample", "scale_factor")], by = "sample")
-prokka_all$rpm <- prokka_all$rpk/(prokka_all$scale_factor/1000000)
+safe <- prokka_bbmap_prodreads_kaiju
+
+prokka_bbmap_prodreads_kaiju[,product_rpm := product_reads_rpk/(meta_data_omics_small$scaling_factor/1000000), by = sample]
+
+prokka_bbmap_prodreads_kaiju <- merge(prokka_bbmap_prodreads_kaiju, meta_data_omics_small[ , c("sample", "scaling_factor")], by = "sample")
+prokka_bbmap_prodreads_kaiju$product_rpm <- prokka_bbmap_prodreads_kaiju$product_reads_rpk/(prokka_bbmap_prodreads_kaiju$scaling_factor/1000000)
  
+ 
+#### where do the NAs come from? 
+prokka_bbmap_prodreads_kaiju[is.na(prokka_bbmap_prodreads_kaiju$product_rpm)]
 # check if each sample has a total of 1 million reads now
-sum(subset(prokka_all,sample == "A1")$rpm)  # 1e+06
+sum(subset(prokka_bbmap_prodreads_kaiju,sample == "A1")$product_rpm, na.rm = TRUE)  # 1e+06
 sum(subset(prokka_all,sample == "A2")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "A3")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "A4")$rpm)  # 1e+06  
