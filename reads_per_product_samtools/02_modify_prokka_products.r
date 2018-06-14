@@ -13,7 +13,7 @@ parser <- ArgumentParser()
 parser$add_argument("-p", "--prokka_file", default = NULL,
                     dest = "prokka_file", required = TRUE,
                     help = "file containing modified and combined prokka files")
-parser$add_argument("-t", "--threshold_richness", default = 1,
+parser$add_argument("-t", "--threshold_richness", default = 0,
                     dest = "threshold", required = TRUE, type= "integer",
                     help = "threshold defining on how many contigs a product \
 							has to be found to be included in further analysis")
@@ -30,7 +30,7 @@ args <- parser$parse_args()
 
 # read in the combined prokka data from all samples 
 print("reading prokka data ...")
-prokka_tables <- fread(args$prokka_file, 
+prokka_tables <- fread(args$prokka_file,
   col.names = c("sample", "contig_id", "gene_start", "gene_end", "annotation"),
   colClasses = c("factor", "factor", "integer", "integer", "character"))
 
@@ -82,10 +82,6 @@ all_unique_products_with_count <- as.data.frame(table(droplevels(prokka_select$p
 unique_products_selected <- all_unique_products_with_count %>%
 filter(Freq > args$threshold) %>%
 select(as.factor("Var1"))
-
-unique_products_selected <- all_unique_products_with_count %>%
-filter(Freq > 1) %>%
-select(as.factor(Var1))
 
 # unique products for samtools script
 print("writing unique products across all samples ...")

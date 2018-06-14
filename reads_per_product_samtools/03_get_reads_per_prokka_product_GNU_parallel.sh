@@ -11,7 +11,7 @@
 # ctrl+b, p # previous
 
 # how many cores should GNU Parallel use for samtools?
-GNU_CORES=44
+GNU_CORES=45
 
 # directories of original data
 ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP/
@@ -61,4 +61,4 @@ export RESULTS_DIR
 export SAMTOOLS_BIN
 export ORIGINAL_BASE_DIR
 
-parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/unified_unique_prokka_products_greater_1.tsv
+parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/test_products.tsv
