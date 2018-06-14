@@ -11,7 +11,7 @@
 # ctrl+b, p # previous
 
 # how many cores should GNU Parallel use for samtools?
-GNU_CORES=45
+GNU_CORES=43
 
 # directories of original data
 ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP
@@ -35,24 +35,8 @@ samtools_view_parallel() {
 	SAMPLE="$1"
 	PRODUCT_NAME="$2"
 	BED_FILENAME=${BED_DIR}/intersect_${PRODUCT_NAME}_${SAMPLE}.bed
-	
-	echo "$SAMPLE"
-	echo "$PRODUCT_NAME"
-	echo "$BED_FILENAME"
-	
-	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv 
-	
-	echo "grep output"?
-	
 	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv \
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
-
-	echo "grepped product in ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff"
-	
-	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
-	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}'
-	
-	echo "awk output?"
 	
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
 	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
@@ -75,4 +59,5 @@ export RESULTS_DIR
 export SAMTOOLS_BIN
 export ORIGINAL_BASE_DIR
 export PROKKA_DIR
-parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/test_products.tsv
+
+parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/unified_unique_prokka_products_greater_0.tsv
