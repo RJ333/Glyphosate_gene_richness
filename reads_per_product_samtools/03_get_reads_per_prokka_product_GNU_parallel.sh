@@ -41,7 +41,7 @@ samtools_view_parallel() {
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
 
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
-	awk -F 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
+	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
 
 	$SAMTOOLS_BIN view -L ${BED_FILENAME} ${ORIGINAL_BASE_DIR}/$SAMPLE/output_IMP/Assembly/mg.reads.sorted.bam |\
       grep -v -P "^\@" | cut -f 1,3 | sort | uniq | cut -f 2  | sort | uniq -c |\
