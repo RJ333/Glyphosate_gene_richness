@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 # directories of original data
-ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP/
+ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP
 PROKKA_DIR=/data/Rene/glyph/prokka 
 SAMTOOLS_BIN=/data/jwerner/tools/samtools-1.7/samtools
 echo "input directories set"
@@ -39,12 +39,12 @@ echo "$BED_FILENAME"
 	echo "grepped product in ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff"
 	
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
-	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}'
+	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}'
 	
 	echo "awk output?"
 	
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
-	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
+	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
 	
 	echo "output written to ${BED_FILENAME}"
 	echo "starting samtools step with ${ORIGINAL_BASE_DIR}/$SAMPLE/output_IMP/Assembly/mg.reads.sorted.bam"

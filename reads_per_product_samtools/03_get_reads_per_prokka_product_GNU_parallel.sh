@@ -14,7 +14,7 @@
 GNU_CORES=45
 
 # directories of original data
-ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP/
+ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP
 PROKKA_DIR=/data/Rene/glyph/prokka 
 SAMTOOLS_BIN=/data/jwerner/tools/samtools-1.7/samtools
 
@@ -33,7 +33,6 @@ mkdir -p $TMP_DIR
 
 samtools_view_parallel() {
 	SAMPLE="$1"
-	cd $OUTPUT_DIR
 	PRODUCT_NAME="$2"
 	BED_FILENAME=${BED_DIR}/intersect_${PRODUCT_NAME}_${SAMPLE}.bed
 
@@ -41,7 +40,7 @@ samtools_view_parallel() {
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
 
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
-	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
+	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
 
 	$SAMTOOLS_BIN view -L ${BED_FILENAME} ${ORIGINAL_BASE_DIR}/$SAMPLE/output_IMP/Assembly/mg.reads.sorted.bam |\
       grep -v -P "^\@" | cut -f 1,3 | sort | uniq | cut -f 2  | sort | uniq -c |\
