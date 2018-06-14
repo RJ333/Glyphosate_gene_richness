@@ -47,28 +47,38 @@ parser$add_argument("-o", "--output_dir", default = NULL,
 args <- parser$parse_args()
 
 # reading in prokka data
+
+# noch probleme mit 1. spalte (data.table mag keine row,names aus dateien)
+old <- read.table("./omics/merge_input/prokka_processed.tsv", sep = "\t", header = TRUE, row.names = 1)
+write.table(old, "./omics/merge_input/prokka_processed.tsv", sep = "\t", row.names = FALSE)
+
+
 print("reading prokka data ...")
 prokka <- fread(args$input/"prokka_processed.tsv",
   colClasses = c("factor", "factor", "integer", "factor", "factor", "factor", "factor"))
-prokka <- fread("./prokka_processed.tsv",
+prokka <- fread("./omics/merge_input/prokka_processed.tsv",
   colClasses = c("factor", "factor", "integer", "factor", "factor", "factor", "factor"))
+  
+  
 
   # reading in kaiju data
 # we can't set the colClasses directly, as we read info about 15 files and then drop the first
 # this is fixed in kaiju script, row names are dropped in future
+old <- read.table("./omics/merge_input/filtered_kaiju_output.tsv", sep = "\t", header = TRUE, row.names = 1)
+write.table(old, "./omics/merge_input/filtered_kaiju_output.tsv", sep = "\t", row.names = FALSE)
+
 print("reading kaiju data ...")
-kaiju <- fread(args$input/"filtered_kaiju_output.tsv", drop = 1)
-kaiju <- fread("./filtered_kaiju_output.tsv", drop = 1)
-# so we do it afterwards by specifying a vector with the columns that should be a factor
-kaiju_factor_cols <- c(1,2,5:9)
-setDT(kaiju)[, (kaiju_factor_cols):= lapply(.SD, factor), .SDcols=kaiju_factor_cols]
+kaiju <- fread(args$input/"filtered_kaiju_output.tsv")
+kaiju <- fread("./omics/merge_input/filtered_kaiju_output.tsv",
+  colClasses = c("factor", "factor", "integer", "integer", "factor", "factor","factor", 
+				 "factor","factor", "double", "double", "double", "double", "double"))
 
 # reading in bbmap data
 print("reading bbmap data ...")
 bbmap <- fread(args$input/"contig_length_coverage.tsv",
   col.names = c("sample", "contig_id", "average_coverage", "contig_length"),
   colClasses = c("factor", "factor", "double", "integer"))
-bbmap <- fread("./contig_length_coverage.tsv",
+bbmap <- fread("./omics/merge_input/contig_length_coverage.tsv",
   col.names = c("sample", "contig_id", "average_coverage", "contig_length"),
   colClasses = c("factor", "factor", "double", "integer"))
 
@@ -77,7 +87,7 @@ print("reading reads per product data ...")
 product_reads <- fread(args$input/"contig_gene_sample_reads.tsv", header = TRUE)
   col.names = c("contig_id", "product2", "sample", "reads_per_product"),
   colClasses = c("factor", "factor", "factor", "integer"))
-product_reads <- fread("./contig_gene_sample_reads.tsv", header = TRUE,
+product_reads <- fread("./omics/merge_input/contig_gene_sample_reads.tsv", header = TRUE,
   col.names = c("contig_id", "product2", "sample", "reads_per_product"),
   colClasses = c("factor", "factor", "factor", "integer"))
 
@@ -89,53 +99,57 @@ product_reads <- fread("./contig_gene_sample_reads.tsv", header = TRUE,
 # print("reading checkM binning QC data ...")
 # checkm <-
 
-names (file) <- c("contig_id", "contig_length", "sample")  # order depending on the script you used
-contig_length$sample_contig_id <- do.call(paste, c(contig_length[c("sample", "contig_id")], sep = "_")) 
-contig_length <- contig_length[c(4,2)]
-prokka_all <- merge(prokka_all, contig_length, by = "sample_contig_id")
+# merging data.tables
+prokka_bbmap <- merge(prokka, bbmap, 
+  by.x = c("sample", "contig_id"), 
+  by.y = c("sample", "contig_id"), all.x = TRUE)
+
+prokka_bbmap_prodreads <- merge(prokka_bbmap, product_reads, 
+  by.x = c("sample", "contig_id", "product2"), 
+  by.y = c("sample", "contig_id", "product2"), all.x = TRUE)
+
+prokka_bbmap_prodreads_kaiju <- merge(prokka_bbmap_prodreads, kaiju,
+  by.x = c("sample", "contig_id"), 
+  by.y = c("sample", "contig_id"), all.x = TRUE)
+
+# reorder columns
 
 
 # add data from read mappings on genes/products
 
-# after string adjustments for products, some read entries are duplicates (same product on same contig in same sample).
-# they have to be summed up using plyr
-library(plyr)
-uniq_product_map2 <- ddply(product_map2,"sample_contig_id_product",numcolwise(sum))
-
-# merge the reads with the big file
-prokka_all <- merge(prokka_all, product_map2, by = "sample_contig_id_product")
-
 # merge with omics meta data
-meta_omics_small <- read.csv(file.choose(), sep = ";")
+meta_data_omics_small <- read.csv("./omics/merge_input/meta_omics_small.csv", header = TRUE, sep = ";")
 prokka_all <- merge(prokka_all, meta_omics_small, by = "sample")
 
-# now all data to calculate the tpm (RNA) or rpm (DNA) is present: http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/
+# now all data to calculate the tpm (RNA) or rpm (DNA) is present: 
+# http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/
 
-prokka_all$rpk <- prokka_all$reads_per_gene/(prokka_all$gene_length/1000)
+prokka_bbmap_prodreads_kaiju$product_reads_rpk <- prokka_bbmap_prodreads_kaiju$reads_per_product/(prokka_bbmap_prodreads_kaiju$gene_length/1000)
+prokka_bbmap_prodreads_kaiju$kaiju_reads_rpk <- prokka_bbmap_prodreads_kaiju$total_reads/(prokka_bbmap_prodreads_kaiju$contig_length.y/1000)
 
 # get scaling factors for each sample
-sum(subset(prokka_all,sample == "A1")$rpk)  # 104241798
-sum(subset(prokka_all,sample == "A2")$rpk)  # 88531948
-sum(subset(prokka_all,sample == "A3")$rpk)  # 123148955
-sum(subset(prokka_all,sample == "A4")$rpk)  # 113719110
-sum(subset(prokka_all,sample == "A5")$rpk)  # 76706929
-sum(subset(prokka_all,sample == "A6")$rpk)  # 93840142
-sum(subset(prokka_all,sample == "A7")$rpk)  # 142089935
-sum(subset(prokka_all,sample == "B8")$rpk)  # 134019320
-sum(subset(prokka_all,sample == "B9")$rpk)  # 87025821
-sum(subset(prokka_all,sample == "B10")$rpk)  # 126025571
 
-# add column to meta_omics_small
-meta_omics_small$scale_factor <- c(104241798, 88531948, 123148955, 113719110, 76706929, 93840142, 142089935, 134019320, 87025821, 126025571)
+# initialize vector
+scaling_factor <- vector("numeric")
 
-# checkhow sum of reads per kilobase correlate to sequencing depth (in read pairs)
+# calculate scaling factor
+for(i in c("A1", "A2", "A3", "A4", "A5", "A6", "A7", "B8", "B9", "B10")) {
+ value <- sum(subset(prokka_bbmap_prodreads_kaiju,sample == i)$product_reads_rpk, na.rm = TRUE)
+ scaling_factor[i] <- value }
+
+ # add vector to meta data 
+meta_data_omics_small <- cbind(meta_data_omics_small, scaling_factor)
+
+# check how sum of reads per kilobase correlate to sequencing depth (in read pairs)
 library(ggplot2)
-ggplot(meta_omics_small, aes( x = new_day, group = treatment, lty = treatment)) +
-  geom_line(aes(y = total_reads, colour = "total paired reads"))+
-  geom_line(aes(y = total_reads * 2, colour = "total single reads"))+
-  geom_line(aes(y = scale_factor, colour = "scale factor"))
+ggplot(meta_data_omics_small, aes( x = new_day, group = treatment, lty = treatment)) +
+  geom_line(aes(y = total_reads * 2, colour = "total single reads"), size = 2)+
+  geom_line(aes(y = scaling_factor, colour = "scale factor"), size = 2)
 
 # generate reads per million  
+
+# without merging both data.tables?
+
 prokka_all <- merge(prokka_all, meta_omics_small[ , c("sample", "scale_factor")], by = "sample")
 prokka_all$rpm <- prokka_all$rpk/(prokka_all$scale_factor/1000000)
  
@@ -150,12 +164,6 @@ sum(subset(prokka_all,sample == "A7")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B8")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B9")$rpm)  # 1e+06
 sum(subset(prokka_all,sample == "B10")$rpm)  # 1e+06
-
-# another value, the average coverage, is created by  #35, bbmap
-# it can be found under /data/jwerner/glyphosate/IMP/${i}/metagenome_coverage/covstats.txt 
-# and needs to be merged by contig_id and sample 
-
-
 
 
 # now only tax information and read normalization for that data is missing
