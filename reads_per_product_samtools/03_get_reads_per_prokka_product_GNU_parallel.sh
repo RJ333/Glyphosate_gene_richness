@@ -52,7 +52,7 @@ samtools_view_parallel() {
 }
 
 
-export -f sam_parallel
+export -f samtools_view_parallel
 # These variables are defined outside the function and must be exported to be visible
 export BED_DIR
 export TMP_DIR
