@@ -29,16 +29,33 @@ echo "$SAMPLE"
 echo "$PRODUCT_NAME"
 echo "$BED_FILENAME"
 
-
+	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv 
+	
+	echo "grep output"?
+	
 	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv \
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
+	
 	echo "grepped product in ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff"
+	
+	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
+	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}'
+	
+	echo "awk output?"
+	
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
 	awk 'BEGIN {FS = OFS = "\t"} NR > 1 {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
-
+	
+	echo "output written to ${BED_FILENAME}"
+	echo "starting samtools step with ${ORIGINAL_BASE_DIR}/$SAMPLE/output_IMP/Assembly/mg.reads.sorted.bam"
+	
 	$SAMTOOLS_BIN view -L ${BED_FILENAME} ${ORIGINAL_BASE_DIR}/$SAMPLE/output_IMP/Assembly/mg.reads.sorted.bam |\
       grep -v -P "^\@" | cut -f 1,3 | sort | uniq | cut -f 2  | sort | uniq -c |\
 	  perl -ane '$_=~/^\s+(\d+) (.+)$/;chomp($2); print "$2\t$1\n"; '\
 	  > ${RESULTS_DIR}/mg.reads.per.gene_${PRODUCT_NAME}_${SAMPLE}.tsv
+	
+	echo "samtools output written to ${RESULTS_DIR}/mg.reads.per.gene_${PRODUCT_NAME}_${SAMPLE}.tsv"
+	
 
 	rm ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
+	echo "${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff removed"
