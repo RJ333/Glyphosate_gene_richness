@@ -15,7 +15,7 @@ GNU_CORES=45
 
 # directories of original data
 ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP/
-PROKKA_DIR=/data/Rene/glyph/prokka/ 
+PROKKA_DIR=/data/Rene/glyph/prokka 
 SAMTOOLS_BIN=/data/jwerner/tools/samtools-1.7/samtools
 
 # working directory
