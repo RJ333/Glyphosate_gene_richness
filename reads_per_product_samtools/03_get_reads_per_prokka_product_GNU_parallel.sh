@@ -35,10 +35,25 @@ samtools_view_parallel() {
 	SAMPLE="$1"
 	PRODUCT_NAME="$2"
 	BED_FILENAME=${BED_DIR}/intersect_${PRODUCT_NAME}_${SAMPLE}.bed
-
+	
+	echo "$SAMPLE"
+	echo "$PRODUCT_NAME"
+	echo "$BED_FILENAME"
+	
+	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv 
+	
+	echo "grep output"?
+	
 	grep "$PRODUCT_NAME" ${PROKKA_DIR}/prokka_for_bed_${SAMPLE}.tsv \
 	  > ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
 
+	echo "grepped product in ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff"
+	
+	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
+	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}'
+	
+	echo "awk output?"
+	
 	cat ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff |\
 	awk 'BEGIN {FS = OFS = "\t"} {print $1,$2,$3,$4,$7}' > ${BED_FILENAME}
 
