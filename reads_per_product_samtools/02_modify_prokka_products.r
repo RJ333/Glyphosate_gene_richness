@@ -13,20 +13,11 @@ parser <- ArgumentParser()
 parser$add_argument("-p", "--prokka_file", default = NULL,
                     dest = "prokka_file", required = TRUE,
                     help = "file containing modified and combined prokka files")
-parser$add_argument("-t", "--threshold_richness", default = 0,
-                    dest = "threshold", required = TRUE, type= "integer",
-                    help = "threshold defining on how many contigs a product \
-							has to be found to be included in further analysis")
 					
 parser$add_argument("-o", "--output_dir", default = NULL,
                     dest = "output_dir", required = TRUE,
                     help = "directory to store processed prokka data")					
 args <- parser$parse_args()
-
-# call like this: 
-# conda activate Renv
-# time Rscript 02_modify_prokka_products.r \
-# -p="/data/Rene/glyph/prokka/prokka_all_modified.tsv" -o="/data/Rene/glyph/prokka/" 
 
 # read in the combined prokka data from all samples 
 print("reading prokka data ...")
