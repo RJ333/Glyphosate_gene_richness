@@ -35,9 +35,10 @@ prokka_neat <- prokka_tables %>%
   spread(Col, Value)
 
 # combine information from columns "note" and "product"
-print("combining columns product and note")
-prokka_neat$product2 <- ifelse(prokka_neat$product == "hypothetical protein" & !is.na(prokka_neat$note), 
-  prokka_neat$note, prokka_neat$product)
+#print("combining columns product and note")
+#prokka_neat$product2 <- ifelse(prokka_neat$product == "hypothetical protein" & !is.na(prokka_neat$note), 
+#  prokka_neat$note, prokka_neat$product)
+prokka_neat$product2 <- prokka_neat$product
 
 # calculate gene length
 print("calculating gene length")
