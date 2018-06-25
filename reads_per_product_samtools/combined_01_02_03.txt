@@ -46,7 +46,7 @@ do
 	head -n 5 $prokka_annot | awk -v sample=$sample \
     'BEGIN {OFS = FS = "\t"}
     {a=sample;} 
-    {print a, $1, $4, $5, $9}' $prokka_annot >> $PROKKA_DIR/prokka_all_modified.tsv
+    {print a, $1, $4, $5, $9}' >> $PROKKA_DIR/prokka_all_modified.tsv
     echo "prokka annotation of sample $sample modified and appended"
   done
 done
@@ -60,7 +60,7 @@ Rscript /data/Rene/git/Glyphosate_gene_richness/reads_per_product_samtools/02_mo
 
 
 # how many cores should GNU Parallel use for samtools?
-GNU_CORES=43
+GNU_CORES=15
 
 # results directories
 
