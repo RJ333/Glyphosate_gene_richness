@@ -30,6 +30,8 @@ mkdir -p $RESULTS_DIR
 mkdir -p $TMP_DIR
 mkdir -p $OUTPUT_DIR/named
 
+THRESHOLD=1
+
 # this script removes any previous versions of the combined prokka file. then is collects prokka
 # files from all samples, extracts the important columns and adds them to prokka_all_modified
 # including the sample name as first column
@@ -56,7 +58,7 @@ echo "output written to $PROKKA_DIR/prokka_all_modified.tsv"
 
 # call like this: 
 Rscript /data/Rene/git/Glyphosate_gene_richness/reads_per_product_samtools/02_modify_prokka_products.r \
-  -p="$PROKKA_DIR/prokka_all_modified.tsv" -o="$PROKKA_DIR" -t=1
+  -p="$PROKKA_DIR/prokka_all_modified.tsv" -o="$PROKKA_DIR" -t=$THRESHOLD
 
 
 # how many cores should GNU Parallel use for samtools?
@@ -94,7 +96,7 @@ export SAMTOOLS_BIN
 export ORIGINAL_BASE_DIR
 export PROKKA_DIR
 
-parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/unified_unique_prokka_products_greater_0.tsv
+parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/unified_unique_prokka_products_greater_${THRESHOLD}.tsv
 echo "output written to $RESULTS_DIR"
 
 echo "processing of samtools output"
