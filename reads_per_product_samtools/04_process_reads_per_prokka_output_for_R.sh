@@ -1,9 +1,9 @@
 #!/bin/sh
 
-OUTPUT_DIR=/data/Rene/glyph/prokka_test/samtools
+OUTPUT_DIR=/data/Rene/glyph/prokka/samtools
 mkdir -p $OUTPUT_DIR/named
 
-# adds the name of the file in folder "unnamed" as first column and copies to "named" folder 
+# adds the name of the file in folder "results" as first column and copies to "named" folder 
 cd $OUTPUT_DIR/results
 echo "adding file name as column to files"
 for files in *.tsv
@@ -38,4 +38,4 @@ awk 'BEGIN { OFS = "\t" ; print "contig\tgene\tsample\treads_per_gene"}
   
 rm appended_genes*tsv
 
-echo "cleaning is done, output written to contig_gene_sample_reads.tsv"
+echo "cleaning is done, output written to $OUTPUT_DIR/named/contig_gene_sample_reads.tsv"
