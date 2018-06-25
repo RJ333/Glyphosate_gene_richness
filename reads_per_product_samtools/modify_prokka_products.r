@@ -1,8 +1,5 @@
 #!/usr/bin/env Rscript
 
-# NOT TESTED as Rscript yet
-
-
 library(argparse)
 library(data.table)
 library(tidyverse)
@@ -20,7 +17,7 @@ parser$add_argument("-o", "--output_dir", default = NULL,
 
 parser$add_argument("-t", "--threshold", default = NULL, type = "integer",
                     dest = "threshold", required = TRUE,
-                    help = "how often a product must appear at least")
+                    help = "how often a product must appear at least in all samples")
 				
 args <- parser$parse_args()
 
@@ -40,10 +37,14 @@ prokka_neat <- prokka_tables %>%
   spread(Col, Value)
 
 # combine information from columns "note" and "product"
-#print("combining columns product and note")
-#prokka_neat$product2 <- ifelse(prokka_neat$product == "hypothetical protein" & !is.na(prokka_neat$note), 
-#  prokka_neat$note, prokka_neat$product)
-prokka_neat$product2 <- prokka_neat$product
+print("combining columns product and note")
+prokka_neat$product2 <- ifelse(prokka_neat$product == "hypothetical protein" & !is.na(prokka_neat$note), 
+  prokka_neat$note, prokka_neat$product)
+
+# use this line, if you are testing a short part of the prokka table, which has no "note" column
+# otherwise the script breaks
+
+# prokka_neat$product2 <- prokka_neat$product
 
 # calculate gene length
 print("calculating gene length")

@@ -12,7 +12,7 @@
 # ctrl+b, p # previous
 
 
-PROKKA_DIR=/data/Rene/glyph/prokka_test
+PROKKA_DIR=/data/Rene/glyph/prokka
 ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP
 PROKKA_PATH=output_IMP/Analysis/annotation
 
@@ -44,24 +44,31 @@ do
   echo $sample
   for prokka_annot in ${ORIGINAL_BASE_DIR}/${sample}/${PROKKA_PATH}/annotation.filt.gff
   do
-	echo $prokka_annot
+	echo "processing $prokka_annot"
 	# be careful with linebreks within awk
-	head -n 1 $prokka_annot | awk -v sample=$sample \
+	awk -v sample=$sample \
     'BEGIN {OFS = FS = "\t"}
     {a=sample;} 
-    {print a, $1, $4, $5, $9}' >> $PROKKA_DIR/prokka_all_modified.tsv
+    {print a, $1, $4, $5, $9}' $prokka_annot >> $PROKKA_DIR/prokka_all_modified.tsv
     echo "prokka annotation of sample $sample modified and appended"
   done
 done
 echo "output written to $PROKKA_DIR/prokka_all_modified.tsv"
 
 
-# call like this: 
+# the conda environment "Renv" needs to activated. So far it only works on bio-48 and only if 
+# activated before running the script. Use:
+
+# conda activate Renv 
+
+# calling the R script:
 Rscript /data/Rene/git/Glyphosate_gene_richness/reads_per_product_samtools/02_modify_prokka_products.r \
   -p="$PROKKA_DIR/prokka_all_modified.tsv" -o="$PROKKA_DIR" -t=$THRESHOLD
 
 
-# how many cores should GNU Parallel use for samtools?
+# how many cores should GNU Parallel use for samtools? 
+# bio-48 has 24 cores, 
+# bio-49 has 50 cores
 GNU_CORES=15
 
 # results directories
@@ -85,7 +92,6 @@ samtools_view_parallel() {
 	rm ${TMP_DIR}/${PRODUCT_NAME}_${SAMPLE}_tmp.gff
 }
 
-
 export -f samtools_view_parallel
 # These variables are defined outside the function and must be exported to be visible
 export BED_DIR
@@ -96,6 +102,7 @@ export SAMTOOLS_BIN
 export ORIGINAL_BASE_DIR
 export PROKKA_DIR
 
+# not sure how to break this line?
 parallel -j $GNU_CORES samtools_view_parallel ::: A1 A2 A3 A4 A5 A6 A7 B8 B9 B10 :::: $PROKKA_DIR/unified_unique_prokka_products_greater_${THRESHOLD}.tsv
 echo "output written to $RESULTS_DIR"
 
