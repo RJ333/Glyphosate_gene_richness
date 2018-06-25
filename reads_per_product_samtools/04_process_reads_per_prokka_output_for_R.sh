@@ -1,6 +1,6 @@
 #!/bin/sh
 
-OUTPUT_DIR=/data/Rene/glyph/prokka/samtools
+OUTPUT_DIR=/data/Rene/glyph/prokka_test/samtools
 mkdir -p $OUTPUT_DIR/named
 
 # adds the name of the file in folder "unnamed" as first column and copies to "named" folder 
