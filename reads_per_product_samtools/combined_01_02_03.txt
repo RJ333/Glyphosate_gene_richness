@@ -12,7 +12,7 @@
 # ctrl+b, p # previous
 
 
-PROKKA_DIR=/data/Rene/glyph/prokka
+PROKKA_DIR=/data/Rene/glyph/prokka_test
 ORIGINAL_BASE_DIR=/data/jwerner/glyphosate/IMP
 PROKKA_PATH=output_IMP/Analysis/annotation
 
@@ -43,7 +43,7 @@ do
   do
 	echo $prokka_annot
 	# be careful with linebreks within awk
-	awk -v sample=$sample \
+	head -n 5 $prokka_annot | awk -v sample=$sample \
     'BEGIN {OFS = FS = "\t"}
     {a=sample;} 
     {print a, $1, $4, $5, $9}' $prokka_annot >> $PROKKA_DIR/prokka_all_modified.tsv
@@ -64,7 +64,7 @@ GNU_CORES=43
 
 # results directories
 
-
+echo "starting samtools parallel"
 samtools_view_parallel() {
 	SAMPLE="$1"
 	PRODUCT_NAME="$2"
