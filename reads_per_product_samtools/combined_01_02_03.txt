@@ -54,9 +54,8 @@ echo "output written to $PROKKA_DIR/prokka_all_modified.tsv"
 
 
 # call like this: 
-conda activate Renv
 Rscript /data/Rene/git/Glyphosate_gene_richness/reads_per_product_samtools/02_modify_prokka_products.r \
-  -p="$PROKKA_DIR/prokka_all_modified.tsv" -o="$PROKKA_DIR" 
+  -p="$PROKKA_DIR/prokka_all_modified.tsv" -o="$PROKKA_DIR" -t=0
 
 
 # how many cores should GNU Parallel use for samtools?

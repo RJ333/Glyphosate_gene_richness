@@ -16,7 +16,12 @@ parser$add_argument("-p", "--prokka_file", default = NULL,
 					
 parser$add_argument("-o", "--output_dir", default = NULL,
                     dest = "output_dir", required = TRUE,
-                    help = "directory to store processed prokka data")					
+                    help = "directory to store processed prokka data")	
+
+parser$add_argument("-t", "--threshold", default = NULL, type = "integer",
+                    dest = "threshold", required = TRUE,
+                    help = "how often a product must appear at least")
+				
 args <- parser$parse_args()
 
 # read in the combined prokka data from all samples 
@@ -62,15 +67,18 @@ print("unifying gene names")
 prokka_select$gene <- gsub("_.*$","", prokka_select$gene)
 
 # turning columns into factors
+print("turning columns into factors")
 prokka_select$eC_number <- as.factor(prokka_select$eC_number)
 prokka_select$product2 <- as.factor(prokka_select$product2)
 prokka_select$gene <- as.factor(prokka_select$gene)
 prokka_select$locus_tag <- as.factor(prokka_select$locus_tag)
 
 # create table with all products across all samples and their global richness
+print("create global product table")
 all_unique_products_with_count <- as.data.frame(table(droplevels(prokka_select$product2)))
 
 # generate vector of unique products with defined threshold
+print("generating unique products above threshold")
 unique_products_selected <- all_unique_products_with_count %>%
 filter(Freq > args$threshold) %>%
 select(as.factor("Var1"))
@@ -83,10 +91,12 @@ write.table(unique_products_selected , sep = "\t",
 print("all done")
 
 # generate prokka output for samtools to create bed.files
+print("generating prokka files for each sample ...")
 prokka_bed  <- setDT(prokka_select)
 prokka_bed[, fwrite(.SD, sep = "\t", paste0(args$output_dir, "/prokka_for_bed_", sample,".tsv")), by = sample]
 
 # remove gene start/end from this file (column 3 and 4)
+print("removing gene start/length for combined prokka file ...")
 prokka_processed <- prokka_select[, c("sample", "contig_id", "gene_length",
 								 "eC_number", "gene", "product2", "locus_tag")]
 
