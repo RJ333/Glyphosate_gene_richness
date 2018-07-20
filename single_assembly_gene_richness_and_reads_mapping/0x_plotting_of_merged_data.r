@@ -4,9 +4,10 @@
 # data is prepared in 03_calculate_and_plot_gene_richness.R
 #and 01_funct_tax_data_merging.bash
 
+
 # plot taxonomic richness
 
-ggplot(tax_rich_omics, aes(x = new_day, colour = treatment))+
+ggplot(tax_rich_omics, aes(x = days, colour = treatment))+
   geom_line(aes(y = richness), linetype = 1) +
   geom_line(aes(y = richness_rel), linetype = 2) +
   facet_wrap(~ treatment, nrow = 2)
@@ -17,31 +18,66 @@ ggplot(tax_rich_omics, aes(x = new_day, colour = treatment))+
 
 sarc <- subset(gene_richness2, grepl("arcosin", product2))
 sarc <- subset(sarc, grepl("oxidase", product2))
+sarc <- subset(sarc, grepl("delta", product2))
 
 # visualization per product
-ggplot(sarc, aes (x = new_day, fill = product2, colour = product2))+
+ggplot(sarc, aes (x = new_day, colour = product2, fill = contig_id))+
   geom_bar(stat = "identity", position = position_dodge(), aes(y = product_rpm))+
-  geom_line(aes(y = gene_richness_relative), size = 1.5)+
+  #geom_line(aes(y = gene_richness_relative), size = 1.5)+
+  #geom_line(data = tax_rich_omics, aes(x = days, y = richness_rel, colour = "black"), linetype = 2, size = 2, alpha = 0.7) +
+  theme(legend.position="none")+
   facet_wrap(~treatment, nrow = 2)
+
+# cumulated product's visualization  
+ggplot(sarc, aes(colour = product2))+
+  geom_bar(stat = "identity", aes(x = new_day - 0.75, y = product_rpm), fill = "black", width = 1)+
+  geom_bar(stat = "identity", aes(x = new_day + 0.75, y = gene_richness_relative), fill = "blue", width = 1)+
+  geom_line(data = tax_rich_omics, aes(x = days, y = richness_rel, colour = "black"), linetype = 2) + 
+  facet_wrap(~treatment, nrow = 2) 
+
+# relative abundance and relative richness are not correlated?? (phnC, phnD, phnH
+# more correlation for phnE,
+# differences in reaction time? because of detection limit per contig?
+# back to starting niveau for abundance? or richness? elevated richness over time?
+phn_op <- subset(prokka_all, treatment == "glyph" & grepl("phn[C-N]", gene))
+sox_all <- subset(prokka_all, treatment == "glyph" & grepl("sarcosine@oxidase", product2))
+# gallaeci besitzt soxBCD gene auf vier contigs und phnCDE 1 contig H noch ein contig
+
+# methylo shikimate dehydrogenase? aroE, 1.1.1.25
+
+#Pseudomonas hat phn[C-N] und alle sox gene
+#Hoeflea soxBCD, alle phn außer JK
+
+#plots aller relevanten OTUS
+#Anteil von phn Genen und sox Genen ohne taxonomische Zuordnung?
+table(is.na(phn_op$genus))
+FALSE  TRUE 
+  126   958 
+  
+table(is.na(sox_all$genus))
+FALSE  TRUE 
+   71   415 
+
+#taxonomie sollte nicht überbewerttet werden
+
+#ist richness empfindlicher als abundanz? wie teste ich das im vergleich
+#zu "normalen" Genen?
+   
+as.data.frame(table(droplevels(phn_op$genus)))
+
+as.data.frame(table(droplevels(sox_op$genus)))
+ as.data.frame(table(droplevels(subset(phn_op, genus == "Pseudomonas")$gene)))
+
+
+phn <- subset(gene_richness2, grepl("phnN", gene))
+#phn <- subset(gene_richness2, grepl("phn[C-N]", gene))
+
+# visualization per product
+
+
 
 # cumulated product's visualization  
 ggplot(sarc, aes (fill = product2, colour = product2))+
-  geom_bar(stat = "identity", aes(x = new_day - 0.75, y = product_rpm), fill = "black", width = 1)+
-  geom_bar(stat = "identity", aes(x = new_day + 0.75, y = gene_richness_relative), fill = "blue", width = 1)+
-  facet_wrap(~treatment, nrow = 2) 
-
-
-phn <- subset(gene_richness2, grepl("phn", gene))
-phn <- subset(gene_richness2, grepl("phn[C-N]", gene))
-
-# visualization per product
-ggplot(phn, aes (x = new_day, fill = product2, colour = product2))+
-  geom_bar(stat = "identity", position = position_dodge(), aes(y = product_rpm))+
-  geom_line(aes(y = gene_richness_relative), size = 1.5)+
-  facet_wrap(~treatment, nrow = 2)
-
-# cumulated product's visualization  
-ggplot(phn, aes (fill = product2, colour = product2))+
   geom_bar(stat = "identity", aes(x = new_day - 0.75, y = product_rpm), fill = "black", width = 1)+
   geom_bar(stat = "identity", aes(x = new_day + 0.75, y = gene_richness_relative), fill = "blue", width = 1)+
   facet_wrap(~treatment, nrow = 2) 
