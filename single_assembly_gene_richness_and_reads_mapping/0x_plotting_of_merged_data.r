@@ -41,6 +41,20 @@ ggplot(sarc, aes(colour = product2))+
 # back to starting niveau for abundance? or richness? elevated richness over time?
 phn_op <- subset(prokka_all, treatment == "glyph" & grepl("phn[C-N]", gene))
 sox_all <- subset(prokka_all, treatment == "glyph" & grepl("sarcosine@oxidase", product2))
+
+
+test <- sox_all[with(sox_all, order(sox_all$product2, sox_all$sample, -sox_all$average_coverage)),]
+
+test <- table(prokka_all$average_coverage) 
+# with this we can check what average coverage is neccessary to
+# generate a contig and check, how close our interesting genes are to that
+# lowest value  for phn_op is 2.296, for sox_all is 2.55, 
+# but we have at least ~7500 contigs with lower average coverage
+sum(head(test, 4600))
+
+phn_op_rich <- subset(gene_richness2, treatment == "glyph" & grepl("phn[C-N]", gene))
+sox_all_rich <- subset(gene_richness2, treatment == "glyph" & grepl("sarcosine@oxidase", product2))
+
 # gallaeci besitzt soxBCD gene auf vier contigs und phnCDE 1 contig H noch ein contig
 
 # methylo shikimate dehydrogenase? aroE, 1.1.1.25
