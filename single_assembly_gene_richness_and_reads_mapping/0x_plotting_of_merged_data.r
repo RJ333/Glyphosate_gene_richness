@@ -67,14 +67,23 @@ FALSE  TRUE
 #------------------------------------------------------------------ assessment of single copy and housekeeping genes
 
    
-#what genes do we have from Wu et al marker genes?
+# what genes do we have from Wu et al marker genes? 
+# additionally Mads Albertsen et al, "recovery of genomes", 2013, supplementary Table S4
 levels(droplevels(subset(gene_richness2, grepl("rpl", gene))$gene))
 levels(droplevels(subset(gene_richness2, grepl("rps", gene))$gene))   
 
 table(droplevels(subset(gene_richness2, grepl("rps", gene))$gene))
 table(droplevels(subset(gene_richness2, grepl("rpl", gene))$gene))
-table(droplevels(subset(prokka_all, grepl("rpl", gene))$gene))
 
+table(droplevels(subset(prokka_all, grepl("rpl", gene))$gene))
+table(droplevels(subset(prokka_all, grepl("rpm", gene))$gene))
+table(droplevels(subset(prokka_all, grepl("rps", gene))$gene))
+
+
+table(droplevels(subset(prokka_all, grepl("era", gene))$product2))
+table(droplevels(subset(prokka_all, grepl("trna", product2) & grepl("class", product2))$product2))
+
+table(droplevels(subset(prokka_all, grepl("trna", product2) & grepl("ligase", product2))$product2))
 
 #translation table product2 gene
 gene_product2 <- unique(gene_richness2[, c(1, 2)])
