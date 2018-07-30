@@ -51,69 +51,84 @@ table(droplevels(subset(prokka_all, grepl("ctp@synthase", product2))$product2))
 # glyS glycine trna ligase (glyS, glyQS, glyQ)
 subset(prokka_all, grepl("glycine", product2))
 table(droplevels(subset(prokka_all, grepl("glyS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("glycine", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("glyc", product2) & grepl("trna", product2))$product2))
 
 # glyS isoleucine trna ligase
 table(droplevels(subset(prokka_all, grepl("ileS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("isoleucine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("isoleucine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("isoleuc", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("isoleuc", product2) & grepl("trna", product2))$gene))
 
 
 # leuS leucine trna ligase
 table(droplevels(subset(prokka_all, grepl("leuS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("leucine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("leucine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("leuc", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("leuc", product2) & grepl("trna", product2))$gene))
 
 # serS serine trna ligase
 table(droplevels(subset(prokka_all, grepl("serS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("serine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("serine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("ser", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("ser", product2) & grepl("trna", product2))$gene))
 
 # thrS threonine trna ligase
 table(droplevels(subset(prokka_all, grepl("thrS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("threonine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("threonine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("threon", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("threon", product2) & grepl("trna", product2))$gene))
 
 # valS valine trna ligase
 table(droplevels(subset(prokka_all, grepl("valS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("valine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("valine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("val", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("val", product2) & grepl("trna", product2))$gene))
 
 # cysS cysteine trna ligase
 table(droplevels(subset(prokka_all, grepl("cysS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("cysteine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("cysteine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("cyst", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("cyst", product2) & grepl("trna", product2))$gene))
 
 # tyrS tyrosine trna ligase
 table(droplevels(subset(prokka_all, grepl("tyrS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("tyrosine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("tyrosine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("tyros", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("tyros", product2) & grepl("trna", product2))$gene))
 
 # hisS histidine trna ligase
 table(droplevels(subset(prokka_all, grepl("hisS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("histidine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("histidine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("histid", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("histid", product2) & grepl("trna", product2))$gene))
 
 # pheS pheT phenylalanine trna ligase
 table(droplevels(subset(prokka_all, grepl("pheS", gene))$product2))
 table(droplevels(subset(prokka_all, grepl("pheT", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("phenylalanine", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("phenylalanine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("phenylalan", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("phenylalan", product2) & grepl("trna", product2))$gene))
 
 # aspS aspartate trna ligase
 table(droplevels(subset(prokka_all, grepl("aspS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("aspartate", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("aspartate", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("aspart", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("aspart", product2) & grepl("trna", product2))$gene))
 
 # proS proline trna ligase
 table(droplevels(subset(prokka_all, grepl("proS", gene))$product2))
-table(droplevels(subset(prokka_all, grepl("proline", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("proline", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("prol", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("prol", product2) & grepl("trna", product2))$gene))
 
 # alaS alanine trna ligase
 table(droplevels(subset(prokka_all, grepl("alaS", gene))$product2))
 table(droplevels(subset(prokka_all, grepl("alan", product2) & grepl("trna", product2))$product2))
-table(droplevels(subset(prokka_all, grepl("alanine", product2) & grepl("trna", product2))$gene))
+table(droplevels(subset(prokka_all, grepl("alan", product2) & grepl("trna", product2))$gene))
+
+# argS arginine trna ligase
+table(droplevels(subset(prokka_all, grepl("argS", gene))$product2))
+table(droplevels(subset(prokka_all, grepl("argin", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("argin", product2) & grepl("trna", product2))$gene))
+
+# metG alanine trna ligase
+table(droplevels(subset(prokka_all, grepl("metG", gene))$product2))
+table(droplevels(subset(prokka_all, grepl("methion", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("methion", product2) & grepl("trna", product2))$gene))
+
+# lys lysidine trna ligase
+table(droplevels(subset(prokka_all, grepl("tilS", gene))$product2))
+table(droplevels(subset(prokka_all, grepl("lysid", product2) & grepl("trna", product2))$product2))
+table(droplevels(subset(prokka_all, grepl("lysid", product2) & grepl("trna", product2))$gene))
 
 #--------------------------------------------------------------------
 
