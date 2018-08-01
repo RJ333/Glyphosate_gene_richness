@@ -325,7 +325,7 @@ names(phn_op) <- c("product2", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "B8", "
 phn_op[is.na(phn_op)] <- 0
 phn_op$group <- c(rep("phn_op", nrow(phn_op)))
 
-single_copy_richness <- rbind(rps, rpl, phn_op, trna_ligase4)
+single_copy_richness <- rbind(rps, rpl) #phn_op, trna_ligase4)
 
 # weitere Gruppen erstellen für mittelwert (referenz) gegen mittelwert(probe) ?
 # wie willkürlich ist die auswahl für Referenz und Probe?
@@ -336,7 +336,7 @@ single_copy_richness <- rbind(rps, rpl, phn_op, trna_ligase4)
 # welche referenzgene sind nutzlos?
 
 
-#single_copy_richness2 <- subset(single_copy_richness, A1 > 10 & A1 < 25)
+single_copy_richness2 <- subset(single_copy_richness, A1 > 10 & A1 < 25)
 single_copy_richness2 <- single_copy_richness
 
 hist(single_copy_richness2$A1, breaks = 10)
@@ -352,15 +352,70 @@ bla[,value_relative := value/value[new_day == 0]*100, by = .(product2, group, tr
 
 gd <- bla %>% 
         group_by(variable, treatment, new_day, group) %>% 
-        summarise(value_relative = mean(value_relative))
+        summarise(value = mean(value))
 #subset(bla, group == "rps" | group == "rpl" | group == "phn_op") %>% 
 
-ggplot(data = bla, aes(x = new_day, y = value_relative, colour = group, group = group)) +
+#displaying species and rpl rps richness with two y axes
+ggplot(data = subset(bla, treatment == "glyph"), aes(x = new_day, y = value*4, colour = group, group = group)) +
   #geom_line(aes(group = product2), alpha = 0.4, size = 1)+
-  geom_line(data = gd, size = 2, alpha = 0.4)+
+  geom_point(data = subset(gd, treatment == "glyph"), size = 3, alpha = 1, colour = "black") +
+  geom_line(data = subset(gd, treatment == "glyph"), size = 0.8, alpha = 1) +
   #stat_summary(fun.y="mean", geom="line") +
-  facet_wrap(~treatment, nrow = 2)
+  geom_point(data = subset(tax_rich, treatment == "glyph"), size = 3, aes(x = days, y = richness)) +
+  geom_line(data = subset(tax_rich, treatment == "glyph"), size = 0.8, aes(x = days, y = richness)) +
+  scale_y_continuous(name = "Species richness based on 16S rRNA gene amplicons", 
+						sec.axis = sec_axis(~./4, name = "single copy gene richness")) +
+  scale_colour_manual(values = c("group_tax" = "black", "rpl" = "darkgreen", "rps" = "lightgreen"),
+						name = "Gene groups",
+						breaks = c("group_tax", "rpl", "rps"),
+						labels = c("16S rRNA gene\n (averaged, amplicons)", 
+									"50S ribosomal proteins\n (averaged, metagenome)", 
+									"30S ribosomal proteins\n (averaged, metagenome)")) +
+	labs(x = "Days")
+	
+ggsave("richness_plot_y_axes.png", width = 12, height = 10)	
+#displaying species and rpl rps richness on shared y axis	
+ggplot(data = subset(bla, treatment == "glyph"), aes(x = new_day, y = value, colour = group, group = group)) +
+  #geom_line(aes(group = product2), alpha = 0.4, size = 1)+
+  geom_point(data = subset(gd, treatment == "glyph"), size = 3, alpha = 1, colour = "black") +
+  geom_line(data = subset(gd, treatment == "glyph"), size = 0.8, alpha = 1) +
+  #stat_summary(fun.y="mean", geom="line") +
+  geom_point(data = subset(tax_rich, treatment == "glyph"), size = 3, aes(x = days, y = richness)) +
+  geom_line(data = subset(tax_rich, treatment == "glyph"), size = 0.8, aes(x = days, y = richness)) +
+  scale_y_continuous(name = "Species or gene richness") +
+  scale_colour_manual(values = c("group_tax" = "black", "rpl" = "darkgreen", "rps" = "lightgreen"),
+						name = "Gene groups",
+						breaks = c("group_tax", "rpl", "rps"),
+						labels = c("16S rRNA gene\n (averaged, amplicons)", 
+									"50S ribosomal proteins\n (averaged, metagenome)", 
+									"30S ribosomal proteins\n (averaged, metagenome)")) +
+	labs(x = "Days")	
+ggsave("richness_plot_shared.png", width = 12, height = 10)
+  #facet_wrap(~treatment, nrow = 2)
+
   
+# plotting sequencing depth of metagenomes
+ggplot(data = subset(meta_omics_small, treatment == "glyph"), aes(x = new_day, y = total_reads, colour = treatment)) +
+  geom_point(size = 3) +
+  geom_line(size = 0.8) +
+  scale_y_continuous(name = "Sequencing depth per sample") +
+  scale_colour_manual(values = c("glyph" = "black"),
+						name = "Sequencing depth",
+						breaks = "glyph",
+						labels = c("glyph" = "Metagenomic\nsamples")) +
+  labs(x = "Days")	
+ ggsave("sequencing_depth.png", width = 12, height = 10)
+rps_genus <- as.data.frame(table(droplevels(subset(prokka_all, grepl("30s@ribosomal@protein@s", product2) & treatment == "glyph")$genus)))
+rps_family <- as.data.frame(table(droplevels(subset(prokka_all, grepl("30s@ribosomal@protein@s", product2) & treatment == "glyph")$family)))
+  
+rpl_genus <- as.data.frame(table(droplevels(subset(prokka_all, grepl("50s@ribosomal@protein@l", product2) & treatment == "glyph")$genus)))
+rpl_family <- as.data.frame(table(droplevels(subset(prokka_all, grepl("50s@ribosomal@protein@l", product2) & treatment == "glyph")$family)))
+
+write.table(sep = "\t", rps_genus, file = "rps_genus.tsv")
+write.table(sep = "\t", rps_family, file = "rps_family.tsv")
+write.table(sep = "\t", rpl_family, file = "rpl_family.tsv")
+write.table(sep = "\t", rpl_genus, file = "rpl_genus.tsv")
+
 # phn G H I J L M
  table(droplevels(subset(prokka_all, grepl("phosphate", product2) & grepl("phosphon", product2))$product2))
 
