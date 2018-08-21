@@ -1,6 +1,41 @@
-# what to do?
+# most abundant or responding genera by 16S data
 
-# infos required?
+# should we use the respective gene from all available reference genomes for the tree?
+Aminobacter
+Aquamicrobium
+Blastomonas
+Brevundimonas
+Caulobacter
+Cupriavidus
+Dokdonella
+Ferrovibrio
+Gallaecimonas
+Hoeflea
+Hyphomonas
+Idiomarina
+Limnohabitans
+Loktanella
+Massilia
+Mesorhizobium
+Methylotenera
+Microbacterium
+Nesiotobacter
+Parvibaculum
+Pseudolabrys
+Pseudomonas
+Pseudorhodobacter
+Reyranella
+Rhizobium
+Rhodobacter
+Sphingomonas
+Sphingopyxis
+Sphingorhabdus
+Terrimonas
+Thalassobaculum
+uncultured_Caulobacteraceae
+uncultured_Rhodobacteraceae
+uncultured_Rhodospirillaceae
+
 
 
 # phosphonate degrading
