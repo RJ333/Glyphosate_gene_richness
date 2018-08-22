@@ -1,106 +1,13 @@
-# most abundant or responding genera by 16S data
 
-# should we use the respective gene from all available reference genomes for the tree?
-Aminobacter
-Aquamicrobium
-Blastomonas
-Brevundimonas
-Caulobacter
-Cupriavidus
-Dokdonella
-Ferrovibrio
-Gallaecimonas
-Hoeflea
-Hyphomonas
-Idiomarina
-Limnohabitans
-Loktanella
-Massilia
-Mesorhizobium
-Methylotenera
-Microbacterium
-Nesiotobacter
-Parvibaculum
-Pseudolabrys
-Pseudomonas
-Pseudorhodobacter
-Reyranella
-Rhizobium
-Rhodobacter
-Sphingomonas
-Sphingopyxis
-Sphingorhabdus
-Terrimonas
-Thalassobaculum
-uncultured_Caulobacteraceae
-uncultured_Rhodobacteraceae
-uncultured_Rhodospirillaceae
-
-
-
-# phosphonate degrading
-
-gene:	product2:
-
-phnC	phosphate@import@atp@binding@protein@phnc
-phnD	phosphate@import@protein@phnd@precursor
-phnE	phosphate@import@permease@protein@phne
-phnF	putative@transcriptional@regulator@phnf
-phnG	alpha@d@ribose@1@methylphosphonate@5@triphosphate@synthase@subunit@phng
-phnH	alpha@d@ribose@1@methylphosphonate@5@triphosphate@synthase@subunit@phnh
-phnI	alpha@d@ribose@1@methylphosphonate@5@triphosphate@synthase@subunit@phni
-phnJ	alpha@d@ribose@1@methylphosphonate@5@phosphate@c@p@lyase
-phnK	putative@phosphonates@utilization@atp@binding@protein@phnk
-phnL	alpha@d@ribose@1@methylphosphonate@5@triphosphate@synthase@subunit@phnl
-phnM	alpha@d@ribose@1@methylphosphonate@5@triphosphate@diphosphatase
-phnN	ribose@1%2c5@bisphosphate@phosphokinase@phnn
-		aminoalkylphosphonic@acid@n@acetyltransferase
-phnP	phosphoribosyl@1%2c2@cyclic@phosphodiesterase
-
-
-# sarcosine oxidizing
-
-product2: 
-
-monomeric@sarcosine@oxidase
-sarcosine@oxidase@subunit@beta
-sarcosine@oxidase%2c@gamma@subunit@family
-sarcosine@oxidase%2c@delta@subunit@family
-
-
-# phosphorus sensing/starvation
-
-gene:	product2: 
-
-phoB	phosphate@regulon@transcriptional@regulatory@protein@phob
-phoR	phosphate@regulon@sensor@protein@phor
-
-# Pi starvation-inducible (psi) genes,
- 
-gene:	product2: 
-
-psiF 	phosphate@starvation@inducible@protein@psif@precursor
-
-#################################### pieces of code?
-
-
+```bash
 #################### this code can be used to adress amino acid sequences!
 
-# prokka already provides the corresponding faa-sequences per annotation
-# the file headers are not appropriate yet: need to be adjusted accordingly to above
-# ## replace white lines and special characters in product names with "@"
-# prokka_select$product2 <- gsub("_|-|'| |/|:|\\(|\\.|\\)|\\|", "@", prokka_select$product2)
-# tolower
-
-# additionally, the header should involve the sample names to distinguish contigs across samples
-
-
 # put fasta output with header into one line
-awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\t"}}' prokka.faa > prokka_1line.faa
+awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\n"}}' prokka.faa > prokka_1line.faa
 
 # grep line and the following
 grep -A 1 "phosphonate" prokka_1line.faa
-
+```
 
 
 
@@ -114,6 +21,7 @@ grep -A 1 "phosphonate" prokka_1line.faa
 
 #################### the code below can be used if you want to extract DNA substrings from the contigs
 
+```r
 # read in the combined prokka data from all samples
 
 print("reading prokka data ...")
@@ -155,11 +63,7 @@ prokka_select$product2 <- gsub("_|-|'| |/|:|\\(|\\.|\\)|\\|", "@", prokka_select
 # unify gene numbering e.g. genE_01, genE_02 etc --> genE
 print("unifying gene names")
 prokka_select$gene <- gsub("_.*$","", prokka_select$gene)
-
-# generate the pos.txt file for the awk script
-
-
-
+```
 
 # stackoverflow: https://stackoverflow.com/questions/45153483/how-to-use-info-on-substring-position-from-one-file-to-extract-substring-from-an
 
