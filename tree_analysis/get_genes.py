@@ -31,6 +31,8 @@ def create_tax_dict(abspath_names_dmp):
 
     return ncbi_tax_dict
 
+# adapt path for names.dmp
+# find the file here: ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/
 tax_dict = create_tax_dict("/tmp/genes_degradation_phn/names.dmp")
 
 tax_list = [31988, 69278, 150203, 41275, 75,
