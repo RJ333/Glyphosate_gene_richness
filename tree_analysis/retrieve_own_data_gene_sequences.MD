@@ -1,4 +1,3 @@
-
 ```bash
 #################### this code can be used to adress amino acid sequences!
 
@@ -65,6 +64,7 @@ print("unifying gene names")
 prokka_select$gene <- gsub("_.*$","", prokka_select$gene)
 ```
 
+```bash
 # stackoverflow: https://stackoverflow.com/questions/45153483/how-to-use-info-on-substring-position-from-one-file-to-extract-substring-from-an
 
 cut.awk
@@ -114,3 +114,4 @@ Output:
 
 >foo 234
 >bar 4
+```
