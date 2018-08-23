@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# use python2
+
 import re
 import sys
 
