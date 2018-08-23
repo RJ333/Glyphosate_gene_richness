@@ -15,7 +15,8 @@ mkdir -p ${BASE_DIR}/prokka_modified/
 for SAMPLE in "${SAMPLE_ARRAY[@]}"
 do 
     echo $SAMPLE
-	cp ${PROKKA_DIR}/prokka.faa ${BASE_DIR}/prokka_original/${SAMPLE}_prokka.faa
+	cp /data/jwerner/glyphosate/IMP/${SAMPLE}/output_IMP/Analysis/annotation/prokka.faa \
+	  ${BASE_DIR}/prokka_original/${SAMPLE}_prokka.faa
 done
 
 echo "prokka files have been copied"
