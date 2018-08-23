@@ -27,8 +27,7 @@ echo "prokka files have been copied"
 for SAMPLE in "${SAMPLE_ARRAY[@]}"
 do 
     echo $SAMPLE
-	awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\n"}}' \
-	  prokka_original/${SAMPLE}_prokka.faa | \
+	awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\n"}}' prokka_original/${SAMPLE}_prokka.faa | \
 	  tail -n +2 | \
 	  sed "s/ /_${SAMPLE} /" | \
 	  sed "s/ /@/g" > prokka_modified/${SAMPLE}_prokka.oneline.sampleheader.nospaces.faa
