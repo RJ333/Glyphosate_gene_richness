@@ -4,7 +4,6 @@
 
 # directories of original data
 BASE_DIR=/data/Rene/glyph/tree/
-GIT_REPO=/data/Rene/Glyphosate_gene_richness/tree_analysis
 PROKKA_DIR=/data/jwerner/glyphosate/IMP/${sample}/output_IMP/Analysis/annotation/
 
 SAMPLE_ARRAY=(A1 A2 A3 A4 A5 A6 A7 B8 B9 B10)
