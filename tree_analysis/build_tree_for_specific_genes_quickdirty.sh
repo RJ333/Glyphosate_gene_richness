@@ -1,3 +1,11 @@
+## TO DO
+# add variables
+# include sequence length in header
+# include sequence length in distribution plot
+# check number of sequences for prokka and ref
+
+
+
 cd /data/Rene/glyph/trees_degradation/msa
 mkdir phnJ
 cd phnJ
