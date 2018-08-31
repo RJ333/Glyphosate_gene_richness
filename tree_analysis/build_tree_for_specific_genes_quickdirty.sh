@@ -43,4 +43,14 @@ python2 /data/Rene/glyph/trees_degradation/tree/remove_special_characters.py phn
   
 cat phnJ.all.msa.faa.clean.phy > phnJ.all.cdhit100.msa.faa.clean.phy
   
-  
+# build tree with RAXML  
+raxmlHPC-PTHREADS-SSE3 \
+  -T 28 \
+  -p 12345 \
+  -s phnC.all.msa.cdhit.clean.phy \
+  -m PROTCATAUTO \
+  -n phnC \
+  -x 12345 \
+  -f a \
+  -N 100 \
+  -w /data/glyphosate/trees/phnJ/raxml
