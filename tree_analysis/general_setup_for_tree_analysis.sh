@@ -24,14 +24,19 @@ echo "prokka files have been copied"
 # original Prokka data was put into a single line, 
 # sample names were included in header and whitespaces replaced with @
 
+cd $BASE_DIR
+
 for SAMPLE in "${SAMPLE_ARRAY[@]}"
 do 
     echo $SAMPLE
 	awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\n"}}' prokka_original/${SAMPLE}_prokka.faa | \
 	  tail -n +2 | \
 	  sed "s/ /_${SAMPLE} /" | \
-	  #awk '/^>/{value=$0;next} {print value"_"length($0) ORS $0;value=""}' | \
+	  awk '/^>/{value=$0;next} {print value"_"length($0) ORS $0;value=""}' | \
 	  sed "s/ /@/g" > prokka_modified/${SAMPLE}_prokka.oneline.sampleheader.nospaces.faa
 done
 
 echo "prokka files have been modified"
+
+./tree_analysis/general_setup_for_tree_analysis.sh: Zeile 34: prokka_modified/B10_prokka.oneline.sampleheader.nospaces.faa: Datei oder Verzeichnis nicht gefunden
+awk: Fatal: Die Datei »prokka_original/B10_prokka.faa« kann nicht zum Lesen geöffnet werden (Datei oder Verzeichnis nicht gefunden)
