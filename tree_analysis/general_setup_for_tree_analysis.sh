@@ -37,6 +37,3 @@ do
 done
 
 echo "prokka files have been modified"
-
-./tree_analysis/general_setup_for_tree_analysis.sh: Zeile 34: prokka_modified/B10_prokka.oneline.sampleheader.nospaces.faa: Datei oder Verzeichnis nicht gefunden
-awk: Fatal: Die Datei »prokka_original/B10_prokka.faa« kann nicht zum Lesen geöffnet werden (Datei oder Verzeichnis nicht gefunden)
