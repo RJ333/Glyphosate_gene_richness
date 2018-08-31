@@ -30,7 +30,7 @@ do
 	awk '{if (!/>/) {printf "%s",$0;next} else {printf "%s%s%s","\n",$0,"\n"}}' prokka_original/${SAMPLE}_prokka.faa | \
 	  tail -n +2 | \
 	  sed "s/ /_${SAMPLE} /" | \
-	  awk '/^>/{value=$0;next} {print value"_"length($0) ORS $0;value=""}' | \
+	  #awk '/^>/{value=$0;next} {print value"_"length($0) ORS $0;value=""}' | \
 	  sed "s/ /@/g" > prokka_modified/${SAMPLE}_prokka.oneline.sampleheader.nospaces.faa
 done
 
