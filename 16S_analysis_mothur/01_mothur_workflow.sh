@@ -60,7 +60,7 @@ set.dir(output=/data/projects/glyphosate/reads/processed)
 # make stability file
 # Group names should not include :, -, or / characters
 # c-negativ und c-positiv wurden nicht bearbeitet
-make.file(inputdir=/data/projects/glyphosate/reads/raw_reads_16S/all_runs, type = fastq)
+make.file(inputdir=/data/projects/glyphosate/reads/raw_reads_16S/all_runs, type = gz)
 
 # stability file cleaves names after first "_", therefore c_negative and c_positive are both "c" now
 make.contigs(file = stability.files, processors = 22)
