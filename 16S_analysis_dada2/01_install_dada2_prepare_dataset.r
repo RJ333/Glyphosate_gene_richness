@@ -8,7 +8,7 @@
 # following tutorial on https://f1000research.com/articles/5-1492/v2
 
 # define working directory to story RData image
-setwd("/data/projects/glyphosate/analysis_16S/R_351_files/")
+setwd("/data/projects/dada2_tutorial")
 load(file = "dada2_tutorial.RData")
 
 
@@ -66,18 +66,22 @@ filtRs <- file.path(filt_path, basename(fnRs))
 for(i in seq_along(fnFs)) {
   fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
 		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft=10, truncLen=c(245, 160),
-                      maxN=0, maxEE=2, truncQ=2,
-                      compress=TRUE)
+                      trimLeft = 10, truncLen = c(245, 160),
+                      maxN = 0, maxEE = 2, truncQ = 2,
+                      compress = TRUE)
 }
-
-
 
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
-
-save.image( file ="dada2_tutorial.RData")
-
 sam.names <- sapply(strsplit(basename(filtFs), "_"), `[`, 1)
 names(derepFs) <- sam.names
 names(derepRs) <- sam.names
+
+ddF <- dada(derepFs[1:40], err = NULL, selfConsist = TRUE)
+# Convergence after  8  rounds.  > 6 hours, bio-48
+ddR <- dada(derepRs[1:40], err = NULL, selfConsist = TRUE)
+
+dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE)
+dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
+
+save.image(file = "dada2_tutorial.RData")
