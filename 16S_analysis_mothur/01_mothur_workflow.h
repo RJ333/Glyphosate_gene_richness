@@ -230,7 +230,7 @@ mmary
 classify.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, reference = silva.nr_v132.align, taxonomy = silva.nr_v132.tax, cutoff = 85)
 It took 4548 secs to classify 523074 sequences.
 
-#removing phyla/lineages that we dont want in our dataset 
+# removing phyla/lineages that we dont want in our dataset 
 # (e.g. Eukaryota, mitochondria etc because the primers are not 
 # supposed to match those)
 
@@ -277,4 +277,16 @@ total # of seqs:        23692933
 It took 54 secs to summarize 23692933 sequences.
 
 # OTU picking based on 98% similarity: (very long step)
-cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02)
+# crashed on bio-49 with all cores, no message except for "killed"
+# using bio-48 with 22 cores
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 22)
+
+
+# Using 22 processors.
+# Splitting the file...
+# Running command: 
+# dist.seqs(fasta=/data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta.0.temp, 
+# processors=22, cutoff=0.02, outputdir=/data/projects/glyphosate/reads/processed/)
+
+Sequence  Time    Num_Dists_Below_Cutoff
+44400     122     247322
