@@ -1,9 +1,3 @@
-# install Bioconductor and dada2 in conda dada2
-conda config --add channels defaults
-conda config --add channels bioconda
-conda config --add channels conda-forge
-
-conda create -n dada2 bioconductor-shortread=1.38.0 r-base=3.5.1 bioconductor-dada2=1.8
 # https://benjjneb.github.io/dada2/bigdata.html
 # https://benjjneb.github.io/dada2/tutorial.html
 
@@ -13,8 +7,13 @@ conda create -n dada2 bioconductor-shortread=1.38.0 r-base=3.5.1 bioconductor-da
 
 # following tutorial on https://f1000research.com/articles/5-1492/v2
 
+# define working directory to story RData image
+setwd("/data/projects/glyphosate/analysis_16S/R_351_files/")
+load(file = "dada2_tutorial.RData")
 
-# first installing these packages manuallysource
+
+
+# first installing these packages manually
 source("http://bioconductor.org/biocLite.R")
 biocLite(c("knitr", "BiocStyle"))
 
@@ -59,6 +58,8 @@ ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
+# be careful, the original script contains filtFs and filt"s"Fs!!
+
 if(!file_test("-d", filt_path)) dir.create(filt_path)
 filtFs <- file.path(filt_path, basename(fnFs))
 filtRs <- file.path(filt_path, basename(fnRs))
@@ -70,8 +71,13 @@ for(i in seq_along(fnFs)) {
                       compress=TRUE)
 }
 
-derepFs <- derepFastq(filtsFs)
-derepRs <- derepFastq(filtsRs)
-sam.names <- sapply(strsplit(basename(filtsFs), "_"), `[`, 1)
+
+
+derepFs <- derepFastq(filtFs)
+derepRs <- derepFastq(filtRs)
+
+save.image( file ="dada2_tutorial.RData")
+
+sam.names <- sapply(strsplit(basename(filtFs), "_"), `[`, 1)
 names(derepFs) <- sam.names
 names(derepRs) <- sam.names

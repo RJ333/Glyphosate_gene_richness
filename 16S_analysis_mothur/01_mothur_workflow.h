@@ -276,5 +276,5 @@ total # of seqs:        23692933
 
 It took 54 secs to summarize 23692933 sequences.
 
-# OTU picking based on 98% similarity:
+# OTU picking based on 98% similarity: (very long step)
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02)
