@@ -281,7 +281,6 @@ It took 54 secs to summarize 23692933 sequences.
 # using bio-48 with 22 cores
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 22)
 
-
 # Using 22 processors.
 # Splitting the file...
 # Running command: 
