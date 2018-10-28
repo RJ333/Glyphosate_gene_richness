@@ -19,6 +19,7 @@ mkdir -p /data/projects/glyphosate/analysis/metadata
 mkdir .p /data/projects/glyphosate/analysis/dada2
 scp -i ~/.ssh/denbi.key /mnt/d/denbi/meta_dna_water.csv centos@193.196.20.111:/data/projects/glyphosate/analysis/metadata/
 
+scp -i ~/.ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/analysis/dada2/otu_table_water_dna.csv /mnt/d/denbi/
  
 # install Bioconductor and dada2 in conda dada2
 conda config --add channels defaults
