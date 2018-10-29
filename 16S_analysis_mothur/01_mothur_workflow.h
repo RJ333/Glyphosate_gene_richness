@@ -289,3 +289,75 @@ cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique
 
 Sequence  Time    Num_Dists_Below_Cutoff
 44400     122     247322
+
+#################### this is where I left off
+
+
+make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label=0.03)
+(label hier vll nicht wichtig)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared		# a shared file that contains all the information on which OTU was found how many times in which group (sample)
+-> rename to: stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list_all.shared
+
+split.abund(fasta=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, cutoff=3)
+Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.rare.list
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.rare.fasta
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.fasta
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.rare.count_table
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table
+
+
+summary.seqs(fasta=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.fasta, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table)
+-> output
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        19      741     244     0       3       1
+2.5%-tile:      23      741     253     0       3       349349
+25%-tile:       23      741     253     0       4       3493489
+Median:         23      741     253     0       4       6986978
+75%-tile:       23      741     253     0       5       10480466
+97.5%-tile:     23      741     253     0       6       13624606
+Maximum:        23      741     259     0       8       13973954
+Mean:   23      741     253.012 0       4.41639
+# of unique seqs:       147018
+total # of seqs:        13973954
+
+Output File Names: 
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.summary
+
+#now we create a new shared file based on the new count table, where the 'singletons' have been removed
+make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, label=0.03)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared			#this is the actual OTU table with reads per OTU per sample
+
+#now we can classify our OTUs
+classify.otu(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, taxonomy=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, label=0.03)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.taxonomy		#taxonomy file with taxonomical info for each OTU!
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.tax.summary	#different version of taxonomy file with taxonomical info for each OTU!
+
+count.groups(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.count.summary		#table with reads per sample 
+
+get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> totalgroup		#OTU table with relative abundances
+
+get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared, scale=totalotu)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> totalotu
+
+get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared, scale=averageotu)
+-> Output File Names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> averageotu
+
+
+get.groups(count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, taxonomy=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.taxonomy, groups=B1-B2-B3-B4-DEPC-leer1-leer2-Negativ-NegativPlatte4-PB1-X247-X248-X249-X274-X275-X276-X301-X302-X303)
+-> Output File names:
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.pick.count_table
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.pick.list
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.pick.taxonomy
+
+split.abund(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.pick.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.pick.count_table, cutoff=10)
