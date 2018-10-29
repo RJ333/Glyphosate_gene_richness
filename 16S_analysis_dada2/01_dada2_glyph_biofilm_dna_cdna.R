@@ -5,6 +5,7 @@
 # define working directory to story RData image
 setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")
 load(file = "dada2_water_dna.RData")
+
 ### the outcommented steps are only required the first time
 
 # first installing these packages manually
