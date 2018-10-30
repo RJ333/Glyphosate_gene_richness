@@ -28,15 +28,8 @@ ls /data/db/silva
 ##### this is for conda for the old version 1.40.05, which throws an 
 ##### error using count.seqs() if raw reads were not unzipped
 
-# to start mothur in conda, add the following lines to bashrc on 
-# bio-49 and save
-vim ~/.bashrc 
-. /data/tools/miniconda3/etc/profile.d/conda.sh
-conda activate
-source ~/.bashrc
-# start mothur environment
-conda activate mothur
-mothur
+# for quick working mothur on chandler-1
+conda create -n mothur_1395 mothur=1.39.5
 
 ##### this is for the prerelease 1.41.0, which works so far
 PATH=/data/Rene/mothur_prerelease_1_41_0/mothur/mothur:$PATH 
