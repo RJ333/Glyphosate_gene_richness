@@ -6,10 +6,7 @@ set.dir(output=/data/projects/glyphosate/reads/processed)
 
 # make stability file
 # Group names should not include :, -, or / characters
-# c-negativ und c-positiv wurden nicht bearbeitet
 make.file(inputdir=/data/projects/glyphosate/reads/raw_reads_16S/all_runs, type = gz)
-
-# stability file cleaves names after first "_", therefore c_negative and c_positive are both "c" now
 make.contigs(file = stability.files, processors = 22)
 	
 # 1.40.5, gz-files: It took 56538 secs to process 40476806 sequences.
@@ -19,7 +16,7 @@ summary.seqs(fasta = stability.trim.contigs.fasta, processors = 24)
 
 count.groups(group = stability.contigs.groups)
 
-# file oligo.txt copied from Lars Möller, 341f-805r described in paper-style (not reversed-complementary)
+# file oligo.txt copied from Lars Möller, 341f-805r as would be described in paper-style (805r not reversed-complementary)
 trim.seqs(fasta = stability.trim.contigs.fasta, oligos = oligo.txt, processors = 24)	
 
 # It took 1128 secs to trim 41418035 sequences.
@@ -33,6 +30,7 @@ list.seqs(fasta = stability.trim.contigs.trim.fasta)
 get.seqs(accnos = stability.trim.contigs.trim.accnos, group = stability.contigs.groups)
 
 # mothur does not like line breaks, even with \
+
 # removes(!) sequences which do not apply to the defined parameters from dataset 
 # (can be found in the accnos file)
 screen.seqs(fasta = stability.trim.contigs.trim.fasta, group = stability.contigs.pick.groups, maxambig = 0, maxhomop = 8, maxlength = 450, minlength = 390, processors = 24) 
@@ -68,18 +66,20 @@ It took 186 secs to summarize 24573245 sequences.
 Output File Names:
  /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.summary
  
-# I copied the pcr.seqs and silva files from lmoeller, as he used the same primers.
+# I copied the pcr.seqs and silva files from Lars Möller, as he used the same primers.
 # should still be checked again
 
-#pcr.seqs(fasta=silva.nr_v132.align, start=?????, end=????, keepdots=F, processors=20)
-#-> Output File Names: 
-#silva.nr_v132.pcr.align	
-#trims the curated sequences of the reference database to a certain section (i.e. start/end) --> this needs to be done only once, you can use the silva.nr_v132.pcr.align file for all your next analyses, as long as you are working with the same primer set (-->same fragment!) and there is no newer version of the reference database (check https://mothur.org/wiki/Silva_reference_files)
+# pcr.seqs(fasta=silva.nr_v132.align, start=?????, end=????, keepdots=F, processors=20)
+# -> Output File Names: 
+# silva.nr_v132.pcr.align	
+# trims the curated sequences of the reference database to a certain section (i.e. start/end) --> 
+# this needs to be done only once, you can use the silva.nr_v132.pcr.align file for all your next analyses, as long as you are working with the same primer set (-->same fragment!) and there is no newer version of the reference database (check https://mothur.org/wiki/Silva_reference_files)
 
 # aligns sequences with the reference database
 # below is the large database
 # align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.nr_v132.pcr.align)
-# the seed_v132 is the reduced database
+
+# we use seed_v132, this is the reduced database
 align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.seed_v132.pcr.align, processors = 24)
 
 It took 7816 secs to align 1552629 sequences.
@@ -96,7 +96,7 @@ Median:         41      17053   402     0       5       12286623
 75%-tile:       41      17053   415     0       5       18429934
 97.5%-tile:     41      17053   427     0       6       23958914
 Maximum:        16198   17053   447     0       8       24573245
-Mean:   45      17052   408     0       4
+Mean:   		45      17052   408     0       4
 # of unique seqs:       1552629
 total # of seqs:        24573245
 
@@ -106,7 +106,7 @@ Output File Names:
  /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.summary
 
 # again removing sequences that dont match 
-# -> starting and ending at the wrong position (look at minimun/maximum in summary) 
+# -> if Start or End do not fit or NBases is off
 screen.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table, summary = stability.trim.contigs.trim.good.unique.summary, start = 41, end = 17053)
 
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.align, count = stability.trim.contigs.trim.good.good.count_table)
@@ -138,7 +138,7 @@ filter.seqs(fasta = stability.trim.contigs.trim.good.unique.good.align, vertical
 # perhaps more redundant sequences can be found, 
 # thats why we use unique.seqs again
 unique.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.fasta, count = stability.trim.contigs.trim.good.good.count_table)
-summary.seqs(fasta=stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count=stability.trim.contigs.trim.good.unique.good.filter.count_table)
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table)
 
 Using 24 processors.
 
@@ -161,7 +161,7 @@ Output File Names:
  
 # pre-clustering merges sequences that are 2 nt different (diffs=) 
 # from each other (1 nt per 100 bp) -> 
-# this allows to take mutations into account (Katis 250 bp reads)
+# this allows to take mutations into account (Katis V4 reads were 250 bp reads)
 
 # I will stick to 2 nt diff although I have 300 bp reads
 pre.cluster(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table, diffs = 2)
@@ -178,7 +178,7 @@ Median:         22      1027    402     0       5       12244603
 75%-tile:       22      1027    422     0       5       18366904
 97.5%-tile:     22      1027    427     0       6       23876974
 Maximum:        22      1027    447     0       8       24489204
-Mean:   21      1027    408     0       4
+Mean:   		21      1027    408     0       4
 # of unique seqs:       638888
 total # of seqs:        24489204
 
@@ -187,13 +187,13 @@ It took 76 secs to summarize 24489204 sequences.
 Output File Names:
  /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.summary
 
-#now we want to detect chimeric sequences in our data set; 
+# now we want to detect chimeric sequences in our data set; 
 # dereplicate=true (t) means that if one sequence gets flagged as chimeric 
 # in one group, it is NOT automatically flagged as chimeric in other groups #
 # (because it might be an abundant sequence in another group) 
 chimera.vsearch(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table, dereplicate = t)
 
-# optional count seqs per sample 
+# optional: count seqs per sample 
 count.groups(count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
 
 #removing the chimeric sequences from our dataset (fasta file)
@@ -211,15 +211,14 @@ Median:         22      1027    402     0       5       11846474
 75%-tile:       22      1027    407     0       5       17769710
 97.5%-tile:     22      1027    427     0       6       23100623
 Maximum:        22      1027    440     0       8       23692946
-Mean:   21      1027    408     0       4
+Mean:   		21      1027    408     0       4
 # of unique seqs:       523074
 total # of seqs:        23692946
 
 It took 61 secs to summarize 23692946 sequences.
 
 Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.su
-mmary
+ /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.summary
 
 # classifying the sequences (before OTU picking!) based on the 
 # complete SILVA reference set (non redundant?) 
@@ -276,8 +275,10 @@ total # of seqs:        23692933
 
 It took 54 secs to summarize 23692933 sequences.
 
+# No difference whether with/without Archea. Makes sense, as SILVAngs neither found archeal seqs.
+
 # OTU picking based on 98% similarity: (very long step)
-# crashed on bio-49 with all cores, no message except for "killed"
+# crashed on bio-49 with 50 cores, no message except for "killed"
 # using bio-48 with 22 cores
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 22)
 
@@ -286,78 +287,16 @@ cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique
 # Running command: 
 # dist.seqs(fasta=/data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta.0.temp, 
 # processors=22, cutoff=0.02, outputdir=/data/projects/glyphosate/reads/processed/)
+# was also killed due to memory failure later. But the number of cores do not matter, the memory intensive step used only one core later
+# was then successfully carried out on phy-2 with a total of 1 TB RAM
 
-Sequence  Time    Num_Dists_Below_Cutoff
-44400     122     247322
+#################### this is where I stopped
 
-#################### this is where I left off
+# missing part "unique_list" is due to new version, not a problem
 
+make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label=0.02)
+# (label not important here?)
+# a shared file that contains all the information on which OTU was found how many times in which group (sample)
 
-make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label=0.03)
-(label hier vll nicht wichtig)
 -> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared		# a shared file that contains all the information on which OTU was found how many times in which group (sample)
--> rename to: stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list_all.shared
-
-split.abund(fasta=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, cutoff=3)
-Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.rare.list
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.rare.fasta
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.fasta
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.rare.count_table
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table
-
-
-summary.seqs(fasta=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.fasta, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table)
--> output
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        19      741     244     0       3       1
-2.5%-tile:      23      741     253     0       3       349349
-25%-tile:       23      741     253     0       4       3493489
-Median:         23      741     253     0       4       6986978
-75%-tile:       23      741     253     0       5       10480466
-97.5%-tile:     23      741     253     0       6       13624606
-Maximum:        23      741     259     0       8       13973954
-Mean:   23      741     253.012 0       4.41639
-# of unique seqs:       147018
-total # of seqs:        13973954
-
-Output File Names: 
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.03.abund.summary
-
-#now we create a new shared file based on the new count table, where the 'singletons' have been removed
-make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, label=0.03)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared			#this is the actual OTU table with reads per OTU per sample
-
-#now we can classify our OTUs
-classify.otu(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, taxonomy=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, label=0.03)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.taxonomy		#taxonomy file with taxonomical info for each OTU!
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.tax.summary	#different version of taxonomy file with taxonomical info for each OTU!
-
-count.groups(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.count.summary		#table with reads per sample 
-
-get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> totalgroup		#OTU table with relative abundances
-
-get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared, scale=totalotu)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> totalotu
-
-get.relabund(shared=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.shared, scale=averageotu)
--> Output File Names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.relabund -> averageotu
-
-
-get.groups(count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.count_table, list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.list, taxonomy=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.taxonomy, groups=B1-B2-B3-B4-DEPC-leer1-leer2-Negativ-NegativPlatte4-PB1-X247-X248-X249-X274-X275-X276-X301-X302-X303)
--> Output File names:
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.pick.count_table
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.pick.list
-stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.cons.pick.taxonomy
-
-split.abund(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.abund.0.03.pick.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.03.abund.pick.count_table, cutoff=10)
+stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared		
