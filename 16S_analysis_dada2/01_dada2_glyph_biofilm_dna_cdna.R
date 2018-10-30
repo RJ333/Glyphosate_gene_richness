@@ -50,16 +50,17 @@ ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
-# forward reads 10 to 270
-# reverse reads 10 to 210
-
+# forward reads 10 to 280
+# reverse reads 10 to 220
+# if we trim too much, the pairing is based on few bases and very unspecific
+# this can result in many paired reads with very different length
 if(!file_test("-d", filt_path)) dir.create(filt_path)
 filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script 
 filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs!!
 for(i in seq_along(fnFs)) {
   fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
 		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(270, 210),
+                      trimLeft = 10, truncLen = c(280, 220),
                       maxN = 0, maxEE = 2, truncQ = 2,
                       compress = TRUE)
 }
@@ -80,24 +81,60 @@ names(derepRs) <- sam.names
 
 # adjusted to 50 samples for training
 ddF <- dada(derepFs[1:60], err = NULL, 
-			selfConsist = TRUE, multithread = TRUE) # Convergence after
+			selfConsist = TRUE, multithread = TRUE) 
+# Convergence after 8 rounds
+
 
 			
 ddR <- dada(derepRs[1:60], err = NULL, 
-			selfConsist = TRUE, multithread = TRUE) # Convergence after 
+			selfConsist = TRUE, multithread = TRUE) 
+# Convergence after 8 rounds
+
 
 #plotErrors(ddF)
 #plotErrors(ddR)	
 
 dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
+# 96 samples were pooled: 9285968 reads in 779973 unique sequences
 dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
+# 96 samples were pooled: 9285968 reads in 630087 unique sequences
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 # multithread?
 seqtab.all <- makeSequenceTable(mergers)
-seqtab <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
 
+## The sequences being tabled vary in length.
+
+dim(seqtab.all)
+
+## [1]  96 9252
+
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab.all)))
+
+##
+## 251 252 253 254 255
+##   1  87 192   6   2
+hist(nchar(getSequences(seqtab.all)), main="Distribution of sequence lengths")
+
+# remove sequences outside of certain length
+# from https://usda-ars-gbru.github.io/Microbiome-workshop/tutorials/amplicon/
+seqtab2 <- seqtab[,nchar(colnames(seqtab)) %in% seq(250,256)])
+
+# seqtab2 <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
+# seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+
+## Identified 59 bimeras out of 288 input sequences.
+
+    dim(seqtab.nochim)
+
+    ## [1]  20 229
+
+    sum(seqtab.nochim)/sum(seqtab)
+
+    ## [1] 0.9643192
+	
 # include deseq2 here?
 # we could probably combine the different sequencing runs here before assigning taxonomy
 
