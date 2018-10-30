@@ -5,7 +5,7 @@
 # define working directory to story RData image
 setwd("/data/projects/glyphosate/reads/dada2_processed/water_cdna")
 load(file = "dada2_water_cdna.RData")
-
+save.image(file = "dada2_water_cdna.RData")
 ### the outcommented steps are only required the first time
 
 # first installing these packages manually
@@ -49,7 +49,7 @@ for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
 # forward reads 10 to 280
-# reverse reads 10 to 240
+# reverse reads 10 to 220
 
 if(!file_test("-d", filt_path)) dir.create(filt_path)
 filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script 
@@ -57,18 +57,18 @@ filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs
 for(i in seq_along(fnFs)) {
   fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
 		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(280, 240),
+                      trimLeft = 10, truncLen = c(280, 220),
                       maxN = 0, maxEE = 2, truncQ = 2,
                       compress = TRUE)
 }
 
-# Trim and Filter
+# now check the quality after trimming
 ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
 for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
+# trimming guesses look really good
 
-
-# Infer sequence variants
+# Infer sequence variants, (usually aim for subset of about 5M total reads)
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
 sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1) # split character adjusted
@@ -76,12 +76,13 @@ names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
 # adjusted to 50 samples for training
-ddF <- dada(derepFs[1:50], err = NULL, 
-			selfConsist = TRUE) # Convergence after  6  rounds. about 2 hours?
+#let's test where multithread = TRUE is available   https://github.com/benjjneb/dada2/issues/41
+ddF <- dada(derepFs[1:60], err = NULL, 
+			selfConsist = TRUE, multithread = TRUE) # Convergence after  8  rounds. about 2 hours?
 
 			
-ddR <- dada(derepRs[1:50], err = NULL, 
-			selfConsist = TRUE) # Convergence after 
+ddR <- dada(derepRs[1:60], err = NULL, 
+			selfConsist = TRUE, multithread = TRUE) # Convergence after 
 
 # plotErrors(ddF)
 # plotErrors(ddR)	
@@ -92,7 +93,7 @@ mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(mergers)
-seqtab <- removeBimeraDenovo(seqtab.all)
+seqtab <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
 
 # include deseq2 here?
 # we could probably combine the different sequencing runs here before assigning taxonomy
@@ -123,7 +124,7 @@ fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
                       rearrangement = "stochastic", control = pml.control(trace = 0))
 detach("package:phangorn", unload=TRUE)
 
-save.image(file = "dada2_water_cdna.RData")
+
 
 # don't forget the controls in meta data? 
 # check MIMARKS example
