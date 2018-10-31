@@ -1,5 +1,14 @@
 ### bullet list with each step of mothur pipeline used
 
+# the first steps are very complicated: the mothur default path are not correctly pasted for the
+# output folder, therefore you can't have the stability.files in the output folder
+# generating the stability.files in the first place sets a new input directory
+# the stability.files later needs to be adjusted manually, as the reads contain the whole path
+# when the stability.files is adjusted and back in the folder, where the original reads are, you
+# can continue 
+
+# this still requires a lot of playing around, not final yet
+
 # You need to set the input and output in the same command. 
 # Mothur clears the the values that are not set when set.dir is run.
 # mothur > set.dir(input=../data/MiSeq_SOP, output=../analyses/)
@@ -8,29 +17,35 @@ set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data
 set.logfile(name = glyphosate_start_1395.log)
 
 # make stability file
+# in this version, the stability file needs to be adjusted manually
+# from local shell
+scp -i ~/.ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.files /mnt/d/mothur1395/
+#adjusting e.g. in excel
+scp -i ~/.ssh/denbi.key /mnt/d/mothur1395/stability2.files.txt centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+
+# back on VM
+mv /data/projects/glyphosate/reads/mothur_processed/stability2.files.txt /data/projects/glyphosate/reads/mothur_processed/stability.files
 # Group names should not include :, -, or / characters
 make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S/, type = gz)
 
 # make.file resets the directories, so reset them too!
-set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data/projects/glyphosate/reads/mothur_processed)
 
+set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
 make.contigs(file = stability.files, processors = 28)
-	
+set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data/projects/glyphosate/reads/mothur_processed)
 # 1.40.5, gz-files: It took 56538 secs to process 40476806 sequences.
-# 1.41.0, fastq-files
-summary.seqs(fasta = stability.trim.contigs.fasta, processors = 24)
-# saved output to overview_contigs.txt and stability.trim.contigs.summary
-
+# 1.39.5, gz-files: It took 3372 secs to process 41041339 sequences. # but forgot to adjust stability.files, now it is one huge group
+summary.seqs(fasta = stability.trim.contigs.fasta, processors = 28)
 count.groups(group = stability.contigs.groups)
 
 # file oligo.txt copied from Lars Möller, 341f-805r as would be described in paper-style (805r not reversed-complementary)
-trim.seqs(fasta = stability.trim.contigs.fasta, oligos = oligo.txt, processors = 24)	
+trim.seqs(fasta = stability.trim.contigs.fasta, oligos = oligo.txt, processors = 28)	
 
 # It took 1128 secs to trim 41418035 sequences.
 
 # check quality of primer-trimmed reads
-summary.seqs(fasta = stability.trim.contigs.trim.fasta, processors = 24)
-summary.seqs(fasta = stability.trim.contigs.scrap.fasta, processors = 24)
+summary.seqs(fasta = stability.trim.contigs.trim.fasta, processors = 28)
+summary.seqs(fasta = stability.trim.contigs.scrap.fasta, processors = 28)
 
 # we have to create a new group file now
 list.seqs(fasta = stability.trim.contigs.trim.fasta)
@@ -40,7 +55,7 @@ get.seqs(accnos = stability.trim.contigs.trim.accnos, group = stability.contigs.
 
 # removes(!) sequences which do not apply to the defined parameters from dataset 
 # (can be found in the accnos file)
-screen.seqs(fasta = stability.trim.contigs.trim.fasta, group = stability.contigs.pick.groups, maxambig = 0, maxhomop = 8, maxlength = 450, minlength = 390, processors = 24) 
+screen.seqs(fasta = stability.trim.contigs.trim.fasta, group = stability.contigs.pick.groups, maxambig = 0, maxhomop = 8, maxlength = 450, minlength = 390, processors = 28) 
 
 # optional, summarises number of sequences per group (eg sample) 
 count.groups(group = stability.contigs.pick.good.groups)
@@ -52,65 +67,26 @@ unique.seqs(fasta = stability.trim.contigs.trim.good.fasta)
 # and the number of times each unique sequence 
 # is found in total and per group (sample)-> important for abundance data!
 count.seqs(name = stability.trim.contigs.trim.good.names, group = stability.contigs.pick.good.groups)
-summary.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, count = stability.trim.contigs.trim.good.count_table)
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, count = stability.trim.contigs.trim.good.count_table, processors = 28)
 
-Using 24 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       390     390     0       3       1
-2.5%-tile:      1       402     402     0       4       614332
-25%-tile:       1       402     402     0       4       6143312
-Median:         1       402     402     0       5       12286623
-75%-tile:       1       421     421     0       5       18429934
-97.5%-tile:     1       427     427     0       6       23958914
-Maximum:        1       450     450     0       8       24573245
-Mean:   1       408     408     0       4
-# of unique seqs:       1552629
-total # of seqs:        24573245
-
-It took 186 secs to summarize 24573245 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.summary
- 
 # I copied the pcr.seqs and silva files from Lars Möller, as he used the same primers.
-# should still be checked again
+# should still be checked again with SINA
 
-# pcr.seqs(fasta=silva.nr_v132.align, start=?????, end=????, keepdots=F, processors=20)
-# -> Output File Names: 
-# silva.nr_v132.pcr.align	
-# trims the curated sequences of the reference database to a certain section (i.e. start/end) --> 
-# this needs to be done only once, you can use the silva.nr_v132.pcr.align file for all your next analyses, as long as you are working with the same primer set (-->same fragment!) and there is no newer version of the reference database (check https://mothur.org/wiki/Silva_reference_files)
+pcr.seqs(fasta = /data/db/silva.seed_v132.align, start = 6387, end = 23442, keepdots = F, processors = 28)
+	
+# trims the curated sequences of the reference database to a certain section 
+# (i.e. start/end) -->  this needs to be done only once
+# you can use the silva.nr_v132.pcr.align file for all your next analyses, 
+# as long as you are working with the same primer set (-->same fragment!) 
+# and there is no newer version of the reference database 
+# (check https://mothur.org/wiki/Silva_reference_files)
 
-# aligns sequences with the reference database
-# below is the large database
-# align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.nr_v132.pcr.align)
+# we use seed_v132 to align, this is the reduced database
+align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.seed_v132.pcr.align, processors = 28)
 
-# we use seed_v132, this is the reduced database
-align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.seed_v132.pcr.align, processors = 24)
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table, processors = 28)
+####### left off here
 
-It took 7816 secs to align 1552629 sequences.
-
-summary.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table)
-
-Using 24 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       37      5       0       2       1
-2.5%-tile:      41      17053   402     0       4       614332
-25%-tile:       41      17053   402     0       4       6143312
-Median:         41      17053   402     0       5       12286623
-75%-tile:       41      17053   415     0       5       18429934
-97.5%-tile:     41      17053   427     0       6       23958914
-Maximum:        16198   17053   447     0       8       24573245
-Mean:   		45      17052   408     0       4
-# of unique seqs:       1552629
-total # of seqs:        24573245
-
-It took 296 secs to summarize 24573245 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.summary
 
 # again removing sequences that dont match 
 # -> if Start or End do not fit or NBases is off

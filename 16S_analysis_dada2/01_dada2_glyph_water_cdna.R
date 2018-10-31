@@ -57,7 +57,7 @@ filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs
 for(i in seq_along(fnFs)) {
   fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
 		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(280, 220),
+                      trimLeft = 10, truncLen = c(280, 240),
                       maxN = 0, maxEE = 2, truncQ = 2,
                       compress = TRUE)
 }
@@ -93,6 +93,20 @@ mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(mergers)
+
+dim(seqtab.all)
+
+## [1]  96 9252
+
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab.all)))
+
+##
+## 251 252 253 254 255
+##   1  87 192   6   2
+
+hist(nchar(getSequences(seqtab.all)), main="Distribution of sequence lengths")
+
 seqtab <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
 
 # include deseq2 here?
