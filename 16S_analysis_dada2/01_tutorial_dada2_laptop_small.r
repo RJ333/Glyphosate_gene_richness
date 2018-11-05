@@ -8,7 +8,7 @@
 # following tutorial on https://f1000research.com/articles/5-1492/v2
 
 # define working directory to story RData image
-setwd("/data/projects/dada2_tutorial")
+setwd("D:/data/mothur_sample")
 load(file = "dada2_tutorial.RData")
 
 
@@ -18,30 +18,30 @@ load(file = "dada2_tutorial.RData")
 # source("http://bioconductor.org/biocLite.R")
 # biocLite(c("knitr", "BiocStyle"))
 
-# library("knitr")
-# library("BiocStyle")
+library("knitr")
+library("BiocStyle")
 
-# .cran_packages <- c("ggplot2", "gridExtra")
-# .bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
+.cran_packages <- c("ggplot2", "gridExtra")
+.bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
 
-# .inst <- .cran_packages %in% installed.packages()
-# if(any(!.inst)) {
-   # install.packages(.cran_packages[!.inst])
-# }
+.inst <- .cran_packages %in% installed.packages()
+if(any(!.inst)) {
+   install.packages(.cran_packages[!.inst])
+}
 
-# .inst <- .bioc_packages %in% installed.packages()
-# if(any(!.inst)) {
-   # source("http://bioconductor.org/biocLite.R")
-   # biocLite(.bioc_packages[!.inst], ask = F)
-# }
+.inst <- .bioc_packages %in% installed.packages()
+if(any(!.inst)) {
+   source("http://bioconductor.org/biocLite.R")
+   biocLite(.bioc_packages[!.inst], ask = F)
+}
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
-# set.seed(100)
+set.seed(100)
 
-# miseq_path <- file.path("/data/projects/dada2_tutorial", "MiSeq_SOP")
-# filt_path <- file.path("/data/projects/dada2_tutorial", "filtered")
+miseq_path <- file.path("D:/data/mothur_sample")
+filt_path <- file.path("D:/data/mothur_sample", "filtered")
 
 # download sample data
 
@@ -74,6 +74,11 @@ for(i in seq_along(fnFs)) {
                       compress = TRUE)
 }
 
+# now check the quality after trimming
+ii <- sample(length(fnFs), 3)
+for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
+for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
+
 # Infer sequence variants
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
@@ -82,23 +87,25 @@ names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
 ddF <- dada(derepFs[1:40], err = NULL, 
-			selfConsist = TRUE) # Convergence after 8 rounds.> 6 hours, bio-48
+			selfConsist = TRUE, multithread = TRUE) # Convergence after 8 rounds
 ddR <- dada(derepRs[1:40], err = NULL, 
-			selfConsist = TRUE) # Convergence after 7 rounds.> 1 hour, bio-49
-
+			selfConsist = TRUE, multithread = TRUE) # Convergence after 7 rounds. 
+			
 plotErrors(ddF) # this doesn't work yet due to failing x11 forwarding (ubuntu subsystem, bio 49?)
 plotErrors(ddR)	# but x11 forwarding works with mobaxterm	
 
 dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
 dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
+# 74 samples were pooled: 852592 reads in 97624 unique sequences.
+# 74 samples were pooled: 852592 reads in 92567 unique sequences.
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(mergers[!grepl("Mock", names(mergers))])
-seqtab <- removeBimeraDenovo(seqtab.all)
+seqtab <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
 
 # Assign taxonomy (I used silva instead of rdp classifier)
-ref_fasta <- "/data/projects/dada2_tutorial/db/silva_nr_v123_train_set.fa.gz"
+ref_fasta <- "D:/data/mothur_sample/silva_nr_v132_train_set.fa.gz"
 taxtab <- assignTaxonomy(seqtab, refFasta = ref_fasta)
 colnames(taxtab) <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")
 seqs <- getSequences(seqtab)
@@ -119,9 +126,11 @@ fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
 detach("package:phangorn", unload=TRUE)
 
 # Combine data into a phyloseq object (csv download link only displayed in V1 of the protocol)					  
-mimarks_path <- file.path(tempdir(), "MIMARKS.csv")
-download.file("https://www.dropbox.com/s/wpxnvsui4mjj8z3/MIMARKS_Data_combined.csv?raw=1",
-                destfile = mimarks_path)
+
+mimarks_path <- ("D:/data/mothur_sample/metadata/metadata.csv")
+# mimarks_path <- file.path(tempdir(), "MIMARKS.csv")
+# download.file("https://www.dropbox.com/s/wpxnvsui4mjj8z3/MIMARKS_Data_combined.csv?raw=1",
+#               destfile = mimarks_path)
 samdf <- read.csv(mimarks_path, header = TRUE)
 samdf$SampleID <- paste0(gsub("00", "", samdf$host_subject_id), "D", samdf$age-21)
 samdf <- samdf[!duplicated(samdf$SampleID),] # Remove dupicate entries for reverse reads
