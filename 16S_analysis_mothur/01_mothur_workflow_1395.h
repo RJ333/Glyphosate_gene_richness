@@ -90,28 +90,8 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stab
 
 # again removing sequences that dont match 
 # -> if Start or End do not fit or NBases is off
-screen.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table, summary = stability.trim.contigs.trim.good.unique.summary, start = 41, end = 17053)
-
+screen.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table, summary = stability.trim.contigs.trim.good.unique.summary, start = 41, end = 17053, processors = 28)
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.align, count = stability.trim.contigs.trim.good.good.count_table)
-
-Using 24 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       17053   390     0       3       1
-2.5%-tile:      41      17053   402     0       4       612231
-25%-tile:       41      17053   402     0       4       6122302
-Median:         41      17053   402     0       5       12244603
-75%-tile:       41      17053   421     0       5       18366904
-97.5%-tile:     41      17053   427     0       6       23876974
-Maximum:        41      17053   447     0       8       24489204
-Mean:   		40      17053   408     0       4
-# of unique seqs:       1526850
-total # of seqs:        24489204
-
-It took 232 secs to summarize 24489204 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.summary
 
 # removes gap characters within the sequences (e.g. '-') 
 # to condense file and save disk space
@@ -123,85 +103,28 @@ filter.seqs(fasta = stability.trim.contigs.trim.good.unique.good.align, vertical
 unique.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.fasta, count = stability.trim.contigs.trim.good.good.count_table)
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table)
 
-Using 24 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       1027    390     0       3       1
-2.5%-tile:      22      1027    402     0       4       612231
-25%-tile:       22      1027    402     0       4       6122302
-Median:         22      1027    402     0       5       12244603
-75%-tile:       22      1027    421     0       5       18366904
-97.5%-tile:     22      1027    427     0       6       23876974
-Maximum:        22      1027    447     0       8       24489204
-Mean:   		21      1027    408     0       4
-# of unique seqs:       1526774
-total # of seqs:        24489204
-
-It took 179 secs to summarize 24489204 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.summary
- 
 # pre-clustering merges sequences that are 2 nt different (diffs=) 
 # from each other (1 nt per 100 bp) -> 
 # this allows to take mutations into account (Katis V4 reads were 250 bp reads)
 
 # I will stick to 2 nt diff although I have 300 bp reads
 pre.cluster(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table, diffs = 2)
-
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table)
-
-Using 24 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       1027    390     0       3       1
-2.5%-tile:      22      1027    402     0       4       612231
-25%-tile:       22      1027    402     0       4       6122302
-Median:         22      1027    402     0       5       12244603
-75%-tile:       22      1027    422     0       5       18366904
-97.5%-tile:     22      1027    427     0       6       23876974
-Maximum:        22      1027    447     0       8       24489204
-Mean:   		21      1027    408     0       4
-# of unique seqs:       638888
-total # of seqs:        24489204
-
-It took 76 secs to summarize 24489204 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.summary
 
 # now we want to detect chimeric sequences in our data set; 
 # dereplicate=true (t) means that if one sequence gets flagged as chimeric 
 # in one group, it is NOT automatically flagged as chimeric in other groups #
 # (because it might be an abundant sequence in another group) 
-chimera.vsearch(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table, dereplicate = t)
+
+# I copied the vsearch bin from mothur executable into the conda environment
+chimera.vsearch(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table, dereplicate = t, processors = 28)
 
 # optional: count seqs per sample 
 count.groups(count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
 
 #removing the chimeric sequences from our dataset (fasta file)
 remove.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, accnos = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.accnos)
-
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
-
-Using 50 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       1027    390     0       3       1
-2.5%-tile:      22      1027    402     0       4       592324
-25%-tile:       22      1027    402     0       4       5923237
-Median:         22      1027    402     0       5       11846474
-75%-tile:       22      1027    407     0       5       17769710
-97.5%-tile:     22      1027    427     0       6       23100623
-Maximum:        22      1027    440     0       8       23692946
-Mean:   		21      1027    408     0       4
-# of unique seqs:       523074
-total # of seqs:        23692946
-
-It took 61 secs to summarize 23692946 sequences.
-
-Output File Names:
- /data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.summary
 
 # classifying the sequences (before OTU picking!) based on the 
 # complete SILVA reference set (non redundant?) 
@@ -209,8 +132,7 @@ Output File Names:
 # as 'non-classified' when there not at least 85% probability (similarity?) 
 # to the next phylo level; try probs=F to remove bootstrap values from 
 # taxonomy
-classify.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, reference = silva.nr_v132.align, taxonomy = silva.nr_v132.tax, cutoff = 85)
-It took 4548 secs to classify 523074 sequences.
+classify.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, reference = /data/db/silva.nr_v132.align, taxonomy = /data/db/silva.nr_v132.tax, cutoff = 85)
 
 # removing phyla/lineages that we dont want in our dataset 
 # (e.g. Eukaryota, mitochondria etc because the primers are not 
@@ -219,65 +141,31 @@ It took 4548 secs to classify 523074 sequences.
 # remove.lineage(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.taxonomy, taxon = Chloroplast-Mitochondria-unknown-Archaea-Eukaryota)
 # keeping Archea
 remove.lineage(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.taxonomy, taxon = Chloroplast-Mitochondria-unknown-Eukaryota)
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, processors = 28)
 
-summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, processors = 50)
+##### OTU picking based on 98% similarity 
+# (memory intensive, performed on phy-2 with 1.39.5)
 
-# summary with Archea removed
+# store private key at bio48/49, adjust to chmod 600, use to copy data from denbi-cloud to bio-48 
+# on bio-48:
+cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta .
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table .
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy .
 
-Using 30 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       1027    390     0       3       1
-2.5%-tile:      22      1027    402     0       4       592324
-25%-tile:       22      1027    402     0       4       5923234
-Median:         22      1027    402     0       5       11846467
-75%-tile:       22      1027    407     0       5       17769700
-97.5%-tile:     22      1027    427     0       6       23100610
-Maximum:        22      1027    440     0       8       23692933
-Mean:   21      1027    408     0       4
-# of unique seqs:       523068
-total # of seqs:        23692933
-
-It took 40 secs to summarize 23692933 sequences.
-
-# summary including Archea
-
-Using 50 processors.
-
-                Start   End     NBases  Ambigs  Polymer NumSeqs
-Minimum:        1       1027    390     0       3       1
-2.5%-tile:      22      1027    402     0       4       592324
-25%-tile:       22      1027    402     0       4       5923234
-Median:         22      1027    402     0       5       11846467
-75%-tile:       22      1027    407     0       5       17769700
-97.5%-tile:     22      1027    427     0       6       23100610
-Maximum:        22      1027    440     0       8       23692933
-Mean:   21      1027    408     0       4
-# of unique seqs:       523068
-total # of seqs:        23692933
-
-It took 54 secs to summarize 23692933 sequences.
-
-# No difference whether with/without Archea. Makes sense, as SILVAngs neither found archeal seqs.
-
-# OTU picking based on 98% similarity: (very long step)
-# crashed on bio-49 with 50 cores, no message except for "killed"
-# using bio-48 with 22 cores
-cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 22)
-
-# Using 22 processors.
-# Splitting the file...
-# Running command: 
-# dist.seqs(fasta=/data/projects/glyphosate/reads/processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta.0.temp, 
-# processors=22, cutoff=0.02, outputdir=/data/projects/glyphosate/reads/processed/)
-# was also killed due to memory failure later. But the number of cores do not matter, the memory intensive step used only one core later
-# was then successfully carried out on phy-2 with a total of 1 TB RAM
+# then run mothur, make sure to get the right version and use screen/tmux
+ssh phy-2
+screen
+/dss6/bio49/bin/mothur/mothur
+set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/)
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 100)
+/dss6/bio49/projects/glyphosate/reads/processed/
 
 #################### this is where I stopped
 
 # missing part "unique_list" is due to new version, not a problem
 
-make.shared(list=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count=stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label=0.02)
+make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label = 0.02)
 # (label not important here?)
 # a shared file that contains all the information on which OTU was found how many times in which group (sample)
 

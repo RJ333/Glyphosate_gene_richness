@@ -133,3 +133,226 @@ Output File Names:
 /data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.summary
 
 It took 46 secs to summarize 24284259 sequences.
+
+# after screen seqs
+
+#V 1.41.0
+
+Using 24 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       17053   390     0       3       1
+2.5%-tile:      41      17053   402     0       4       612231
+25%-tile:       41      17053   402     0       4       6122302
+Median:         41      17053   402     0       5       12244603
+75%-tile:       41      17053   421     0       5       18366904
+97.5%-tile:     41      17053   427     0       6       23876974
+Maximum:        41      17053   447     0       8       24489204
+Mean:   		40      17053   408     0       4
+# of unique seqs:       1526850
+total # of seqs:        24489204
+
+It took 232 secs to summarize 24489204 sequences.
+
+#V 1.39.5
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.align, count = stability.trim.contigs.trim.good.good.count_table)
+
+Using 28 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       17053   390     0       3       1
+2.5%-tile:      41      17053   402     0       4       605062
+25%-tile:       41      17053   402     0       4       6050615
+Median:         41      17053   402     0       5       12101229
+75%-tile:       41      17053   403     0       5       18151843
+97.5%-tile:     41      17053   427     0       6       23597395
+Maximum:        41      17053   440     0       8       24202456
+Mean:  		    40.9448 17053   408.042 0       4.72024
+# of unique seqs:       1473961
+total # of seqs:        24202456
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.summary
+
+It took 42 secs to summarize 24202456 sequences.
+
+# filter.seqs()
+Length of filtered alignment: 1014
+Number of columns removed: 16041
+Length of the original alignment: 17055
+Number of sequences used to construct filter: 1473961
+
+# after second unique.seqs()
+
+
+# V 1.14.0
+Using 24 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1027    390     0       3       1
+2.5%-tile:      22      1027    402     0       4       612231
+25%-tile:       22      1027    402     0       4       6122302
+Median:         22      1027    402     0       5       12244603
+75%-tile:       22      1027    421     0       5       18366904
+97.5%-tile:     22      1027    427     0       6       23876974
+Maximum:        22      1027    447     0       8       24489204
+Mean:   		21      1027    408     0       4
+# of unique seqs:       1526774
+total # of seqs:        24489204
+
+It took 179 secs to summarize 24489204 sequences.
+
+# V 1.39.5
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table)
+
+Using 28 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       3       1
+2.5%-tile:      22      1014    402     0       4       605062
+25%-tile:       22      1014    402     0       4       6050615
+Median:         22      1014    402     0       5       12101229
+75%-tile:       22      1014    403     0       5       18151843
+97.5%-tile:     22      1014    427     0       6       23597395
+Maximum:        22      1014    440     0       8       24202456
+Mean:   		21.971  1014    408.042 0       4.72024
+# of unique seqs:       1473888
+total # of seqs:        24202456
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.summary
+
+It took 35 secs to summarize 24202456 sequences.
+
+# after pre.cluster()
+
+# V1.41.0
+
+Using 24 processors.
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1027    390     0       3       1
+2.5%-tile:      22      1027    402     0       4       612231
+25%-tile:       22      1027    402     0       4       6122302
+Median:         22      1027    402     0       5       12244603
+75%-tile:       22      1027    422     0       5       18366904
+97.5%-tile:     22      1027    427     0       6       23876974
+Maximum:        22      1027    447     0       8       24489204
+Mean:   		21      1027    408     0       4
+# of unique seqs:       638888
+total # of seqs:        24489204
+
+It took 76 secs to summarize 24489204 sequences.
+
+# V 1.39.5
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table)
+
+Using 28 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       3       1
+2.5%-tile:      22      1014    402     0       4       605062
+25%-tile:       22      1014    402     0       4       6050615
+Median:         22      1014    402     0       5       12101229
+75%-tile:       22      1014    402     0       5       18151843
+97.5%-tile:     22      1014    427     0       6       23597395
+Maximum:        22      1014    440     0       8       24202456
+Mean:   21.971  1014    408.045 0       4.71476
+# of unique seqs:       568372
+total # of seqs:        24202456
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.summary
+
+It took 8 secs to summarize 24202456 sequences.
+
+# after removing chimera seqs
+
+# 1.41.0
+
+Using 50 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1027    390     0       3       1
+2.5%-tile:      22      1027    402     0       4       592324
+25%-tile:       22      1027    402     0       4       5923237
+Median:         22      1027    402     0       5       11846474
+75%-tile:       22      1027    407     0       5       17769710
+97.5%-tile:     22      1027    427     0       6       23100623
+Maximum:        22      1027    440     0       8       23692946
+Mean:   		21      1027    408     0       4
+# of unique seqs:       523074
+total # of seqs:        23692946
+
+It took 61 secs to summarize 23692946 sequences.
+
+# 1.39.5
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.count_table)
+
+Using 28 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       3       1
+2.5%-tile:      22      1014    402     0       4       586113
+25%-tile:       22      1014    402     0       4       5861129
+Median:         22      1014    402     0       5       11722257
+75%-tile:       22      1014    402     0       5       17583385
+97.5%-tile:     22      1014    427     0       6       22858400
+Maximum:        22      1014    440     0       8       23444512
+Mean:   		21.9999 1014    408.042 0       4.71266
+# of unique seqs:       475228
+total # of seqs:        23444512
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.summary
+
+It took 7 secs to summarize 23444512 sequences.
+It took 1787 secs to classify 475228 sequences.
+
+# after classification and removing lineage
+# V 1.41.0
+
+# summary including Archea
+
+Using 50 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1027    390     0       3       1
+2.5%-tile:      22      1027    402     0       4       592324
+25%-tile:       22      1027    402     0       4       5923234
+Median:         22      1027    402     0       5       11846467
+75%-tile:       22      1027    407     0       5       17769700
+97.5%-tile:     22      1027    427     0       6       23100610
+Maximum:        22      1027    440     0       8       23692933
+Mean:   21      1027    408     0       4
+# of unique seqs:       523068
+total # of seqs:        23692933
+
+It took 54 secs to summarize 23692933 sequences.
+
+# V 1.39.5
+
+Using 28 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       3       1
+2.5%-tile:      22      1014    402     0       4       586113
+25%-tile:       22      1014    402     0       4       5861126
+Median:         22      1014    402     0       5       11722252
+75%-tile:       22      1014    402     0       5       17583377
+97.5%-tile:     22      1014    427     0       6       22858390
+Maximum:        22      1014    440     0       8       23444502
+Mean:   21.9999 1014    408.042 0       4.71266
+# of unique seqs:       475224
+total # of seqs:        23444502
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.summary
+
+It took 6 secs to summarize 23444502 sequences.
+
+
+
