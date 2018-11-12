@@ -162,8 +162,49 @@ set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, outp
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 100)
 /dss6/bio49/projects/glyphosate/reads/processed/
 
+# mv output to subfolder cut_off_002, the rerun with cutoff 003
+ssh phy-2
+screen
+/dss6/bio49/bin/mothur/mothur
+set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003)
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 100)
+
+# copy files back to the cloud, except for dist-file, which is huge and not needed
+# on bio-48:
+cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
+# scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+
 #################### this is where I stopped
 
-make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, label = 0.02)
-# (label not important here?)
-# a shared file that contains all the information on which OTU was found how many times in which group (sample)
+make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
+
+# rename output file outside mothur
+mv stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list_all.shared
+
+# remove singletons
+split.abund(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, cutoff = 1)
+
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.abund.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, processors = 24)
+summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.rare.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.rare.count_table, processors = 24)
+
+
+# now we create a new shared file based on the new count table, where the 'singletons' have been removed
+make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, label = 0.02)
+
+#now we can classify our OTUs
+classify.otu(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, label = 0.02)
+
+count.groups(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared)
+
+# OTU table with relative abundances -> total group
+get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared)
+# OTU table with relative abundances -> total OTU
+get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared, scale = totalotu)
+# OTU table with relative abundances -> average OTU
+get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared, scale = averageotu)
+
+# to copy files
+scp -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.relabund /mnt/d/data/mothur_sample/
+

@@ -351,8 +351,44 @@ total # of seqs:        23444502
 
 Output File Names:
 /data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.summary
-
 It took 6 secs to summarize 23444502 sequences.
 
 
+##### only V 1.39.5 now on
 
+# after clustering and split into abund and rare
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.abund.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, processors = 24)
+
+Using 24 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       3       1
+2.5%-tile:      22      1014    402     0       4       583777
+25%-tile:       22      1014    402     0       4       5837762
+Median:         22      1014    402     0       5       11675524
+75%-tile:       22      1014    402     0       5       17513285
+97.5%-tile:     22      1014    427     0       6       22767270
+Maximum:        22      1014    439     0       8       23351046
+Mean:   21.9999 1014    407.979 0       4.71364
+# of unique seqs:       381768
+total # of seqs:        23351046
+
+mothur > summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.rare.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.rare.count_table, processors = 24)
+
+Using 24 processors.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       1014    390     0       4       1
+2.5%-tile:      22      1014    402     0       4       2337
+25%-tile:       22      1014    427     0       4       23365
+Median:         22      1014    427     0       4       46729
+75%-tile:       22      1014    427     0       5       70093
+97.5%-tile:     22      1014    428     0       7       91120
+Maximum:        22      1014    440     0       8       93456
+Mean:   21.9926 1014    423.96  0       4.46762
+# of unique seqs:       93456
+total # of seqs:        93456
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.rare.summary
