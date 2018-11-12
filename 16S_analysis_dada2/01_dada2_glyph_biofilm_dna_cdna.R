@@ -5,6 +5,7 @@
 # define working directory to story RData image
 setwd("/data/projects/glyphosate/reads/dada2_processed/biofilm")
 load(file = "dada2_biofilm.RData")
+
 save.image(file = "dada2_biofilm.RData")
 ### the outcommented steps are only required the first time
 
@@ -34,8 +35,10 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 set.seed(100)
 
-miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", "biofilm")
-filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", "biofilm")
+miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", 
+						"biofilm")
+filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", 
+						"biofilm")
 
 
 # here starts the processing
@@ -43,27 +46,29 @@ fns <- sort(list.files(miseq_path, full.names = TRUE))
 fnFs <- fns[grepl("R1", fns)]
 fnRs <- fns[grepl("R2", fns)]
 
-# Trim and Filter 
 # this doesn't work always, probably due to empty fastq lines
 # you can still select manually a couple of samples
 ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
-# forward reads 10 to 280
-# reverse reads 10 to 220
 # if we trim too much, the pairing is based on few bases and very unspecific
 # this can result in many paired reads with very different length
 if(!file_test("-d", filt_path)) dir.create(filt_path)
-filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script 
-filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs!!
-for(i in seq_along(fnFs)) {
-  fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
-		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(280, 220),
-                      maxN = 0, maxEE = 2, truncQ = 2,
-                      compress = TRUE)
-}
+filtFs <- file.path(filt_path, basename(fnFs))
+filtRs <- file.path(filt_path, basename(fnRs))
+
+# Trim and Filter
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen = c(280, 235),
+                  maxN = 0, maxEE = c(2.5, 5), truncQ = 2, rm.phix = FALSE,
+                  trimLeft = c(10, 0), minLen = c(270, 235), 
+				  compress = TRUE, multithread = TRUE)
+				  
+# reads after trimming
+head(out)
+
+# as percentage 
+out[,2]/out[,1]*100
 
 # now check the quality after trimming
 ii <- sample(length(fnFs), 3)
@@ -71,28 +76,25 @@ for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
 for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
 
 
-# Infer sequence variants (usually aim for subset of about 5M total reads)
-# let's test where multithread = TRUE is available   https://github.com/benjjneb/dada2/issues/41
+# dereplicate reads, keep abundance and quality information
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
+# split character adjusted
 sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1) # split character adjusted
 names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
-# adjusted to 50 samples for training
+# Infer sequence variants with training subset
 ddF <- dada(derepFs[1:60], err = NULL, 
 			selfConsist = TRUE, multithread = TRUE) 
-# Convergence after 8 rounds
-
-
-			
+			# Convergence after  7  rounds.
+		
 ddR <- dada(derepRs[1:60], err = NULL, 
 			selfConsist = TRUE, multithread = TRUE) 
-# Convergence after 8 rounds
+			# Convergence after  7  rounds.
 
-
-#plotErrors(ddF)
-#plotErrors(ddR)	
+plotErrors(ddF, nominalQ = TRUE)
+plotErrors(ddR, nominalQ = TRUE)	
 
 dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
 # 96 samples were pooled: 9285968 reads in 779973 unique sequences
@@ -101,40 +103,44 @@ dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
-# multithread?
 seqtab.all <- makeSequenceTable(mergers)
-
-## The sequences being tabled vary in length.
-
+# number of samples and uniq seqs
 dim(seqtab.all)
-
-## [1]  96 9252
 
 # Inspect distribution of sequence lengths
 table(nchar(getSequences(seqtab.all)))
+hist(nchar(getSequences(seqtab.all)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(250, 500, by = 10)))
 
-##
-## 251 252 253 254 255
-##   1  87 192   6   2
-hist(nchar(getSequences(seqtab.all)), main="Distribution of sequence lengths")
+# pick expected and abundant sequence lengths and check again
+seqtab2 <- seqtab.all[,nchar(colnames(seqtab.all)) %in% seq(392, 448)]
 
-# remove sequences outside of certain length
-# from https://usda-ars-gbru.github.io/Microbiome-workshop/tutorials/amplicon/
-seqtab2 <- seqtab[,nchar(colnames(seqtab)) %in% seq(250,256)])
+table(nchar(getSequences(seqtab2)))
+hist(nchar(getSequences(seqtab2)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(390, 450, by = 5)))
 
-# seqtab2 <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
-# seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
-
-## Identified 59 bimeras out of 288 input sequences.
-
-    dim(seqtab.nochim)
-
-    ## [1]  20 229
-
-    sum(seqtab.nochim)/sum(seqtab)
-
-    ## [1] 0.9643192
 	
+# remove chimera based on denoised sequences
+# checks if both parts of a contig represents either part of more abundant seqs
+seqtab2.nochim <- removeBimeraDenovo(seqtab2, method = "consensus", 
+					multithread = TRUE, verbose = TRUE)
+
+# number of samples and uniq seqs
+dim(seqtab2.nochim)
+
+# ratio of non-chimeric to total seqs
+# chimeras can make up many but low abundant seqs
+sum(seqtab2.nochim)/sum(seqtab2)
+
+# not tested
+table(nchar(getSequences(seqtab2.nochim)))
+hist(nchar(getSequences(seqtab2.nochim)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(390, 450, by = 5)))
+
+
 # include deseq2 here?
 # we could probably combine the different sequencing runs here before assigning taxonomy
 

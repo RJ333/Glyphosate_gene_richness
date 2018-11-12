@@ -6,6 +6,7 @@
 setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")
 load(file = "dada2_water_dna.RData")
 
+save.image(file = "dada2_water_dna.RData")
 ### the outcommented steps are only required the first time
 
 # first installing these packages manually
@@ -34,8 +35,10 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 set.seed(100)
 
-miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", "water_dna")
-filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", "water_dna")
+miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", 
+						"water_dna")
+filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", 
+						"water_dna")
 
 
 # here starts the processing
@@ -43,47 +46,51 @@ fns <- sort(list.files(miseq_path, full.names = TRUE))
 fnFs <- fns[grepl("R1", fns)]
 fnRs <- fns[grepl("R2", fns)]
 
-# Trim and Filter
+
 ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
-# forward reads 10 to 280
-# reverse reads 10 to 240
-
 if(!file_test("-d", filt_path)) dir.create(filt_path)
-filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script 
-filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs!!
-for(i in seq_along(fnFs)) {
-  fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
-		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(280, 240),
-                      maxN = 0, maxEE = 2, truncQ = 2,
-                      compress = TRUE)
-}
+filtFs <- file.path(filt_path, basename(fnFs))
+filtRs <- file.path(filt_path, basename(fnRs))
 
 # Trim and Filter
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen = c(280, 225),
+                  maxN = 0, maxEE = c(2.5, 5), truncQ = 2, rm.phix = FALSE,
+                  trimLeft = c(10, 0), minLen = c(270, 220), 
+				  compress = TRUE, multithread = TRUE)
+
+# reads after trimming
+head(out)
+
+# as percentage 
+out[,2]/out[,1]*100
+
+# now check the quality after trimming
 ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
 for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
 
 
-# Infer sequence variants
+# dereplicate reads, keep abundance and quality information
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
+# split character adjusted
 sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1) # split character adjusted
 names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
-# adjusted to 50 samples for training
-ddF <- dada(derepFs[1:50], err = NULL, 
-			selfConsist = TRUE) # Convergence after  6  rounds. about 2 hours?
-
+# Infer sequence variants with training subset
+ddF <- dada(derepFs[1:60], err = NULL, 
+			selfConsist = TRUE, multithread = TRUE) 
+			# Convergence after 6 rounds
+		
+ddR <- dada(derepRs[1:60], err = NULL, 
+			selfConsist = TRUE, multithread = TRUE) 
+			# 
 			
-ddR <- dada(derepRs[1:50], err = NULL, 
-			selfConsist = TRUE) # Convergence after 
-
-# plotErrors(ddF)
+plotErrors(ddF)
 # plotErrors(ddR)	
 
 dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
@@ -123,7 +130,7 @@ fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
                       rearrangement = "stochastic", control = pml.control(trace = 0))
 detach("package:phangorn", unload=TRUE)
 
-save.image(file = "dada2_water_dna.RData")
+
 
 # don't forget the controls in meta data? 
 # check MIMARKS example

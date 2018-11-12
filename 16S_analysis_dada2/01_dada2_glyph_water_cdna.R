@@ -6,6 +6,7 @@
 setwd("/data/projects/glyphosate/reads/dada2_processed/water_cdna")
 load(file = "dada2_water_cdna.RData")
 save.image(file = "dada2_water_cdna.RData")
+
 ### the outcommented steps are only required the first time
 
 # first installing these packages manually
@@ -34,8 +35,10 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 set.seed(100)
 
-miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", "water_cdna")
-filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", "water_cdna")
+miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", 
+						"water_cdna")
+filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", 
+					   "water_cdna")
 
 
 # here starts the processing
@@ -43,24 +46,26 @@ fns <- sort(list.files(miseq_path, full.names = TRUE))
 fnFs <- fns[grepl("R1", fns)]
 fnRs <- fns[grepl("R2", fns)]
 
-# Trim and Filter
+
 ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
-# forward reads 10 to 280
-# reverse reads 10 to 220
-
 if(!file_test("-d", filt_path)) dir.create(filt_path)
-filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script 
-filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs!!
-for(i in seq_along(fnFs)) {
-  fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
-		      c(filtFs[[i]], filtRs[[i]]),
-                      trimLeft = 10, truncLen = c(280, 240),
-                      maxN = 0, maxEE = 2, truncQ = 2,
-                      compress = TRUE)
-}
+filtFs <- file.path(filt_path, basename(fnFs))
+filtRs <- file.path(filt_path, basename(fnRs))
+
+# Trim and Filter
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen = c(280, 235),
+                  maxN = 0, maxEE = c(2.5, 5), truncQ = 2, rm.phix = FALSE,
+                  trimLeft = c(10, 0), minLen = c(270, 235), 
+				  compress = TRUE, multithread = TRUE)
+				  
+# reads after trimming
+head(out)
+
+# as percentage 
+out[,2]/out[,1]*100
 
 # now check the quality after trimming
 ii <- sample(length(fnFs), 3)
@@ -68,46 +73,63 @@ for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
 for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
 # trimming guesses look really good
 
-# Infer sequence variants, (usually aim for subset of about 5M total reads)
+# dereplicate reads, keep abundance and quality information
 derepFs <- derepFastq(filtFs)
 derepRs <- derepFastq(filtRs)
-sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1) # split character adjusted
+# split character adjusted
+sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1) 
 names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
-# adjusted to 50 samples for training
-#let's test where multithread = TRUE is available   https://github.com/benjjneb/dada2/issues/41
+# # Infer sequence variants with training subset should be about 100 M bases
 ddF <- dada(derepFs[1:60], err = NULL, 
-			selfConsist = TRUE, multithread = TRUE) # Convergence after  8  rounds. about 2 hours?
-
+			selfConsist = TRUE, multithread = TRUE) 
+			# Convergence after  6  rounds.
 			
-ddR <- dada(derepRs[1:60], err = NULL, 
-			selfConsist = TRUE, multithread = TRUE) # Convergence after 
+system.time(ddR <- dada(derepRs[1:60], err = NULL, 
+			selfConsist = TRUE, multithread = TRUE)) 
+			# Convergence after 
 
-# plotErrors(ddF)
-# plotErrors(ddR)	
+# plotErrors(ddF, nominalQ = TRUE)
+# plotErrors(ddR, nominalQ = TRUE)	
 
-dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
-dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
+dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, 
+				multithread = TRUE)
+dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, 
+				multithread = TRUE)
+# Join forward and reverse reads, corrected for seq errors
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(mergers)
-
+# number of samples and uniq seqs
 dim(seqtab.all)
-
-## [1]  96 9252
 
 # Inspect distribution of sequence lengths
 table(nchar(getSequences(seqtab.all)))
+hist(nchar(getSequences(seqtab.all)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(250, 500, by = 10)))
 
-##
-## 251 252 253 254 255
-##   1  87 192   6   2
+# pick expected and abundant sequence lengths and check again
+seqtab2 <- seqtab.all[,nchar(colnames(seqtab.all)) %in% seq(390, 450)]
 
-hist(nchar(getSequences(seqtab.all)), main="Distribution of sequence lengths")
+table(nchar(getSequences(seqtab2)))
+hist(nchar(getSequences(seqtab2)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(390, 450, by = 5)))
 
-seqtab <- removeBimeraDenovo(seqtab.all, multithread = TRUE)
+# remove chimera based on denoised sequences
+# checks if both parts of a contig represents either part of more abundant seqs
+seqtab2.nochim <- removeBimeraDenovo(seqtab2, method = "consensus", 
+					multithread = TRUE, verbose = TRUE)
+
+# number of samples and uniq seqs
+dim(seqtab2.nochim)
+
+# ratio of non-chimeric to total seqs
+# chimeras can make up many but low abundant seqs
+sum(seqtab2.nochim)/sum(seqtab2)
 
 # include deseq2 here?
 # we could probably combine the different sequencing runs here before assigning taxonomy
