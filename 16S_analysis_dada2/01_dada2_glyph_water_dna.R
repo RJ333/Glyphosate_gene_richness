@@ -88,19 +88,56 @@ ddF <- dada(derepFs[1:60], err = NULL,
 		
 ddR <- dada(derepRs[1:60], err = NULL, 
 			selfConsist = TRUE, multithread = TRUE) 
-			# 
+			# Convergence after 6 rounds
 			
-plotErrors(ddF)
-# plotErrors(ddR)	
+plotErrors(ddF, nominalQ = TRUE)
+plotErrors(ddR, nominalQ = TRUE)	
 
-dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
+dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) 
 dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(mergers)
-seqtab <- removeBimeraDenovo(seqtab.all)
+# number of samples and uniq seqs
+dim(seqtab.all)
 
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab.all)))
+hist(nchar(getSequences(seqtab.all)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(250, 500, by = 10)))
+
+# pick expected and abundant sequence lengths and check again
+seqtab2 <- seqtab.all[,nchar(colnames(seqtab.all)) %in% seq(392, 448)]
+
+table(nchar(getSequences(seqtab2)))
+hist(nchar(getSequences(seqtab2)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(390, 450, by = 5)))
+	
+# remove chimera based on denoised sequences
+# checks if both parts of a contig represents either part of more abundant seqs
+seqtab2.nochim <- removeBimeraDenovo(seqtab2, method = "consensus", 
+					multithread = TRUE, verbose = TRUE)
+
+# number of samples and uniq seqs
+dim(seqtab2.nochim)
+
+# ratio of non-chimeric to total seqs
+# chimeras can make up many but low abundant seqs
+sum(seqtab2.nochim)/sum(seqtab2)
+
+
+# not tested
+table(nchar(getSequences(seqtab2.nochim)))
+hist(nchar(getSequences(seqtab2.nochim)), 
+	main = "Distribution of sequence lengths", 
+	breaks = (seq(390, 450, by = 5)))
+	
+	
+	
+	
 # include deseq2 here?
 # we could probably combine the different sequencing runs here before assigning taxonomy
 
