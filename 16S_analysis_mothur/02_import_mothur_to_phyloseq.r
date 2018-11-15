@@ -1,23 +1,24 @@
 # Set the working dir with mothur files in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
-
+save.image("mothur_glyph.RData")
+load("mothur_glyph.RData")
 # define required packages
-library("knitr")
-library("BiocStyle")
+# library("knitr")
+# library("BiocStyle")
 
-.cran_packages <- c("ggplot2", "gridExtra")
-.bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
+# .cran_packages <- c("ggplot2", "gridExtra")
+# .bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
 
-.inst <- .cran_packages %in% installed.packages()
-if(any(!.inst)) {
-   install.packages(.cran_packages[!.inst])
-}
+# .inst <- .cran_packages %in% installed.packages()
+# if(any(!.inst)) {
+   # install.packages(.cran_packages[!.inst])
+# }
 
-.inst <- .bioc_packages %in% installed.packages()
-if(any(!.inst)) {
-   source("http://bioconductor.org/biocLite.R")
-   biocLite(.bioc_packages[!.inst], ask = F)
-}
+# .inst <- .bioc_packages %in% installed.packages()
+# if(any(!.inst)) {
+   # source("http://bioconductor.org/biocLite.R")
+   # biocLite(.bioc_packages[!.inst], ask = F)
+# }
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
@@ -37,24 +38,39 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 rank_names(mothur_ps)
   
 # adjust taxonomy header
-colnames(tax_table(mothur_ps)) <- c(k = "Kingdom", p = "Phylum", c= "Class", 
-									o = "Order", f = "Family", g = "Genus" )
+colnames(tax_table(mothur_ps)) <- c(k = "kingdom", p = "phylum", c= "class", 
+									o = "order", f = "family", g = "genus" )
 									
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta.tsv", row.names = 1, header = TRUE)
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta.tsv", 
+						row.names = 1, 
+						header = TRUE)
 metafile2 <- sample_data(metafile)
 
 # read OTU representative sequences, for generation of file check gitlab #59
-OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", format = "fasta",
-               nrec = -1L, skip = 0L, seek.first.rec = FALSE, use.names = TRUE)
+OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", 
+							  format = "fasta",
+							  nrec = -1L, skip = 0L, 
+							  seek.first.rec = FALSE, 
+							  use.names = TRUE)
 
 mothur_ps2 <- merge_phyloseq(mothur_ps, metafile2, refseq(OTU_seqs))
 
-mothur_ps3 <- filter_taxa(mothur_ps, function (x) {sum(x > 0) > 1}, prune=TRUE)
+mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 1}, prune=TRUE)
+mothur_ps3_ra <- transform_sample_counts(mothur_ps3, function(x){(x / sum(x)) * 100})
+mothur_ra_melt <- psmelt(mothur_ps3_ra)
+# need to remove "Sample" to average the parallels
 
+mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
+								+ treatment + nucleic_acid + habitat + disturbance 
+								+ cell_counts + glyphosate + glyphosate_gone 
+								+ kingdom + phylum + class + order + family + genus, 
+								data = mothur_ra_melt, 
+								mean)
+								
 # this changes the header from the actual sequence to Seq_001, Seq_002 etc
 taxa_names(mothur_ps)
 
@@ -78,11 +94,13 @@ dm <- dist.ml(phang.align)
 treeNJ <- NJ(dm) # Note, tip order != sequence order
 fit = pml(treeNJ, data = phang.align)
 
-# then fit a GTR+G+I maximum likelihood tree using the neighbor-joining tree as a starting point.
+# then fit a GTR+G+I maximum likelihood tree 
+# using the neighbor-joining tree as a starting point.
 fitGTR <- update(fit, k = 4, inv = 0.2)
 # the following step takes longer
 fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
-                      rearrangement = "stochastic", control = pml.control(trace = 0))
+                      rearrangement = "stochastic", 
+					  control = pml.control(trace = 0))
 detach("package:phangorn", unload=TRUE)
 
 # generate taxonomy from tax table as df
@@ -90,7 +108,7 @@ wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
                   [c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")], 
 				  sep = "__"))
 				  
-# generate otu table
+# generate otu table with taxonomy as dataframe
 otu_export <- as.data.frame(otu_table(mothur_ps))
 tmp <- names(otu_export)
 
@@ -100,9 +118,5 @@ names(tmp)[i] = paste(wholetax[i], tmp[i], sep = "__")
 
 names(otu_export) <- names(tmp)
 
-
-# bind meta data
-
-# generate tree
 
 
