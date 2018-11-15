@@ -44,3 +44,10 @@ fitGTR <- update(fit, k = 4, inv = 0.2)
 fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
                       rearrangement = "stochastic", control = pml.control(trace = 0))
 detach("package:phangorn", unload=TRUE)
+
+# get this into phyloseq
+ps_dada <- phyloseq(tax_table(taxtab), 
+					otu_table(water_seqtable, 
+							  taxa_are_rows = FALSE), 
+					phy_tree(fitGTR$tree),
+					#refseq(seqs))
