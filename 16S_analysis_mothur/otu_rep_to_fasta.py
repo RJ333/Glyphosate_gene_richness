@@ -22,15 +22,19 @@ args = parser.parse_args()
 
 input_filename = open(args.input_file, "r")
 output_filename = open(args.output_file, "w")
+to_replace = [".", "-"]
 
-
+def clean_fasta_alignment(symbols):
+    for symbol in symbols:
+        line.rstrip().replace(symbol, "")
+ 
 with input_filename as f:
     for line in f:
         if line.startswith(">"):
             fasta_header = re.match(r"(.+?)\|", line.split()[1]).group(1)
             output_filename.write(">" + fasta_header + "\n")
         else:
-            seq = line.rstrip().replace("-", "").replace(".", "")
+            seq = clean_fasta_alignment(to_replace)
             output_filename.write(seq + "\n")
 
 			
