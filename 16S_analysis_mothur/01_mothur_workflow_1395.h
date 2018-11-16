@@ -159,8 +159,13 @@ ssh phy-2
 screen
 /dss6/bio49/bin/mothur/mothur
 set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/)
-cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 100)
-/dss6/bio49/projects/glyphosate/reads/processed/
+# killed again with 100 cores due to memory exceedment
+// cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 100)
+// /dss6/bio49/projects/glyphosate/reads/processed/
+
+# restarted from this point, used 28 cores, set via summary.seqs
+sens.spec(cutoff=0.03, list=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, column=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist, count=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
+
 
 # mv output to subfolder cut_off_002, the rerun with cutoff 003, crashed with 100 cores
 ssh phy-2
