@@ -58,12 +58,18 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta",
 							  use.names = TRUE)
 
 mothur_ps2 <- merge_phyloseq(mothur_ps, metafile2, refseq(OTU_seqs))
+# remove OTUs with less than 3 reads
+mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 2}, prune = TRUE)
 
-mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 1}, prune=TRUE)
+# transform into relative abundance, displayed in percentage!
 mothur_ps3_ra <- transform_sample_counts(mothur_ps3, function(x){(x / sum(x)) * 100})
 mothur_ra_melt <- psmelt(mothur_ps3_ra)
-# need to remove "Sample" to average the parallels
+mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
+
+
+
+# need to remove "Sample" to average the parallels
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
 								+ cell_counts + glyphosate + glyphosate_gone 
