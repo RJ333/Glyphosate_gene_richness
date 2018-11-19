@@ -1,27 +1,25 @@
-# this script uses mothur interactively! It is not designed to run on its own
+# this script uses mothur interactively!
 
-# the first steps are a little complicated: 1) the mothur default path are not 
-# correctly pasted for the output folder, therefore you can't have the 
-# stability.files in the output folder
+# the first steps are a little complicated, not final yet: 
+# 1) the group names in the stability files are wrong (contain full path), 
+# you have to adjust them manually. "group" means sample or library 
 
-# 2) generating the stability.files in the first place sets a new input directory
-# the stability.files later needs to be adjusted manually, as the reads 
-# contain the whole path
+# 2) generating the stability.files sets a new input directory
 
 # when the stability.files is adjusted and back in the folder, 
-# where the original reads are, you
-# can continue 
-
-# this still requires a lot of playing around, not final yet
+# where the original reads are, you can continue
 
 # mothur does not like line breaks, even with \
 
 # You need to set the input and output in the same command. 
-# Mothur clears the the values that are not set when set.dir is run.
-# mothur > set.dir(input=../data/MiSeq_SOP, output=../analyses/)
-# set input dir for raw reads and output dir for all further files
-set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data/projects/glyphosate/reads/mothur_processed)
+# Mothur clears the values that are not set when calling set.dir
+
+# set input dir for raw reads and output dir for to make stability file
+set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
 set.logfile(name = glyphosate_start_1395.log)
+
+# Group names should not include :, -, or / characters
+make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S/, type = gz)
 
 # make stability file
 # in this version, the stability file needs to be adjusted manually
@@ -32,8 +30,6 @@ scp -i ~/.ssh/denbi.key /mnt/d/mothur1395/stability2.files.txt centos@193.196.20
 
 # back on VM
 mv /data/projects/glyphosate/reads/mothur_processed/stability2.files.txt /data/projects/glyphosate/reads/mothur_processed/stability.files
-# Group names should not include :, -, or / characters
-make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S/, type = gz)
 
 # make.file resets the directories, so reset them too!
 set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
@@ -62,7 +58,7 @@ get.seqs(accnos = stability.trim.contigs.trim.accnos, group = stability.contigs.
 # (can be found in the accnos file)
 screen.seqs(fasta = stability.trim.contigs.trim.fasta, group = stability.contigs.pick.groups, maxambig = 0, maxhomop = 8, maxlength = 450, minlength = 390, processors = 28) 
 
-# optional, summarises number of sequences per group (eg sample) 
+# optional, summarises number of sequences per group 
 count.groups(group = stability.contigs.pick.good.groups)
 
 # looks for unique sequences and merges identical sequences 
@@ -160,19 +156,19 @@ screen
 /dss6/bio49/bin/mothur/mothur
 set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/)
 # killed again with 100 cores due to memory exceedment
-// cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 100)
-// /dss6/bio49/projects/glyphosate/reads/processed/
+# but 60 cores and cutoff 0.02 worked
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 60)
 
-# restarted from this point, used 28 cores, set via summary.seqs
-sens.spec(cutoff=0.03, list=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, column=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist, count=/dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
-
-
-# mv output to subfolder cut_off_002, the rerun with cutoff 003, crashed with 100 cores
+# I'm also trying to repeat cluster.split() with cutoff 0.03. This crashed several times, now I'm using only 10 cores on phy-2
+# mv output to subfolder cut_off_002, the rerun with cutoff 003
 ssh phy-2
 screen
 /dss6/bio49/bin/mothur/mothur
 set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003)
-cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 60)
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 10)
+
+# you can take up the cluster.split()-steps from the sens.spec()-step. But I assume that the memory demands 
+# are already determined before ("splitting file" in the beginning of cluster.split()) and it will crash again, regardless of the number of cores set with sens.spec()
 
 # copy files back to the cloud, except for dist-file, which is huge and not needed
 # on bio-48:
@@ -212,7 +208,5 @@ get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique
 # generate a fasta file containing a representative sequence (here based on most abundant) per OTU, this will be imported to phyloseq for tree calculation
 get.oturep(method = abundance, list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.abund.fasta)
 
-
 # to copy files
 scp -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.relabund /mnt/d/data/mothur_sample/
-

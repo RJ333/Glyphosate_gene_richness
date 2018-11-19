@@ -1,7 +1,10 @@
 # Set the working dir with mothur files in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
-save.image("mothur_glyph.RData")
 load("mothur_glyph.RData")
+
+save.image("mothur_glyph.RData")
+# if you load a workspace, you then only need to load the packages
+
 # define required packages
 # library("knitr")
 # library("BiocStyle")
@@ -34,10 +37,9 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared",
   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.0.02.cons.taxonomy", 
   parseFunction = parse_taxonomy_default)
-
-rank_names(mothur_ps)
   
 # adjust taxonomy header
+rank_names(mothur_ps)
 colnames(tax_table(mothur_ps)) <- c(k = "kingdom", p = "phylum", c= "class", 
 									o = "order", f = "family", g = "genus" )
 									
@@ -56,19 +58,19 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta",
 							  nrec = -1L, skip = 0L, 
 							  seek.first.rec = FALSE, 
 							  use.names = TRUE)
-
+# add meta data and OTU representative seqs to phyloseq object
 mothur_ps2 <- merge_phyloseq(mothur_ps, metafile2, refseq(OTU_seqs))
 # remove OTUs with less than 3 reads
 mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 2}, prune = TRUE)
-
 # transform into relative abundance, displayed in percentage!
 mothur_ps3_ra <- transform_sample_counts(mothur_ps3, function(x){(x / sum(x)) * 100})
 mothur_ra_melt <- psmelt(mothur_ps3_ra)
+# add absolute abundance (rel abundance * total cell counts)
+mothur_ra_melt$abs_Abundance <- (mothur_ra_melt$Abundance * mothur_ra_melt$cell_counts)/100
+# turn OTUs from char to factor
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
-
-
-
+# depending on the plot, we need the parallels separately or averaged
 # need to remove "Sample" to average the parallels
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
@@ -76,53 +78,30 @@ mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ kingdom + phylum + class + order + family + genus, 
 								data = mothur_ra_melt, 
 								mean)
-								
-# this changes the header from the actual sequence to Seq_001, Seq_002 etc
-taxa_names(mothur_ps)
 
-# taxa are already "Otuxxxxxx", no adjustment needed
-# n_seqs <- seq(ntaxa(mothur_ps))
-# len_n_seqs <- nchar(max(n_seqs))
-# taxa_names(mothur_ps) <- paste("Seq", formatC(n_seqs, 
-# 											width = len_n_seqs, 
-# 											flag = "0"), sep = "_")
-# taxa_names(mothur_ps)
-
-
-# generate a tree
-seqs <- getSequences(OTU_seqs)
-#names(seqs) <- seqs # This propagates to the tip labels of the tree
-alignment <- AlignSeqs(DNAStringSet(seqs), anchor = NA)
+# generate a tree to add to the phyloseq object
+# we use filtered sequences (OTU > 2 reads)
+seqs_pruned  <- refseq(mothur_ps3)
+alignment <- AlignSeqs(seqs_pruned, anchor = NA, processors = NULL)
 
 # phangorn package: we first construct a neighbor-joining tree,
 phang.align <- phyDat(as(alignment, "matrix"), type = "DNA")
+# this takes longer
 dm <- dist.ml(phang.align)
 treeNJ <- NJ(dm) # Note, tip order != sequence order
-fit = pml(treeNJ, data = phang.align)
+fit = pml(treeNJ, data = phang.align, multicore = TRUE)
+
+### below: running at the moment, not tested with this dataset, but worked before
+
 
 # then fit a GTR+G+I maximum likelihood tree 
 # using the neighbor-joining tree as a starting point.
 fitGTR <- update(fit, k = 4, inv = 0.2)
 # the following step takes longer
 fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
-                      rearrangement = "stochastic", 
+                      rearrangement = "stochastic", multicore = TRUE, 
 					  control = pml.control(trace = 0))
-detach("package:phangorn", unload=TRUE)
+detach("package:phangorn", unload = TRUE)
 
-# generate taxonomy from tax table as df
-wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
-                  [c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus")], 
-				  sep = "__"))
-				  
-# generate otu table with taxonomy as dataframe
-otu_export <- as.data.frame(otu_table(mothur_ps))
-tmp <- names(otu_export)
-
-for(i in 1:length(tmp)){
-names(tmp)[i] = paste(wholetax[i], tmp[i], sep = "__")
-}
-
-names(otu_export) <- names(tmp)
-
-
-
+# add the generated tree to phyloseq
+mothur_ps4_ra <- merge_phyloseq(mothur_ps3_ra, fitGTR)

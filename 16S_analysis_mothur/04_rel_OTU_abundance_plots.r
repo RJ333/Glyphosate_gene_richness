@@ -1,6 +1,7 @@
-# interactive R script based on psmelt-object
-# for data with parallels (not averaged)
-# generates abundance plots over time based on a list of OTUs 
+# this interactive script subsets a specific OTU and plots it relative
+# abundance in water column and biofilm over days per nucleic acid and treatment
+# the samples include parallels
+# Input is a custom list of OTUs 
 
 
 # first a vector of OTUs to be plotted with abundance threshold
@@ -30,27 +31,43 @@ current_otu_data$treatment2 <- factor(current_otu_data$treatment,
 											  labels = c("Control", "Treatment"))
 		
 current_plot <- ggplot(data = current_otu_data, 
-	                   aes(x = days - 69, y = Abundance, 
-	                   group = nucleic_acid, lty = nucleic_acid)) + 
-	geom_vline(aes(xintercept = 0), linetype = "dashed", size=1.2) +
-	geom_point(data = subset(current_otu_data, treatment == "control"), 
-		       aes(colour = treatment), alpha = 1) +
-	stat_summary(data = subset(current_otu_data, treatment == "control"), 
-	             aes(colour = treatment), fun.y = "mean",  
-				 geom = "line",  size = 2, alpha = 1) +
-	stat_summary(data = subset(current_otu_data, treatment == "glyph"), 
-	             aes(colour = treatment), fun.y = "mean",  
-				 geom = "line",  size = 2) +
-	geom_point(data = subset(current_otu_data, treatment == "glyph"), 
-	             aes(colour = treatment)) +
-	scale_linetype_manual(values = c("dna" = 1, "cdna" = 6), 
+	                   aes(x = days - 69, 
+						   y = abs_Abundance, 
+						   group = nucleic_acid, 
+						   lty = nucleic_acid)) + 
+	geom_vline(aes(xintercept = 0), 
+			   linetype = "dashed", 
+			   size = 1.2) +
+	geom_point(data = subset(abs_OTU_abundance, treatment == "control"), 
+		       aes(colour = treatment), 
+			   alpha = 1) +
+	stat_summary(data = subset(abs_OTU_abundance, treatment == "control"), 
+	             aes(colour = treatment), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2, 
+				 alpha = 1) +
+	stat_summary(data = subset(abs_OTU_abundance, treatment == "glyph"), 
+	             aes(colour = treatment), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2) +
+	geom_point(data = subset(abs_OTU_abundance, treatment == "glyph"), 
+	           aes(colour = treatment)) +
+scale_linetype_manual(values = c("dna" = 1, 
+									 "cdna" = 6), 
 						name = "Nucleic acid  ", 
-						breaks = c("cdna", "dna"), 
-						labels = c("16S rRNA", "16S rRNA gene")) +
-	scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"), 
+						breaks = c("cdna", 
+								   "dna"), 
+						labels = c("16S rRNA", 
+								   "16S rRNA gene")) +
+	scale_colour_manual(values = c("glyph" = "black", 
+								   "control" = "grey50"), 
 						name = "Microcosm  ", 
-						breaks = c("glyph", "control"), 
-						labels = c("Treatment", "Control")) +
+						breaks = c("glyph", 
+								   "control"), 
+						labels = c("Treatment", 
+								   "Control")) +
 	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
 	theme_bw() +
 	ggtitle(species_title) +
@@ -64,6 +81,6 @@ current_plot <- ggplot(data = current_otu_data,
 									  species_title, 
 									  ".png", 
 									  sep = ""), 
-						 width = 10, 
+						 width = 13, 
 						 height = 7)
 }

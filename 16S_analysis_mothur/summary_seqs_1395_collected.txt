@@ -1,4 +1,4 @@
-summary.seqs()
+# this file contains the collected summary.seqs() output during the mothur workflow
 
 ########trimmed good qual
 mothur > summary.seqs(fasta = stability.trim.contigs.trim.fasta, processors = 28)
