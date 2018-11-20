@@ -1,3 +1,8 @@
+# this workflow describes how to import data from mothur into phyloseq. For full
+# usage, you need a shared, a constaxonomy, a metadata and a otu_rep.fasta file
+# a tree is optional, but will be generated within R anyway.
+
+
 # Set the working dir with mothur files in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
 load("mothur_glyph.RData")
@@ -40,8 +45,12 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
   
 # adjust taxonomy header
 rank_names(mothur_ps)
-colnames(tax_table(mothur_ps)) <- c(k = "kingdom", p = "phylum", c= "class", 
-									o = "order", f = "family", g = "genus" )
+colnames(tax_table(mothur_ps)) <- c(k = "kingdom", 
+									p = "phylum", 
+									c = "class", 
+									o = "order", 
+									f = "family", 
+									g = "genus" )
 									
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
@@ -55,7 +64,8 @@ metafile2 <- sample_data(metafile)
 # read OTU representative sequences, for generation of file check gitlab #59
 OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", 
 							  format = "fasta",
-							  nrec = -1L, skip = 0L, 
+							  nrec = -1L, 
+							  skip = 0L, 
 							  seek.first.rec = FALSE, 
 							  use.names = TRUE)
 # add meta data and OTU representative seqs to phyloseq object
@@ -98,9 +108,13 @@ fit = pml(treeNJ, data = phang.align, multicore = TRUE)
 # using the neighbor-joining tree as a starting point.
 fitGTR <- update(fit, k = 4, inv = 0.2)
 # the following step takes longer
-fitGTR <- optim.pml(fitGTR, model = "GTR", optInv = TRUE, optGamma = TRUE,
-                      rearrangement = "stochastic", multicore = TRUE, 
-					  control = pml.control(trace = 0))
+fitGTR <- optim.pml(fitGTR, 
+					model = "GTR", 
+					optInv = TRUE, 
+					optGamma = TRUE,
+                    rearrangement = "stochastic", 
+					multicore = TRUE, 
+					control = pml.control(trace = 1))
 detach("package:phangorn", unload = TRUE)
 
 # add the generated tree to phyloseq

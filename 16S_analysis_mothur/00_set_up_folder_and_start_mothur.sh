@@ -18,8 +18,12 @@ ln -s /data/db/silva.seed_v132.align /data/projects/glyphosate/reads/mothur_proc
 # as they are the source for dada2 run-separated processing
 ln -s /data/projects/glyphosate/reads/raw_reads_16S/*/*.gz /data/projects/glyphosate/reads/raw_reads_16S/
 
-# create conda environment for mothur on chandler-1
+# create conda environment for mothur on chandler-1, make sure channels are configured
 conda create -n mothur_1395 mothur=1.39.5
 
 # if vsearch is missing in conda environment and you have another mothur version installed
 cp /data/programs/mothur/vsearch /home/centos/miniconda3/envs/mothur_1395/bin/
+
+# start mothur
+conda activate mothur_1395
+mothur
