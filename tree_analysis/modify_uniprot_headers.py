@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# I guess this script modifies uniprot headers? :-)
+
 # use python2
 
 import re

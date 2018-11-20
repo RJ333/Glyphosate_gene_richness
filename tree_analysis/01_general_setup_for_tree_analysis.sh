@@ -1,6 +1,8 @@
 #!/usr/bin/bash
 
-# set up the general folder structure and get your sample data
+# this script prepares the prokka annotation tables 
+# from different samples for the MSA analysis and
+# sets up the general directory structure
 
 # directories of original data
 BASE_DIR=/data/Rene/glyph/tree/

@@ -1,9 +1,10 @@
+# this interactive bash script generates a tree from a chosen gene
+# towards the calculation of the tree
+
 ## TO DO
 # add variables
 # include sequence length in distribution plot
 # check number of sequences for prokka and ref > 0
-
-
 
 cd /data/Rene/glyph/trees_degradation/msa
 mkdir phnJ
