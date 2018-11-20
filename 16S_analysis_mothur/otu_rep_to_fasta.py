@@ -31,8 +31,8 @@ def clean_fasta_alignment(line, symbols):
     return line
 
 # this is the actual formatting process
-with input_filename as f:
-    for line in f:
+with input_filename as fasta:
+    for line in fasta:
         if line.startswith(">"):
             fasta_header = re.match(r"(.+?)\|", line.split()[1]).group(1)
             output_filename.write(">" + fasta_header + "\n")
