@@ -16,11 +16,9 @@ parser.add_argument("-i", "--input_file", dest = "input_file", type = str,
                     help = "input file (get.oturep() fasta file from mothur)")
 parser.add_argument("-o", "--output_file", dest = "output_file", type = str,
 					default = None, required = True, action = "store",
-                    help="output file")
+                    help = "output file")
 args = parser.parse_args()
 
-input_filename = open(args.input_file, "r")
-output_filename = open(args.output_file, "w")
 seq_gap_symbol = [".", "-"]
 
 def clean_fasta_alignment(line, symbols):
@@ -38,12 +36,11 @@ def clean_fasta_alignment(line, symbols):
         line = line.rstrip().replace(symbol, "")
     return line
 
-# this is the actual formatting process
-with input_filename as fasta:
-    for line in fasta:
+with open(args.input_file) as open_fasta_line, open(args.output_file, "w") as open_output_file:
+    for line in open_fasta_line:
         if line.startswith(">"):
             fasta_header = re.match(r"(.+?)\|", line.split()[1]).group(1)
-            output_filename.write(">" + fasta_header + "\n")
+            open_output_file.write(">" + fasta_header + "\n")
         else:
             seq = clean_fasta_alignment(line, seq_gap_symbol)
-            output_filename.write(seq + "\n")
+            open_output_file.write(seq + "\n")
