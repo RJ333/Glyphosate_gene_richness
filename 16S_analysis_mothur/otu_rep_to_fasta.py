@@ -19,13 +19,19 @@ parser.add_argument("-o", "--output_file", dest = "output_file", type = str,
                     help="output file")
 args = parser.parse_args()
 
-# set variables for input, output and gap symbols
 input_filename = open(args.input_file, "r")
 output_filename = open(args.output_file, "w")
-to_replace = [".", "-"]
+seq_gap_symbol = [".", "-"]
 
-# this function removes gap symbols
 def clean_fasta_alignment(line, symbols):
+	"""
+	the for loop deletes the gap symbols in each fasta line.
+	
+	Args:
+        line (str)
+        symbols (str): The characters to be removed from the fasta sequence           Second line of description should be indented.
+
+	"""
     for symbol in symbols:
         line = line.rstrip().replace(symbol, "")
     return line
@@ -37,5 +43,6 @@ with input_filename as fasta:
             fasta_header = re.match(r"(.+?)\|", line.split()[1]).group(1)
             output_filename.write(">" + fasta_header + "\n")
         else:
-            seq = clean_fasta_alignment(line, to_replace)
+            seq = clean_fasta_alignment(line, seq_gap_symbol)
             output_filename.write(seq + "\n")
+
