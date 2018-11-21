@@ -118,4 +118,4 @@ fitGTR <- optim.pml(fitGTR,
 detach("package:phangorn", unload = TRUE)
 
 # add the generated tree to phyloseq
-mothur_ps4_ra <- merge_phyloseq(mothur_ps3_ra, fitGTR)
+mothur_ps4_ra <- merge_phyloseq(mothur_ps3_ra, phy_tree(fitGTR$tree))
