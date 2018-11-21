@@ -26,7 +26,7 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 
 
-ps_dna_water <- subset_samples(mothur_ps3_ra, nucleic_acid == "dna" & 
+ps_dna_water <- subset_samples(mothur_ps4_ra, nucleic_acid == "dna" & 
 											  habitat == "water")
 # turn days into factors for plotting
 sample_data(ps_dna_water)$days <- as.factor(sample_data(ps_dna_water)$days)
