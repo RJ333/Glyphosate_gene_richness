@@ -26,11 +26,13 @@ seq_gap_symbol = [".", "-"]
 def clean_fasta_alignment(line, symbols):
 	"""
 	the for loop deletes the gap symbols in each fasta line.
-	
+
 	Args:
         line (str)
-        symbols (str): The characters to be removed from the fasta sequence           Second line of description should be indented.
+        symbols (str): The characters to be removed from the fasta sequence
 
+	Return:
+		sequence lines without gap chars
 	"""
     for symbol in symbols:
         line = line.rstrip().replace(symbol, "")
@@ -45,4 +47,3 @@ with input_filename as fasta:
         else:
             seq = clean_fasta_alignment(line, seq_gap_symbol)
             output_filename.write(seq + "\n")
-
