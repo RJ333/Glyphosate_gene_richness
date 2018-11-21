@@ -39,6 +39,7 @@ def clean_fasta_alignment(line, symbols):
 with open(args.input_file) as open_fasta_line, open(args.output_file, "w") as open_output_file:
     for line in open_fasta_line:
         if line.startswith(">"):
+			# line.split selects the part of the header to look for regex
             fasta_header = re.match(r"(.+?)\|", line.split()[1]).group(1)
             open_output_file.write(">" + fasta_header + "\n")
         else:
