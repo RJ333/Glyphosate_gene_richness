@@ -36,12 +36,12 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 # import mothur output into phyloseq
 mothur_ps <- import_mothur(mothur_list_file = NULL, 
-  mothur_group_file = NULL,
-  mothur_tree_file = NULL, 
-  cutoff = NULL, 
-  mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared",
-  mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.0.02.cons.taxonomy", 
-  parseFunction = parse_taxonomy_default)
+						   mothur_group_file = NULL,
+						   mothur_tree_file = NULL, 
+						   cutoff = NULL, 
+						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared",
+						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.0.02.cons.taxonomy", 
+						   parseFunction = parse_taxonomy_default)
   
 # adjust taxonomy header
 rank_names(mothur_ps)
@@ -51,6 +51,17 @@ colnames(tax_table(mothur_ps)) <- c(k = "kingdom",
 									o = "order", 
 									f = "family", 
 									g = "genus" )
+
+### to implement! https://github.com/joey711/phyloseq/issues/547
+# Alternatively, I always like to add my OTUs as their own column in the tax_table which i do this way:
+tax_table(physeq) <- cbind(tax_table(physeq), 
+    rownames(tax_table(physeq)))
+colnames(tax_table(physeq)) <- 
+  c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "OTUID")
+#Then you can filter OTUs in your dataset the same way you would any other taxonomic level									
+
+
+									
 									
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
