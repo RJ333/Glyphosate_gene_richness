@@ -15,76 +15,160 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 # this is copied from a tutorial from:
 # https://joey711.github.io/phyloseq/plot_ordination-examples.html
 
-# subset_samples(GlobalPatterns, SampleType=="Ocean")
 
 
+# careful! subset_samples does not work inside functions 
+# https://github.com/joey711/phyloseq/issues/487
+
+
+# set variables
+ps <- mothur_ps4_ra
+acids <- c("dna", "cdna")
+habitats <- c("water", "biofilm")
+min_OTU_counts <- 5
+after_day <- 44
+sample_subset_list <- list() 
+
+ordinations <- c("CCA", "NMDS")
+
+# for testing the function
+ps = mothur_ps4_ra
+nucleic_acid = "cdna"
+habitat = "water"
+threshold = 5
+
+
+get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
+	sample_subset <- sample_data(ps)[ which(sample_data(ps2)$nucleic_acid == nucleic_acid & 
+											sample_data(ps2)$habitat == habitat & 
+											sample_data(ps2)$days > days),]
+	phy_subset <- merge_phyloseq(tax_table(ps), 
+								 otu_table(ps),
+								 phy_tree(ps),
+								 refseq(ps),
+								 sample_subset)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) > threshold}, prune = TRUE)
+	return(phy_subset2)
+}
+
+if(length(sample_subset_list) == 0) {
+	for (acid in acids){
+		for (habitat in habitats) {
+			print(paste0("nucleic_acid is ", acid, " and habitat is ", habitat))
+			sample_subset_list[[length(sample_subset_list)+1]] <- 
+				get_sample_subsets(ps = ps, 
+								   nucleic_acid = acid, 
+								   habitat = habitat, 
+								   days = after_day, 
+								   threshold = threshold)
+		}
+	}
+print(sample_subset_list)
+} else {
+	print("list is not empty, abort to prevend appending...")
+}
+
+
+
+
+
+
+GP.ord <- ordinate(dna_water_5_44, "NMDS", "bray", autotransform = FALSE)
+plot_ordination(dna_water_5_44, GP.ord, type="sample", color="days", shape="treatment") + 
+	 geom_polygon(aes(fill=disturbance)) + 
+	 geom_point(size=5) + 
+	 ggtitle("dna_water_nmds") +
+	 geom_text(aes(label = new_day), colour = "black", size = 2)
 
 
 # Remove OTUs that do not show appear more than 5 times in more than half the samples
 # wh0 = genefilter_sample(GP, filterfun_sample(function(x) x > 5), A=0.5*nsamples(GP))
 # GP1 = prune_taxa(wh0, GP)
 
-
+# remove data from sample -25-days?? 
 
 ps_dna_water <- subset_samples(mothur_ps4_ra, nucleic_acid == "dna" & 
-											  habitat == "water")
+													habitat == "water" &
+													days > 44,
+													prune = TRUE)
+										  
+ps_dna_water1 <- filter_taxa(ps_dna_water, function (x) {sum(x > 0) > 1}, prune = TRUE)
 # turn days into factors for plotting
-sample_data(ps_dna_water)$days <- as.factor(sample_data(ps_dna_water)$days)
-GP1 = ps_dna_water
+sample_data(ps_dna_water1)$days <- as.factor(sample_data(ps_dna_water1)$days)
+GP1 = ps_dna_water1
 
 # (1) Just OTUs
 
 # Let’s start by plotting just the OTUs, and shading the points by Phylum. 
 # Note that even in our “trimmed” dataset there are ntaxa(GP1)= 204 OTUs.
 
-GP.ord <- ordinate(GP1, "NMDS", "bray")
-p1 <- plot_ordination(GP1, GP.ord, type="taxa", color="phylum", title="taxa") +
-			facet_wrap(~phylum, 3)
+#GP.ord <- ordinate(GP1, "NMDS", "bray")
+# p1 <- plot_ordination(GP1, GP.ord, type="taxa", color="phylum", title="taxa") +
+			# facet_wrap(~phylum, 3)
 		
-print(p1)
-
-# (2) Just samples
-
-# Next, let’s plot only the samples, and shade the points by “SampleType” 
-# while also modifying the shape according to whether they are human-associated. 
-# There are a few additional ggplot2 layers added to make the plot even nicer…
-
-p2 = plot_ordination(GP1, GP.ord, type="sample", color="days", shape="treatment") 
-p2 + geom_polygon(aes(fill=nucleic_acid)) + geom_point(size=5) + ggtitle("samples")
+# print(p1)
 
 
-##### below not possible without phytree object!!
+GP.ord <- ordinate(GP1, "NMDS", "bray", autotransform = FALSE)
+plot_ordination(GP1, GP.ord, type="sample", color="days", shape="treatment") + 
+	 geom_polygon(aes(fill=disturbance)) + 
+	 geom_point(size=5) + 
+	 ggtitle("dna_water_nmds") +
+	 geom_text(aes(label = new_day), colour = "black", size = 2)
+	 
+	 
+	 
+# CCA plot	 
+#cca.phyloseq() apparently does not exist anymore
 
-# In this section I loop through different method parameter options to the 
-# plot_ordination function, store the plot results in a list, and then plot 
-# these results in a combined graphic using ggplot2.
+ps_dna_water_44 <- subset_samples(mothur_ps4_ra, nucleic_acid == "dna" & 
+													habitat == "water" &
+													days > 44,
+													prune = TRUE)
+										  
+ps_dna_water_44_1 <- filter_taxa(ps_dna_water_44, function (x) {sum(x > 0) > 1}, prune = TRUE)
+sample_data(ps_dna_water_44_1)$days <- as.factor(sample_data(ps_dna_water_44_1)$days)
+test <- ordinate(ps_dna_water_44_1, "CCA", ~ glyphosate, try = 100, autotransform = FALSE)
 
-require(plyr)
-dist = "bray"
-ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
-plist = llply(as.list(ord_meths), function(i, physeq, dist){
-        ordi = ordinate(physeq, method = i, distance = dist)
-        plot_ordination(physeq, ordi, "samples", color = "days", shape = "treatment")
-}, GP1, dist)
-names(plist) <- ord_meths
+plot_ordination(ps_dna_water_44_1, test, type="sample", color="days", shape="treatment") + 
+	 geom_polygon(aes(fill=disturbance)) + 
+	 geom_point(size=5) + 
+	 ggtitle("dna_water_cca") +
+	 geom_text(aes(label = new_day), colour = "black", size = 3)
 
-# The following chunk will extract the data from each of those individual plots, 
-# and put it back together in one big data.frame suitable 
-# for including all plots in one graphic.
 
-pdataframe = ldply(plist, function(x){
-    df = x$data[, 1:2]
-    colnames(df) = c("Axis_1", "Axis_2")
-    return(cbind(df, x$data))
-})
-names(pdataframe)[1] = "method"
+## dna_biofilm nmds
 
-# Now that all the ordination results are combined in one data.frame, called 
-# pdataframe, we can use this to make a standard faceted ggplot scatterplot.
-
-p = ggplot(pdataframe, aes(Axis_1, Axis_2, color=SampleType, shape=human, fill=SampleType))
-p = p + geom_point(size=4) + geom_polygon()
-p = p + facet_wrap(~method, scales="free")
-p = p + scale_fill_brewer(type="qual", palette="Set1")
-p = p + scale_colour_brewer(type="qual", palette="Set1")
-p
+ps_dna_biofilm <- subset_samples(mothur_ps4_ra, nucleic_acid == "dna" & 
+													habitat == "biofilm" &
+													days > 44,
+													prune = TRUE)
+										  
+ps_dna_biofilm1 <- filter_taxa(ps_dna_biofilm, function (x) {sum(x > 0) > 1}, prune = TRUE)
+# turn days into factors for plotting
+sample_data(ps_dna_biofilm1)$days <- as.factor(sample_data(ps_dna_biofilm1)$days)
+GP1 = ps_dna_biofilm1
+GP.ord <- ordinate(GP1, "NMDS", "bray", autotransform = FALSE)
+plot_ordination(GP1, GP.ord, type="sample", color="days", shape="treatment") + 
+	 geom_polygon(aes(fill=disturbance)) + 
+	 geom_point(size=5) + 
+	 ggtitle("dna_biofilm_nmds") +
+	 geom_text(aes(label = new_day), colour = "black", size = 3)
+	 
+## cdna_biofilm
+	 
+ps_cdna_biofilm <- subset_samples(mothur_ps4_ra, nucleic_acid == "cdna" & 
+													habitat == "biofilm" &
+													days > 44,
+													prune = TRUE)
+										  
+ps_cdna_biofilm1 <- filter_taxa(ps_cdna_biofilm, function (x) {sum(x > 0) > 1}, prune = TRUE)
+# turn days into factors for plotting
+sample_data(ps_cdna_biofilm1)$days <- as.factor(sample_data(ps_cdna_biofilm1)$days)
+GP1 = ps_cdna_biofilm1
+GP.ord <- ordinate(GP1, "NMDS", "bray", autotransform = FALSE)
+plot_ordination(GP1, GP.ord, type="sample", color="days", shape="treatment") + 
+	 geom_polygon(aes(fill=disturbance)) + 
+	 geom_point(size=5) + 
+	 ggtitle("cdna_biofilm_nmds") +
+	 geom_text(aes(label = new_day), colour = "black", size = 3)
