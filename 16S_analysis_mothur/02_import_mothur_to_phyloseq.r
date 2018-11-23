@@ -44,25 +44,17 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   parseFunction = parse_taxonomy_default)
   
 # adjust taxonomy header
+tax_table(mothur_ps) <- cbind(tax_table(mothur_ps), 
+    rownames(tax_table(mothur_ps)))
+colnames(tax_table(mothur_ps)) <- c("kingdom", 
+									"phylum", 
+									"class", 
+									"order", 
+									"family", 
+									"genus", 
+									"otu_id")
 rank_names(mothur_ps)
-colnames(tax_table(mothur_ps)) <- c(k = "kingdom", 
-									p = "phylum", 
-									c = "class", 
-									o = "order", 
-									f = "family", 
-									g = "genus" )
-
-### to implement! https://github.com/joey711/phyloseq/issues/547
-# Alternatively, I always like to add my OTUs as their own column in the tax_table which i do this way:
-tax_table(physeq) <- cbind(tax_table(physeq), 
-    rownames(tax_table(physeq)))
-colnames(tax_table(physeq)) <- 
-  c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "OTUID")
-#Then you can filter OTUs in your dataset the same way you would any other taxonomic level									
-
-
-									
-									
+											
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
 
@@ -96,7 +88,7 @@ mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
 								+ cell_counts + glyphosate + glyphosate_gone 
-								+ kingdom + phylum + class + order + family + genus, 
+								+ kingdom + phylum + class + order + family + genus + otu_id, 
 								data = mothur_ra_melt, 
 								mean)
 
