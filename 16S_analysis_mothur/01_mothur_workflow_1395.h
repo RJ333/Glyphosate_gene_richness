@@ -1,39 +1,43 @@
 # this script uses mothur interactively!
 
-# the first steps are a little complicated, not final yet: 
+# the first steps are a little complicated:
 # 1) the group names in the stability files are wrong (contain full path), 
-# you have to adjust them manually. "group" means sample or library 
+# you have to adjust them using awk. "group" means sample or library 
 
-# 2) generating the stability.files sets a new input directory
+# 2) mothur looks in different folders, but there is a pasting error with "/" so it won't work
+# until it is in the inputdir. but for some reason, the stability.files will be put into the output dir
 
-# when the stability.files is adjusted and back in the folder, 
-# where the original reads are, you can continue
+# so after creating stability.files, we move and rename it to the input folder (where the reads are)
+# we modify it using awk (outside of mothur in second shell) and then can use make.contigs
+
 
 # mothur does not like line breaks, even with \
 
 # You need to set the input and output in the same command. 
 # Mothur clears the values that are not set when calling set.dir
 
+
+# use screen or tmux or byobu!
+
 # set input dir for raw reads and output dir for to make stability file
 set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
-set.logfile(name = glyphosate_start_1395.log)
+set.logfile(name = glyphosate_water_1395.log, append = T)
 
 # Group names should not include :, -, or / characters
-make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S/, type = gz)
+# gives error ( inputdir not exist or not writable) and writes to output dir
+make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S, type = gz)
 
-# make stability file
-# in this version, the stability file needs to be adjusted manually
-# from local shell
-scp -i ~/.ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.files /mnt/d/mothur1395/
-# adjusting e.g. in excel
-scp -i ~/.ssh/denbi.key /mnt/d/mothur1395/stability2.files.txt centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+# in second shell!
+# use awk to remove the path and exchange the first column 
+# with the second column until the first underscore
+cd /data/projects/glyphosate/reads/mothur_processed
+mv stability.files /data/projects/glyphosate/reads/raw_reads_16S/stabil.temp
+cd  /data/projects/glyphosate/reads/raw_reads_16S/
+awk 'BEGIN{OFS="\t"}; {sub(".*/", "", $2); sub(".*/", "", $3); print $1, $2, $3}' stabil.temp |\
+awk 'BEGIN{FS = "_| "; OFS = "\t"}; {print $1, $0}' | awk 'BEGIN{OFS = "\t"}; {print $2, $4, $5}' > stability.files
 
-# back on VM
-mv /data/projects/glyphosate/reads/mothur_processed/stability2.files.txt /data/projects/glyphosate/reads/mothur_processed/stability.files
-
-# make.file resets the directories, so reset them too!
-set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
-make.contigs(file = stability.files, processors = 28)
+# make contigs from forward and reverse, using the stability.files
+make.contigs(file = stability.files, processors = 27)
 
 # now we don't use the folder of the raw reads anymore
 set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data/projects/glyphosate/reads/mothur_processed)
