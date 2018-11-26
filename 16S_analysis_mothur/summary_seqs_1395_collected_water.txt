@@ -1,0 +1,72 @@
+# mothur 1.39.5  on phoebe3, only water, no controls
+# make contigs
+It took 2982 secs to process 26483809 sequences.
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       35      35      0       3       1
+2.5%-tile:      1       439     439     0       4       662096
+25%-tile:       1       440     440     0       4       6620953
+Median:         1       440     440     0       5       13241905
+75%-tile:       1       465     465     1       5       19862857
+97.5%-tile:     1       465     465     12      6       25821714
+Maximum:        1       602     602     128     300     26483809
+Mean:   		1       447.918 447.918 1.41176 4.96785
+# of Seqs:      26483809
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.summary
+
+It took 70 secs to summarize 26483809 sequences.
+
+# after trimming, good
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       4       4       0       1       1
+2.5%-tile:      1       401     401     0       4       583620
+25%-tile:       1       402     402     0       4       5836193
+Median:         1       402     402     0       5       11672386
+75%-tile:       1       427     427     1       5       17508579
+97.5%-tile:     1       427     427     11      6       22761152
+Maximum:        1       562     562     71      275     23344771
+Mean:   		1       409.834 409.834 1.28736 4.66236
+# of Seqs:      23344771
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.summary
+
+It took 62 secs to summarize 23344771 sequences.
+
+
+# after trimming, scrap
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       35      35      0       3       1
+2.5%-tile:      1       436     436     0       4       78476
+25%-tile:       1       440     440     0       4       784760
+Median:         1       440     440     0       5       1569520
+75%-tile:       1       465     465     2       6       2354279
+97.5%-tile:     1       565     565     17      8       3060563
+Maximum:        1       602     602     128     300     3139038
+Mean: 		    1       448.549 448.549 2.33694 5.54615
+# of Seqs:      3139038
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.scrap.summary
+
+It took 8 secs to summarize 3139038 sequences.
+
+# after unique seqs and removal of low quality reads
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       390     390     0       3       1
+2.5%-tile:      1       402     402     0       4       387647
+25%-tile:       1       402     402     0       4       3876462
+Median:         1       402     402     0       5       7752924
+75%-tile:       1       427     427     0       5       11629386
+97.5%-tile:     1       427     427     0       6       15118201
+Maximum:        1       450     450     0       8       15505847
+Mean:   		1       409.077 409.077 0       4.63338
+# of unique seqs:       1071143
+total # of seqs:        15505847
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.summary
+
+It took 13 secs to summarize 15505847 sequences.
