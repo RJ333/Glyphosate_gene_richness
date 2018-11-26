@@ -59,10 +59,12 @@ rank_names(mothur_ps)
 # phyloseq performs an inner joint!
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta.tsv", 
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond.tsv", 
 						row.names = 1, 
-						header = TRUE)
+						header = TRUE,
+						na.strings = "")
 metafile2 <- sample_data(metafile)
+
 
 # read OTU representative sequences, for generation of file check gitlab #59
 OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", 
