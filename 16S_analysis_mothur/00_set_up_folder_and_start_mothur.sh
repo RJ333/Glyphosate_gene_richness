@@ -10,20 +10,23 @@ wget -O /data/db/Silva.nr_v132.tgz 'https://mothur.org/w/images/3/32/Silva.nr_v1
 cd /data/db 
 tar -xvzf /data/db/Silva.seed_v132.tgz
 tar -xvzf /data/db/Silva.nr_v132.tgz
-# link 
+# link (make sure databases are present, as link will be created anyway)
 ln -s /data/db/silva.seed_v132.align /data/projects/glyphosate/reads/mothur_processed
 
 # create soft links to gzipped read files in one mothur target folder
 # the physical reads are kept in seperate folders
-# as they are the source for dada2 run-separated processing
-ln -s /data/projects/glyphosate/reads/raw_reads_16S/*/*.gz /data/projects/glyphosate/reads/raw_reads_16S/
-
-# create conda environment for mothur on chandler-1, make sure channels are configured
+# as they are the source for dada2 run-separated processing (only water samples, no controls)
+ln -s /data/projects/glyphosate/reads/raw_reads_16S/water*/*.gz /data/projects/glyphosate/reads/raw_reads_16S/
+cd /data/projects/glyphosate/reads/raw_reads_16S/
+rm *pos*.gz
+rm *neg*.gz
+# create conda environment for mothur, make sure channels are configured
 conda create -n mothur_1395 mothur=1.39.5
 
 # if vsearch is missing in conda environment and you have another mothur version installed
 cp /data/programs/mothur/vsearch /home/centos/miniconda3/envs/mothur_1395/bin/
-
+# or from bio-48
+scp -i /data/Rene/ssh/denbi.key /data/bin/mothur/vsearch centos@193.196.20.103:/home/centos/miniconda3/envs/mothur_1395/bin/
 # start mothur
 conda activate mothur_1395
 mothur
