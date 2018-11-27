@@ -59,7 +59,7 @@ rank_names(mothur_ps)
 # phyloseq performs an inner joint!
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond.tsv", 
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond2.tsv", 
 						row.names = 1, 
 						header = TRUE,
 						na.strings = "")
