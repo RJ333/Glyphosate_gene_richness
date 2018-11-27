@@ -130,13 +130,21 @@ do.call("grid.arrange", c(shannon,
 # set day 62 and 69 to untreated and 72, 76, 79, 83 ,86 to treated
 # sampleData(GP)$human <- getVariable(GP, "SampleType") %in% c("Feces", "Mock", "Skin", "Tongue")
 
-waterdna <- subset_samples(mothur_div, habitat == "water" & 
-									   nucleic_acid == "dna", 
+ttest_list <- list()
+richness_subset_list <- list()
+richness_subset_list[["water_cdna_control"]] <- watercdnacontrol2
+richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
+richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
+richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
+
+biofilmcdnaglyph <- subset_samples(mothur_div, habitat == "biofilm" & 
+									   nucleic_acid == "cdna" &
+									   treatment == "glyph",
 									   prune = TRUE)
 # update the counts (singletons were removed already)
-waterdna2 <- filter_taxa(waterdna, function (x) {sum(x > 0) > 1}, prune = TRUE)
+biofilmcdnaglyph2 <- filter_taxa(biofilmcdnaglyph, function (x) {sum(x > 0) > 1}, prune = TRUE)
 # calculate measures
-erich <- estimate_richness(waterdna2, measures = c("Observed", 
+erich <- estimate_richness(biofilmcdnaglyph2, measures = c("Observed", 
 												   "Chao1", 
 												   "ACE", 
 												   "Shannon", 
@@ -144,14 +152,18 @@ erich <- estimate_richness(waterdna2, measures = c("Observed",
 												   "InvSimpson", 
 												   "Fisher"))
 # perform t test with measures												   
-ttest <- t(sapply(erich, function(x) unlist(t.test(x~sample_data(waterdna2)$condition)[c("estimate",
-																						 "p.value",
-																						 "statistic",
-																						 "conf.int")])))
-ttest	
+ttest <- t(sapply(erich, function(x) unlist(t.test(x~sample_data(biofilmcdnaglyph2)$condition)[c("estimate",
+																							  "p.value",
+																							   "statistic",
+																							   "conf.int")])))
 
+
+ttest_cdnabiofilmglyph <- ttest																						 
+
+ttest_list[["cdnabiofilmglyph"]] <- ttest_cdnabiofilmglyph	
+richness_subset_list[["biofilm_dna_control"]] <- biofilmdnacontrol2
 # plot measures only divided by condition. NA marks samples neither treated or untreated
-plot_richness(waterdna2, x = "condition", 
+plot_richness(waterdnaglyph2, x = "condition", 
 						 color = "new_day", 
 						 measures = c("Observed", 
 									  "Chao1", 
