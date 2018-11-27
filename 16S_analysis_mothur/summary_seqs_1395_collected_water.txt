@@ -140,3 +140,40 @@ Output File Names:
 /data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.summary
 
 It took 6 secs to summarize 15450366 sequences.
+
+# after chimera removal
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       972     390     0       4       1
+2.5%-tile:      21      972     402     0       4       373547
+25%-tile:       21      972     402     0       4       3735469
+Median:         21      972     402     0       5       7470938
+75%-tile:       21      972     427     0       5       11206406
+97.5%-tile:     21      972     427     0       6       14568328
+Maximum:        21      972     440     0       8       14941874
+Mean:   		20.9999 972     409.102 0       4.62119
+# of unique seqs:       353300
+total # of seqs:        14941874
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.summary
+
+It took 6 secs to summarize 14941874 sequences.
+
+# after remove lineages
+
+                Start   End     NBases  Ambigs  Polymer NumSeqs
+Minimum:        1       972     390     0       4       1
+2.5%-tile:      21      972     402     0       4       373547
+25%-tile:       21      972     402     0       4       3735469
+Median:         21      972     402     0       5       7470938
+75%-tile:       21      972     427     0       5       11206406
+97.5%-tile:     21      972     427     0       6       14568328
+Maximum:        21      972     440     0       8       14941874
+Mean:   		20.9999 972     409.102 0       4.62119
+# of unique seqs:       353300
+total # of seqs:        14941874
+
+Output File Names:
+/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.summary
+
+It took 5 secs to summarize 14941874 sequences.
