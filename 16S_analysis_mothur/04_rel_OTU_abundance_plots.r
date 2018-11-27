@@ -38,21 +38,21 @@ current_plot <- ggplot(data = current_otu_data,
 	geom_vline(aes(xintercept = 0), 
 			   linetype = "dashed", 
 			   size = 1.2) +
-	geom_point(data = subset(abs_OTU_abundance, treatment == "control"), 
+	geom_point(data = subset(current_otu_data, treatment == "control"), 
 		       aes(colour = treatment), 
 			   alpha = 1) +
-	stat_summary(data = subset(abs_OTU_abundance, treatment == "control"), 
+	stat_summary(data = subset(current_otu_data, treatment == "control"), 
 	             aes(colour = treatment), 
 				 fun.y = "mean",  
 				 geom = "line", 
 				 size = 2, 
 				 alpha = 1) +
-	stat_summary(data = subset(abs_OTU_abundance, treatment == "glyph"), 
+	stat_summary(data = subset(current_otu_data, treatment == "glyph"), 
 	             aes(colour = treatment), 
 				 fun.y = "mean",  
 				 geom = "line", 
 				 size = 2) +
-	geom_point(data = subset(abs_OTU_abundance, treatment == "glyph"), 
+	geom_point(data = subset(current_otu_data, treatment == "glyph"), 
 	           aes(colour = treatment)) +
 scale_linetype_manual(values = c("dna" = 1, 
 									 "cdna" = 6), 
