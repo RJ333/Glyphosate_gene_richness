@@ -179,7 +179,10 @@ plot_richness(waterdnaglyph2, x = "condition",
 str(mothur_ra_melt)
 
 # highest genus abundance per habitat
-genus_max <- aggregate(Abundance ~ genus + habitat, data = mothur_ra_melt, max)
+genus_max <- aggregate(Abundance ~ genus + family + habitat, data = mothur_ra_melt, max)
+#genus_max <- aggregate(Abundance ~ genus + family + habitat, data = deseq_melt, max)
+genus_max$Abundance <- round(genus_max$Abundance, 2)
+genus_max[order(-genus_max$Abundance),]
 
 # number of OTUs per genus
 genus_distribution <- aggregate(Abundance ~ OTU + habitat + genus, 
