@@ -170,7 +170,14 @@ sigtabs_list$biofilm_control_cdna_min_reads_per_OTU_1
 # extract column from list in R "otu_id" for VENN diagram, get counts with "length"
 # https://stackoverflow.com/questions/28305685/get-column-from-list-of-dataframes-r
 
+# create a list of all identified OTUs in sigtabs_list
+deseq_otus <- row.names(sigtabs_list[[1]])
+for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[i]])))}
+
 A <- row.names(sigtabs_list[[1]])
+
+
+sigtabs_list[1][1]
 B <- row.names(sigtabs_list[[3]])
 A %in% B
 
@@ -179,6 +186,8 @@ setdiff(A,B)
 setdiff(B,A)
 intersect(intersect(A,B),C)
 Reduce(intersect, list(A,B,C))
+
+# merge outputs from list by row.names
 
 # plot from otu_id and ps_subset
 # we could use the OTU_list function from 04_abs_OTU_abundance_plots
