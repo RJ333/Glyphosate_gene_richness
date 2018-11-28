@@ -146,33 +146,23 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.
 
 # as it is only water samples and the files are not so big, I'll give it a first try on my VM
 # (memory intensive, performed on phy-2 with 1.39.5)
+# crashed as hard drive was full
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 10)
 
 # store private key at bio48/49, adjust to chmod 600, 
 # use to copy data from denbi-cloud to bio-48 
 
 # on bio-48:
-#cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
-#scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta .
-#scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table .
-#scp -i /data/Rene/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy .
+cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta .
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table .
+scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy .
 
-# then run mothur, make sure to get the right version and use screen/tmux
-#ssh phy-2
-#screen
-#/dss6/bio49/bin/mothur/mothur
-#set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/)
-# killed again with 100 cores due to memory exceedment
-# but 60 cores and cutoff 0.02 worked
-#cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.02, processors = 60)
-
-# I'm also trying to repeat cluster.split() with cutoff 0.03. This crashed several times, now I'm using only 10 cores on phy-2
-# mv output to subfolder cut_off_002, the rerun with cutoff 003
-#ssh phy-2
-#screen
-#/dss6/bio49/bin/mothur/mothur
-#set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003)
-#cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 10)
+ssh phy-2
+screen
+/dss6/bio49/bin/mothur/mothur
+set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003)
+cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 25)
 
 # you can take up the cluster.split()-steps from the sens.spec()-step. But I assume that the memory demands 
 # are already determined before ("splitting file" in the beginning of cluster.split()) and it will crash again, regardless of the number of cores set with sens.spec()
@@ -180,9 +170,9 @@ cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique
 # copy files back to the cloud, except for dist-file, which is huge and not needed
 # on bio-48:
 cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
-# scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
-scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
-scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/
+scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
+scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
+scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
 
 # this is the count table with absolute values
 make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
