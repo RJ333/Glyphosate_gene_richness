@@ -167,6 +167,10 @@ names(sigtabs_list)
 sigtabs_list[[1]]
 sigtabs_list$biofilm_control_cdna_min_reads_per_OTU_1
 
+# extract water glyph samples
+test <- sigtabs_list[c(1,3)]
+# sort by log fold change
+water_glyph_sigs <- lapply(test, function(x) x[order(x$log2FoldChange),])
 # extract column from list in R "otu_id" for VENN diagram, get counts with "length"
 # https://stackoverflow.com/questions/28305685/get-column-from-list-of-dataframes-r
 
