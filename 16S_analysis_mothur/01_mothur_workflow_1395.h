@@ -170,12 +170,24 @@ cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique
 # copy files back to the cloud, except for dist-file, which is huge and not needed
 # on bio-48:
 cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
-scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
+# scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
 scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
 scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
 
 # this is the count table with absolute values
 make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
+
+# now we can classify our OTUs
+classify.otu(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, label = 0.03)
+
+count.groups(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared)
+
+# generate a fasta file containing a representative sequence (here based on most abundant) per OTU, this will be imported to phyloseq for tree calculation
+get.oturep(method = abundance, list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta)
+
+
+### below is for removal of singletons, I will not do this, as we can take care of singletons within phyloseq (and it is not always desirable to have them removed e.g. estimate richness)
+### also for generation of relative abundance, which I will also do within phyloseq
 
 # rename output file outside mothur, as this is with singletons
 mv stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list_all.shared
@@ -190,10 +202,6 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.
 # now we create a new shared file based on the new count table, where the 'singletons' have been removed
 make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, label = 0.02)
 
-# now we can classify our OTUs
-classify.otu(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, label = 0.02)
-
-count.groups(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared)
 
 # OTU table with relative abundances -> total group
 get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared)
@@ -202,8 +210,6 @@ get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique
 # OTU table with relative abundances -> average OTU
 get.relabund(shared = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared, scale = averageotu)
 
-# generate a fasta file containing a representative sequence (here based on most abundant) per OTU, this will be imported to phyloseq for tree calculation
-get.oturep(method = abundance, list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.0.02.abund.count_table, fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.0.02.abund.fasta)
 
 # to copy files
 scp -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.relabund /mnt/d/data/mothur_sample/
