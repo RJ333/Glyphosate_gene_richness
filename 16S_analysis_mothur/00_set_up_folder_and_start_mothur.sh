@@ -30,3 +30,13 @@ scp -i /data/Rene/ssh/denbi.key /data/bin/mothur/vsearch centos@193.196.20.103:/
 # start mothur
 conda activate mothur_1395
 mothur
+
+# meta data for phyloseq import from local pc
+scp -i /drives/d/ssh/denbi.key /mnt/d/all_samples_with_meta.tsv centos@193.196.20.103:/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond2.tsv
+
+# run script to adjust otu reps to proper fasta sequences for import to phyloseq
+cd /data/projects/glyphosate/reads/mothur_processed
+
+python /home/centos/scripts/otu_rep_to_fasta.py \
+  -i stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.rep.fasta \
+  -o OTU_reps_fasta_water_003.fasta
