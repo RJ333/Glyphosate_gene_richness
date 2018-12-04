@@ -22,18 +22,13 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 
 # set variables
-ordinations <- c("CCA", "NMDS")
+ordinations <- c("NMDS", "CCA")
 
 ps <- mothur_ps4_ra
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold = 5
 after_day <- c(43, 44)
-
-
-
-
-
 
 
 
@@ -49,6 +44,89 @@ get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) > threshold}, prune = TRUE)
 	return(phy_subset2)
 }
+
+
+formula <- list("~ glyphosate", NULL)
+
+ordination_list <- list()
+	for (current_formula in formula) {
+							tmp <- lapply(sample_subset_list, 
+										  ordinate, 
+										  method = "CCA",
+										  formula = as.formula(current_formula))
+							ordination_list[[paste(current_formula)]] <- tmp
+}
+
+
+library(phyloseq)
+data(GlobalPatterns)
+ps <- GlobalPatterns
+ps1 <- filter_taxa(ps, function (x) {sum(x > 0) > 10}, prune = TRUE)
+ps2 <- filter_taxa(ps, function (x) {sum(x > 0) > 20}, prune = TRUE)
+sample_subset_list <- list()
+sample_subset_list <- c(ps1, ps2)
+
+formula <- list()
+formula <- c("~ SampleType", NULL)
+formula <- list("~ SampleType", NULL)
+
+
+ordination_list <- list()
+for (current_formula in formula) {
+  tmp <- lapply(sample_subset_list, 
+                ordinate, 
+                method = "CCA",
+                formula = as.formula(current_formula)) 
+                ordination_list[[length(ordination_list) + 1]] <- tmp
+}
+
+ordination_list <- list()
+for (current_formula in formula) {
+  tmp <- lapply(sample_subset_list, 
+                ordinate, 
+                method = "CCA",
+                formula = if(is.null(current_formula)) NULL else as.formula(current_formula))
+                ordination_list[[length(ordination_list) + 1]] <- tmp
+}
+
+
+							tmp <- lapply(sample_subset_list, 
+										  ordinate, 
+										  method = "CCA",
+										  formula = as.formula(formula[[2]]))
+							ordination_list[[paste(current_formula)]] <- tmp
+
+formula <- list("~ Al", NULL)
+							
+for (current_formula in formula) {
+cca(paste(varespec, as.formula(current_formula), sep = " "), data = varechem)
+}
+
+ps2 <- filter_taxa(ps, function (x) {sum(x > 0) > 50}, prune = TRUE)
+test_otu <- as.data.frame(otu_table(ps2))
+test_sample <- phyloseq_to_df(sample_data(ps2))
+str(ordination_list, max = 2)
+
+
+ordination_list <- list()
+counter <- 0
+for (method in ordinations) {
+	for (current_formula in formula) {
+							
+							tmp <- lapply(sample_subset_list, ordinate, 
+											  method = method, 
+											  dist = "bray", 
+											  try = 2,
+											  maxtry = 5,
+											  formula = current_formula,
+											  autotransform = FALSE)
+							ordination_list[[paste(method, current_formula)]] <- tmp
+}
+}
+str(ordination_list, max = 2)
+ 
+				
+
 
 sample_subset_list <- list() 
 if(length(sample_subset_list) == 0) {
@@ -80,22 +158,39 @@ print(sample_subset_list)
 }
 
 # TO DO:
-# integrate checks for: counter = 0, list is empty
 # I should turn this very similar functions into a bigger function or loop
 ordination_nmds <- list()
-ordination_nmds <- lapply(sample_subset_list, ordinate, method = "NMDS", dist = "bray", try = 100, autotransform = FALSE)
+ordination_nmds <- lapply(sample_subset_list, ordinate, 
+											  method = "NMDS", 
+											  dist = "bray", 
+											  try = 100, 
+											  autotransform = FALSE)
+											  
+ordination_nmds <- lapply(sample_subset_list, ordinate, 
+											  method = "NMDS", 
+											  dist = "unifrac",
+											  weighted = TRUE)
+											  
 
 ordination_cca <- list()
-ordination_cca <- lapply(sample_subset_list, ordinate, method = "CCA", try = 100, formula = ~ glyphosate, autotransform = FALSE)
+ordination_cca <- lapply(sample_subset_list, ordinate, 
+											 method = "CCA", 
+											 formula = ~ glyphosate + Condition(days),
+											 try = 100, 
+											 autotransform = FALSE)
 
 ordination_rda <- list()
-ordination_rda <- lapply(sample_subset_list, ordinate, method = "RDA", try = 100, formula = ~ glyphosate, autotransform = FALSE)
+ordination_rda <- lapply(sample_subset_list, ordinate, 
+											 method = "RDA", 
+											 try = 100, 
+											 formula = ~ glyphosate, 
+											 autotransform = FALSE)
 
-# this security check works
+# NMDS function
 nmds_ordination_plots <- list()
 counter <- 0
 if(length(nmds_ordination_plots) == 0 & 
-	identical(counter, integer(0))) {
+	all.equal(counter, 0)) {
 nmds_ordination_plots <- mapply(function(x,y) {
 						 counter <<- counter + 1 
 						 plot_ordination(x, y, 
@@ -117,11 +212,13 @@ nmds_ordination_plots <- mapply(function(x,y) {
 				"), abort to prevend appending..."))
 }
 
-# not implemented in the others so far
+
+# CCA, RDA function
 cca_ordination_plots <- list()
 counter <- 0
+if(length(cca_ordination_plots) == 0 & 
+	all.equal(counter, 0)) {
 cca_ordination_plots <- mapply(function(x,y) {
-						print(paste("counter")
 						counter <<- counter + 1 
 						plot_ordination(x, y, type = "sample", color = "new_day", shape="treatment") + 
 							geom_polygon(aes(fill = disturbance)) + 
@@ -129,45 +226,67 @@ cca_ordination_plots <- mapply(function(x,y) {
 							guides(color = FALSE) +
 							ggtitle(names(sample_subset_list)[counter]) +
 							geom_text(aes(label = new_day), colour = "black", size = 2)
-}, x = sample_subset_list, y = ordination_cca, SIMPLIFY = FALSE)
-
-
-rda_ordination_plots <- list()
-counter <- 0
-rda_ordination_plots <- mapply(function(x,y) {
-						counter <<- counter + 1 
-						plot_ordination(x, y, type = "sample", color = "new_day", shape="treatment") + 
-							geom_polygon(aes(fill = disturbance)) + 
-							geom_point(size = 5) + 
-							guides(color = FALSE) +
-							ggtitle(names(sample_subset_list)[counter]) +
-							geom_text(aes(label = new_day), colour = "black", size = 2)
-}, x = sample_subset_list, y = ordination_rda, SIMPLIFY = FALSE)
+}, x = sample_subset_list, y = ordination_cca, SIMPLIFY = FALSE)} else {
+	print(paste("list is not empty, or counter not 0 (counter is", counter, 
+				"), abort to prevend appending..."))
+}
 
 # samples 5:8 are those without the very early and different sample from day 44
-
+plot_folder <- "/data/projects/glyphosate/plots/R/ordination/"
 # NMDS plots
 require(gridExtra)
 do.call("grid.arrange", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))	
-do.call("grid.arrange", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))
-
-
-
-# RDA plots
-rda_with_constraint <- rda_ordination_plots
-rda_no_constraint <- rda_ordination_plots
-
-do.call("grid.arrange", c(rda_with_constraint[c(5:8)], nrow = 2, top = "rda_with_constraint"))
-do.call("grid.arrange", c(rda_no_constraint[c(5:8)], nrow = 2, top = "rda_no_constraint"))	
-
-
+ggsave(file = paste(plot_folder, "nmds_after_43.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+g <- do.call("arrangeGrob", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS_unifrac"))
+ggsave(g, file = paste(plot_folder, "nmds_after_44_unifrac.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+						  
+do.call("arrangeGrob", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))
+ggsave(file = paste(plot_folder, "nmds_after_44.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
 # CCA plots
-with_constraint <- cca_ordination_plots
-no_constraint <- cca_ordination_plots
-
-do.call("grid.arrange", c(with_constraint[c(5:8)], nrow = 2, top = "cca_with_constraint"))
+g <- do.call("arrangeGrob", c(cca_ordination_plots[c(1:4)], nrow = 2, top = "cca_two_conditions"))
+ggsave(g, file = paste(plot_folder, "cca_after_43_two_conditions.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+g <- do.call("arrangeGrob", c(cca_ordination_plots[c(5:8)], nrow = 2, top = "cca_two_conditions"))
+ggsave(g, file = paste(plot_folder, "cca_after_44_two_conditions.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+								  
 do.call("grid.arrange", c(no_constraint[c(5:8)], nrow = 2, top = "cca_no_constraint"))	
 
+# RDA plots
+do.call("grid.arrange", c(rda_ordination_plots[c(1:4)], nrow = 2, top = "rda_with_constraint"))
+ggsave(file = paste(plot_folder, "rda_after_43_constrained.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+do.call("grid.arrange", c(rda_ordination_plots[c(5:8)], nrow = 2, top = "rda_with_constraint"))
+ggsave(file = paste(plot_folder, "rda_after_44_constrained.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+
+
+scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/ordination/* /mnt/d/denbi/chandler/ordination/
+
+
+dist = "bray"
+ord_meths = c("DCA", "CCA", "RDA", "DPCoA", "NMDS", "MDS", "PCoA")
+plist = llply(as.list(ord_meths), function(i, physeq, dist){
+        ordi = ordinate(physeq, method=i, distance=dist)
+        plot_ordination(physeq, ordi, "samples", color="SampleType")
+}, GP1, dist)
 
 ################# single plots for testing
 GP.ord <- ordinate(dna_water_5_44, "NMDS", "bray", autotransform = FALSE)
