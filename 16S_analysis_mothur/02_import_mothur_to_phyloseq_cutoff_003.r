@@ -11,22 +11,22 @@ save.image("mothur_glyph_003.RData")
 # if you load a workspace, you then only need to load the packages
 
 # define required packages
-library("knitr")
-library("BiocStyle")
+# library("knitr")
+# library("BiocStyle")
 
-.cran_packages <- c("ggplot2", "gridExtra")
-.bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
+# .cran_packages <- c("ggplot2", "gridExtra")
+# .bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
 
-.inst <- .cran_packages %in% installed.packages()
-if(any(!.inst)) {
-   install.packages(.cran_packages[!.inst])
-}
+# .inst <- .cran_packages %in% installed.packages()
+# if(any(!.inst)) {
+   # install.packages(.cran_packages[!.inst])
+# }
 
-.inst <- .bioc_packages %in% installed.packages()
-if(any(!.inst)) {
-   source("http://bioconductor.org/biocLite.R")
-   biocLite(.bioc_packages[!.inst], ask = F)
-}
+# .inst <- .bioc_packages %in% installed.packages()
+# if(any(!.inst)) {
+   # source("http://bioconductor.org/biocLite.R")
+   # biocLite(.bioc_packages[!.inst], ask = F)
+# }
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
@@ -43,23 +43,31 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.03.cons.taxonomy", 
 						   parseFunction = parse_taxonomy_default)
   
-# adjust taxonomy header
+# add taxonomy columns and adjust header
+wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
+                  [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")], 
+				  sep = "_"))
+
+
 tax_table(mothur_ps) <- cbind(tax_table(mothur_ps), 
-    rownames(tax_table(mothur_ps)))
+							  rownames(tax_table(mothur_ps)), 
+							  wholetax)
+							  
 colnames(tax_table(mothur_ps)) <- c("kingdom", 
 									"phylum", 
 									"class", 
 									"order", 
 									"family", 
 									"genus", 
-									"otu_id")
+									"otu_id",
+									"wholetax")
 rank_names(mothur_ps)
 											
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond2.tsv", 
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond3.tsv", 
 						row.names = 1, 
 						header = TRUE,
 						na.strings = "")
@@ -67,7 +75,7 @@ metafile2 <- sample_data(metafile)
 
 
 # read OTU representative sequences, for generation of file check gitlab #59
-OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", 
+OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_water_003.fasta", 
 							  format = "fasta",
 							  nrec = -1L, 
 							  skip = 0L, 
@@ -89,7 +97,7 @@ mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 # need to remove "Sample" to average the parallels
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
-								+ cell_counts + glyphosate + glyphosate_gone 
+								+ cell_counts + glyphosate + glyphosate_gone + condition_diversity +
 								+ kingdom + phylum + class + order + family + genus + otu_id, 
 								data = mothur_ra_melt, 
 								mean)

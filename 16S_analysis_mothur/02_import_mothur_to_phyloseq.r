@@ -5,9 +5,9 @@
 
 # Set the working dir with mothur files in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
-load("mothur_glyph.RData")
+load("mothur_glyph_002.RData")
 
-save.image("mothur_glyph.RData")
+save.image("mothur_glyph_002.RData")
 # if you load a workspace, you then only need to load the packages
 
 # define required packages
@@ -39,27 +39,34 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_group_file = NULL,
 						   mothur_tree_file = NULL, 
 						   cutoff = NULL, 
-						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared",
-						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.0.02.cons.taxonomy", 
+						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
+						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
 						   parseFunction = parse_taxonomy_default)
   
-# adjust taxonomy header
+# add taxonomy columns and adjust header
+wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
+                  [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")], 
+				  sep = "_"))
+
 tax_table(mothur_ps) <- cbind(tax_table(mothur_ps), 
-    rownames(tax_table(mothur_ps)))
+							  rownames(tax_table(mothur_ps)), 
+							  wholetax)
+							  
 colnames(tax_table(mothur_ps)) <- c("kingdom", 
 									"phylum", 
 									"class", 
 									"order", 
 									"family", 
 									"genus", 
-									"otu_id")
+									"otu_id",
+									"wholetax")
 rank_names(mothur_ps)
 											
 # when you combine different objects such as otu and meta table,
 # phyloseq performs an inner joint!
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond2.tsv", 
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond3.tsv", 
 						row.names = 1, 
 						header = TRUE,
 						na.strings = "")
@@ -67,7 +74,7 @@ metafile2 <- sample_data(metafile)
 
 
 # read OTU representative sequences, for generation of file check gitlab #59
-OTU_seqs <- readDNAStringSet(file = "OTU_reps.fasta", 
+OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta", 
 							  format = "fasta",
 							  nrec = -1L, 
 							  skip = 0L, 
@@ -89,7 +96,7 @@ mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 # need to remove "Sample" to average the parallels
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
-								+ cell_counts + glyphosate + glyphosate_gone 
+								+ cell_counts + glyphosate + glyphosate_gone + condition_diversity +
 								+ kingdom + phylum + class + order + family + genus + otu_id, 
 								data = mothur_ra_melt, 
 								mean)
