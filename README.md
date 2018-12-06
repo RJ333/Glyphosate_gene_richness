@@ -62,7 +62,8 @@ R
 I performed parallel runs of dada2, as each sequencing run data needs interactive and individual caretaking: the plotting of the sequence quality will show you where to trim your reads. The outcome of the scripts `02_dada2...r` are `.RData`-files, which contain a sequence table (Seqtab). At the moment, all workspaces need to be loaded to merge the Seqtabs from the parallel runs into one object (`03_dada2_glyph_water_mergetest.r`). Those sequences will then be assigned taxonomically and turned into an `phyloseq`-object.
 
 ****phyloseq analysis****
-about to come, this is supposed to be the same for dada2 and mothur processed data
+
+about to come, this is supposed to be the same for `dada2` and `mothur`-processed data
 
 ***Metagenomic analysis***
 
