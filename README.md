@@ -40,6 +40,7 @@ wget -O /data/db/silva_species_assignment_v132.fa.gz\
   'https://zenodo.org/record/1172783/files/silva_species_assignment_v132.fa.gz?download=1'
 ```
 The primers are removed using the (currently) hard-coded version of a cutadapt script `01_cutadapt_tested_static.sh`, which does it for each directory separately. The script has to be called from within the raw reads directory and output and primer sequences have to be adjusted accordingly. See the manual: https://cutadapt.readthedocs.io/en/stable/guide.html
+There is also a version including argument passing, which is not tested yet (`01_cutadapt_untested.sh`).
 
 ```bash
 #!/bin/bash
@@ -57,6 +58,8 @@ conda create -n dada2 bioconductor-shortread=1.38.0 r-base=3.5.1 bioconductor-da
 conda activate dada2
 R
 ```
+
+I performed parallel runs of dada2, as each sequencing run data needs interactive and individual caretaking: the plotting of the sequence quality will show you where to trim your reads. The outcome of the scripts `02_dada2...r` are `.RData`-files, which contain a sequence table (Seqtab). At the moment, all workspaces need to be loaded to merge the Seqtabs from the parallel runs into one object (`03_dada2_glyph_water_mergetest.r`). Those sequences will then be assigned taxonomically and turned into an `phyloseq`-object.
 
 
 
