@@ -5,39 +5,39 @@
 
 
 # first a vector of OTUs to be plotted with abundance threshold
-# OTU_list <- subset(aggregate(Abundance ~ OTU, 
-							 # data = mothur_ra_melt, 
-							 # max), 
-				   # Abundance > 0.05)[,1]
+OTU_list <- subset(aggregate(Abundance ~ OTU, 
+							 data = mothur_ra_melt, 
+							 max), 
+				   Abundance > 0.05)[,1]
 				
 
-OTU_list <- c("Otu000001", "Otu000003", "Otu000004", "Otu000007", "Otu000008",
-				"Otu000009", "Otu000010", "Otu000011", "Otu000012", "Otu000013",
-				"Otu000014", "Otu000015", "Otu000025", "Otu000030", "Otu000032",
-				"Otu000034", "Otu000036", "Otu000037", "Otu000041", "Otu000044",
-				"Otu000046", "Otu000049", "Otu000050", "Otu000056", "Otu000058",
-				"Otu000059", "Otu000070", "Otu000072", "Otu000078", "Otu000094",
-				"Otu000228", "Otu000401", "Otu000038", "Otu000047", "Otu000048",
-				"Otu000051", "Otu000062", "Otu000065", "Otu000066", "Otu000081",
-				"Otu000098", "Otu000121", "Otu000135", "Otu000180", "Otu000204",
-				"Otu000005", "Otu000006", "Otu000017", "Otu000018", "Otu000019",
-				"Otu000020", "Otu000109", "Otu000112", "Otu000129", "Otu000139",
-				"Otu000176", "Otu000191", "Otu000214", "Otu000320", "Otu000016",
-				"Otu000033", "Otu000042", "Otu000002", "Otu000021", "Otu000023",
-				"Otu000054", "Otu000064", "Otu000087", "Otu000123", "Otu000272",
-				"Otu000039", "Otu000111", "Otu000210", "Otu000024", "Otu000028",
-				"Otu000096", "Otu000097", "Otu000103", "Otu000149", "Otu000181",
-				"Otu000186")
+# OTU_list <- c("Otu000001", "Otu000003", "Otu000004", "Otu000007", "Otu000008",
+				# "Otu000009", "Otu000010", "Otu000011", "Otu000012", "Otu000013",
+				# "Otu000014", "Otu000015", "Otu000025", "Otu000030", "Otu000032",
+				# "Otu000034", "Otu000036", "Otu000037", "Otu000041", "Otu000044",
+				# "Otu000046", "Otu000049", "Otu000050", "Otu000056", "Otu000058",
+				# "Otu000059", "Otu000070", "Otu000072", "Otu000078", "Otu000094",
+				# "Otu000228", "Otu000401", "Otu000038", "Otu000047", "Otu000048",
+				# "Otu000051", "Otu000062", "Otu000065", "Otu000066", "Otu000081",
+				# "Otu000098", "Otu000121", "Otu000135", "Otu000180", "Otu000204",
+				# "Otu000005", "Otu000006", "Otu000017", "Otu000018", "Otu000019",
+				# "Otu000020", "Otu000109", "Otu000112", "Otu000129", "Otu000139",
+				# "Otu000176", "Otu000191", "Otu000214", "Otu000320", "Otu000016",
+				# "Otu000033", "Otu000042", "Otu000002", "Otu000021", "Otu000023",
+				# "Otu000054", "Otu000064", "Otu000087", "Otu000123", "Otu000272",
+				# "Otu000039", "Otu000111", "Otu000210", "Otu000024", "Otu000028",
+				# "Otu000096", "Otu000097", "Otu000103", "Otu000149", "Otu000181",
+				# "Otu000186")
 			
 				
-# define subset function for specific phyloseq-object
-# get_current_otu_data <- function(x) {
-	# subset(mothur_ra_melt, OTU == x)
-#}
-
+define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
-	subset(deseq_melt, OTU == x)
+	subset(mothur_ra_melt, OTU == x)
 }
+
+# get_current_otu_data <- function(x) {
+	# subset(deseq_melt, OTU == x)
+# }
 
 # where the plots should be stored
 #plot_folder <- "/data/projects/glyphosate/plots/R/OTU_abundance/"
@@ -109,3 +109,5 @@ scale_linetype_manual(values = c("dna" = 1,
 						 width = 13, 
 						 height = 7)
 }
+
+#scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/plots/R/deseq/* /mnt/d/denbi/phoebe/deseq/
