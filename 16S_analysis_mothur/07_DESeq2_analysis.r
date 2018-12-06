@@ -3,9 +3,9 @@
 # http://joey711.github.io/phyloseq-extensions/DESeq2.html
 
 # install DESeq2
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install("DESeq2", version = "3.8")
+# if (!requireNamespace("BiocManager", quietly = TRUE))
+    # install.packages("BiocManager")
+# BiocManager::install("DESeq2", version = "3.8")
 
 
 
@@ -25,8 +25,8 @@ deseq_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_group_file = NULL,
 						   mothur_tree_file = NULL, 
 						   cutoff = NULL, 
-						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.shared",
-						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.0.02.cons.taxonomy", 
+						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
+						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
 						   parseFunction = parse_taxonomy_default)
   
 # adjust taxonomy header
@@ -42,7 +42,7 @@ colnames(tax_table(deseq_ps)) <- c("kingdom",
 rank_names(deseq_ps)
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond2.tsv", 
+metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond3.tsv", 
 						row.names = 1, 
 						header = TRUE,
 						na.strings = "")
@@ -90,7 +90,7 @@ ps <- deseq_ps2
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 treatments <- c("glyph", "control")
-threshold <- 1
+threshold <- 0
 
 
 # this is the nested for loop which calls the subsetting function 
