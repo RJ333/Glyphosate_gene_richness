@@ -23,21 +23,30 @@ ps_water_glyph <- subset_samples(mothur_ps4_ra,	habitat == "water" &
 													treatment == "glyph",
 													prune = TRUE)
 
-badTaxa = c("Otu000641", "Otu000674")
-goodTaxa <- setdiff(taxa_names(ps_water_glyph), badTaxa)
-ps_water_glyph2 <- prune_taxa(goodTaxa, ps_water_glyph)
-													
-ps_water_glyph2 <- filter_taxa(ps_water_glyph2, function (x) {sum(x > 0) > 15}, prune = TRUE)											
-			
-tree_plot <- plot_tree(ps_water_glyph2, 
+tree_plot <- plot_tree(ps_water_glyph, 
 								label.tips = "genus", 
 							  color = "disturbance",
 							   #size = "Abundance",
 							   text.size = 2)
 
+# cutoff 0.02 data contains some very different OTUs, which stretch the tree
+# let's remove those							   
+# badTaxa = c("Otu000641", "Otu000674")
+# goodTaxa <- setdiff(taxa_names(ps_water_glyph), badTaxa)
+# ps_water_glyph2 <- prune_taxa(goodTaxa, ps_water_glyph)
+													
+ps_water_glyph2 <- filter_taxa(ps_water_glyph, function (x) {sum(x > 0) > 80}, prune = TRUE)											
+			
+tree_plot <- plot_tree(ps_water_glyph2, "treeonly",
+								label.tips = "taxa_names", 
+							  #color = "disturbance",
+							   #size = "Abundance",
+							   text.size = 2,
+							   ladderize = TRUE)
+
 plot_folder <- "/data/projects/glyphosate/plots/R/trees_16S/"	
 
-ggsave(tree_plot, file = paste(plot_folder, "water_glyph_16.svg", 
+ggsave(tree_plot, file = paste(plot_folder, "003_glyph_31.svg", 
 								  sep = ""),
 								  height = 20,
 								  width = 13)
@@ -77,6 +86,7 @@ ps_genus <- tax_glom(ps_water_glyph2, "Genus", NArm = TRUE)
 								  
 								  
 #scp -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/trees_16S/* /mnt/d/denbi/chandler/trees_16S/
+scp -i /drives/d/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/plots/R/trees_16S/* /mnt/d/denbi/phoebe/trees_16S/
 
 # tree with otus marked only during disturbance = high?
 						   
