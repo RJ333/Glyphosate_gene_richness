@@ -59,6 +59,8 @@ mothur
 
 The mothur workflow is described in  `01_mothur_workflow_1395.h`. The goal of this script is to perform all steps to generate an OTU table, a taxonomic annotation and the amplicon sequences representing each OTUs. Relative abundance, singleton removal and tree building will later be performed within `phyloseq`.
 
+I separately store the output from the `summary.seqs()`-command, which gives a good overview how your data set changes (`summary_seqs_1395_collected.txt`). 
+
 ****adjust stability.files****
 
 The first step in the workflow is to generate a file listing all the sample read pairs. The group names in this `stability.files` are wrong (they contain the full path) and it is created in the wrong directory, you have to adjust them using awk. "group" means sample or library here. . Use this two-liner, which renames `stability.files` and moves it to the input folder (where the reads are):
@@ -75,11 +77,9 @@ awk 'BEGIN{FS = "_| "; OFS = "\t"}; {print $1, $0}' | awk 'BEGIN{OFS = "\t"}; {p
 
 ****characteristics of mothur (1.39.5)****
 
-mothur is written in C++. mothur looks in different directories, when it can't find a file in the input dir, but there is a pasting bug with "/" so it won't work until it is in the inputdir.
+mothur is written in C++. You need to set the input and output in the same command. mothur clears the values that are not set when calling `set.dir()`. mothur also looks in different directories, when it can't find a file in the input dir, but there is a pasting bug with "/" so it won't work until it is in the inputdir.
 
 mothur does not understand line breaks! There is also a command line mode and a batch mode, but I have not used those. 
-
-I separately store the output from the `summary.seqs()`-command, which gives a good overview how your data set changes (`summary_seqs_1395_collected.txt`). 
 
 ****memory demands****
 
