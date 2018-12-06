@@ -63,9 +63,10 @@ ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
+# be careful, the original script contains typo "filtsFs"
 if(!file_test("-d", filt_path)) dir.create(filt_path)
-filtFs <- file.path(filt_path, basename(fnFs))			# be careful, the original script          
-filtRs <- file.path(filt_path, basename(fnRs))			# contains filtFs and filt"s"Fs!!
+filtFs <- file.path(filt_path, basename(fnFs))			         
+filtRs <- file.path(filt_path, basename(fnRs))
 for(i in seq_along(fnFs)) {
   fastqPairedFilter(c(fnFs[[i]], fnRs[[i]]),
 		      c(filtFs[[i]], filtRs[[i]]),
@@ -82,14 +83,14 @@ names(derepFs) <- sam.names
 names(derepRs) <- sam.names
 
 ddF <- dada(derepFs[1:40], err = NULL, 
-			selfConsist = TRUE) # Convergence after 8 rounds.> 6 hours, bio-48
+			selfConsist = TRUE)
 ddR <- dada(derepRs[1:40], err = NULL, 
-			selfConsist = TRUE) # Convergence after 7 rounds.> 1 hour, bio-49
+			selfConsist = TRUE)
 
-plotErrors(ddF) # this doesn't work yet due to failing x11 forwarding (ubuntu subsystem, bio 49?)
-plotErrors(ddR)	# but x11 forwarding works with mobaxterm	
+plotErrors(ddF) 
+plotErrors(ddR)	
 
-dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) # for multiple cores
+dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE)
 dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
 mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
 
