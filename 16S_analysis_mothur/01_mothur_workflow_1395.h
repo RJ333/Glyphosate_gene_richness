@@ -1,23 +1,6 @@
 # this script uses mothur interactively!
 
-# the first steps are a little complicated:
-# 1) the group names in the stability files are wrong (contain full path), 
-# you have to adjust them using awk. "group" means sample or library 
-
-# 2) mothur looks in different folders, but there is a pasting error with "/" so it won't work
-# until it is in the inputdir. but for some reason, the stability.files will be put into the output dir
-
-# so after creating stability.files, we move and rename it to the input folder (where the reads are)
-# we modify it using awk (outside of mothur in second shell) and then can use make.contigs
-
-
-# mothur does not like line breaks, even with \
-
-# You need to set the input and output in the same command. 
-# Mothur clears the values that are not set when calling set.dir
-
-
-# use screen or tmux or byobu!
+# use screen, tmux or byobu!
 
 # set input dir for raw reads and output dir for to make stability file
 set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
@@ -27,14 +10,7 @@ set.logfile(name = glyphosate_1395.log, append = T)
 # gives error ( inputdir not exist or not writable) and writes to output dir
 make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S, type = gz)
 
-# in second shell!
-# use awk to remove the path and exchange the first column 
-# with the second column until the first underscore
-cd /data/projects/glyphosate/reads/mothur_processed
-mv stability.files /data/projects/glyphosate/reads/raw_reads_16S/stabil.temp
-cd  /data/projects/glyphosate/reads/raw_reads_16S/
-awk 'BEGIN{OFS="\t"}; {sub(".*/", "", $2); sub(".*/", "", $3); print $1, $2, $3}' stabil.temp |\
-awk 'BEGIN{FS = "_| "; OFS = "\t"}; {print $1, $0}' | awk 'BEGIN{OFS = "\t"}; {print $2, $4, $5}' > stability.files
+# the generated stability.files is not correct, use the awk command from README.md (in another terminal) to adjust the file
 
 # make contigs from forward and reverse, using the stability.files
 make.contigs(file = stability.files, processors = 27)
@@ -79,10 +55,10 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, count = stab
 # as he used the same primers.
 pcr.seqs(fasta = /data/db/silva.seed_v132.align, start = 6387, end = 23442, keepdots = F, processors = 28)
 	
-# trims the curated sequences of the reference database to a certain section 
-# (i.e. start/end) -->  this needs to be done only once
+# pcr.seqs() trims the curated sequences of the reference database to a 
+# certain section (i.e. start/end) -->  this needs to be done only once
 # you can use the silva.nr_v132.pcr.align file for all your next analyses, 
-# as long as you are working with the same primer set (-->same fragment!) 
+# as long as you are working with the same primer set (--> same fragment!) 
 # and there is no newer version of the reference database 
 # (check https://mothur.org/wiki/Silva_reference_files)
 
@@ -144,35 +120,9 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.
 
 ##### OTU picking based on 98% similarity 
 
-# as it is only water samples and the files are not so big, I'll give it a first try on my VM
-# (memory intensive, performed on phy-2 with 1.39.5)
-# crashed as hard drive was full
+# performend on phy-2
+# check the README.md if you want to transfer the files to phy-2, which has more RAM
 cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 10)
-
-# store private key at bio48/49, adjust to chmod 600, 
-# use to copy data from denbi-cloud to bio-48 
-
-# on bio-48:
-cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003
-scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta .
-scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table .
-scp -i /data/Rene/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy .
-
-ssh phy-2
-screen
-/dss6/bio49/bin/mothur/mothur
-set.dir(input = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003, output = /dss6/bio49/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003)
-cluster.split(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, taxonomy = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.nr_v132.wang.pick.taxonomy, splitmethod = classify, taxlevel = 4, cutoff = 0.03, processors = 25)
-
-# you can take up the cluster.split()-steps from the sens.spec()-step. But I assume that the memory demands 
-# are already determined before ("splitting file" in the beginning of cluster.split()) and it will crash again, regardless of the number of cores set with sens.spec()
-
-# copy files back to the cloud, except for dist-file, which is huge and not needed
-# on bio-48:
-cd /data/projects/glyphosate/analysis_16S/mothur_1_39_5
-# scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.dist centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
-scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
-scp -i /data/Rene/ssh/denbi.key /data/projects/glyphosate/analysis_16S/mothur_1_39_5/cut_off_003/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec centos@193.196.20.103:/data/projects/glyphosate/reads/mothur_processed/
 
 # this is the count table with absolute values (check whether the file names include "0.02" or similar)
 make.shared(list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table)
@@ -184,13 +134,3 @@ count.groups(shared = stability.trim.contigs.trim.good.unique.good.filter.unique
 
 # generate a fasta file containing a representative sequence (here based on most abundant) per OTU, this will be imported to phyloseq for tree calculation
 get.oturep(method = abundance, list = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.list, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.denovo.vsearch.pick.pick.count_table, fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.fasta)
-
-
-### below is for removal of singletons, I will not do this, as we can take care of singletons within phyloseq (and it is not always desirable to have them removed e.g. estimate richness)
-### also for generation of relative abundance, which I will also do within phyloseq
-
-# rename output file outside mothur, as this is with singletons
-mv stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.shared stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list_all.shared
-
-# to copy files
-scp -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/reads/mothur_processed/stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.abund.relabund /mnt/d/data/mothur_sample/
