@@ -12,7 +12,7 @@ The program `mothur` and the R package `dada2` (together with `cutadapt`) were u
 
 ****set up dada2****
 
-based upon https://f1000research.com/articles/5-1492/v2
+based upon https://f1000research.com/articles/5-1492/v2. If you want to follow this tutorial, install dada2 as below and look into `tutorial_dada2.r`
 
 Reads for dada2 have to be without primers, we use `cutadapt`. dada2 infers sequencing errors, which usually differ between sequencing runs and habitats. Therefore, I put all data from different runs into separate directories. 
 
@@ -61,7 +61,8 @@ R
 
 I performed parallel runs of dada2, as each sequencing run data needs interactive and individual caretaking: the plotting of the sequence quality will show you where to trim your reads. The outcome of the scripts `02_dada2...r` are `.RData`-files, which contain a sequence table (Seqtab). At the moment, all workspaces need to be loaded to merge the Seqtabs from the parallel runs into one object (`03_dada2_glyph_water_mergetest.r`). Those sequences will then be assigned taxonomically and turned into an `phyloseq`-object.
 
-
+****phyloseq analysis****
+about to come, this is supposed to be the same for dada2 and mothur processed data
 
 ***Metagenomic analysis***
 
