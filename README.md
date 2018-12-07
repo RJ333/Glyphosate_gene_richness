@@ -4,13 +4,13 @@ The widespread herbicide glyphosate has been detected in aquatic coastal zones o
 
 -----
 
-**Scripts**
+## Scripts
 
 ### 16S amplicon analysis
 
 The program `mothur` (1.39.5) and the R package `dada2` 1.8 (together with `cutadapt` 1.8.3) were used to process amplicon reads.
 
-****set up mothur****
+#### set up mothur
 
 set up the directories: some of the structure was already generated for the `dada2`-analysis. We will use the same raw reads and add a directory which will become the working directory
 
@@ -51,24 +51,24 @@ reverse GACTACHVGGGTATCTAATCC
 conda activate mothur_1395
 mothur
 ```
-****mothur workflow****
+#### mothur workflow
 
 The mothur workflow is described in  `01_mothur_workflow_1395.h`. The goal of this script is to perform all steps to generate an OTU table, a taxonomic annotation and the amplicon sequences representing each OTUs. Relative abundance, singleton removal and tree building will later be performed within `phyloseq`.
 
 I suggest to separately store the output from the `summary.seqs()`-command, which gives a good overview how your data set changes (`summary_seqs_1395_collected.txt`). The output is also contained in the log file. 
 
-****adjust stability.files****
+#### adjust stability.files
 
 The first step in the workflow is to generate a file listing all the sample read pairs. The group names in this `stability.files` are wrong (they contain the full path) and it is created in the wrong directory, you have to adjust them using awk. "group" means sample or library here. . Use this two-liner, which renames `stability.files` and moves it to the input folder (where the reads are):
 The workflow contains the outcommented version of the required code, it has to be executed outside of mothur
 
-****characteristics of mothur (1.39.5)****
+#### characteristics of mothur (1.39.5)
 
 mothur is written in C++. You need to set the input and output in the same command. mothur clears the values that are not set when calling `set.dir()`. mothur also looks in different directories, when it can't find a file in the input dir, but there is a pasting bug with "/" so it won't work until it is in the inputdir.
 
 mothur does not understand line breaks! There is also a command line mode and a batch mode, but I have not used those. 
 
-****memory demands****
+#### memory demands
 
 The command `cluster.split()` is likely to demand a huge amount of RAM, also based on the number of cores you used before. It crashed for me several times, even on `phy-2` with 1 TB of RAM. The workflow includes commands to transfer the relevant data between e.g. the cloud and phy-2.
 
@@ -94,7 +94,7 @@ cd /.../<mothur_work_dir_on_bio48>
 scp stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.list user_name@IP:/path/to/mothur_work_dir
 scp stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.sensspec user_name@IP:/path/to/mothur_work_dir
 ```
-****generate OTU sequence fasta file****
+#### generate OTU sequence fasta file
 
 Within this workflow, we will generate a file containing aligned sequences of all OTUs, based (here) on the most abundant sequence per OTU. Using the python script `otu_rep_to_fasta.py`, we can turn this output into proper fasta format, which can be integrated into `phyloseq`. Run it as 
 
@@ -105,12 +105,12 @@ python /path/to/scripts/otu_rep_to_fasta.py \
   -o <your_proper_fasta.fasta>
 ```
 
-****Metagenomic analysis****
+#### Metagenomic analysis
 
-```parse_prokka_genes_to_bed``` contains scripts that were used to extract a bed.file from prokka annotations and then perform an intersect via samtools to get mapping information on specific genes. Originally developed for my co assembled metagenomes in Sweden, a branch contains the adapted version for the IMP single assemblies
+`parse_prokka_genes_to_bed` contains scripts that were used to extract a bed.file from prokka annotations and then perform an intersect via samtools to get mapping information on specific genes. Originally developed for my co assembled metagenomes in Sweden, a branch contains the adapted version for the IMP single assemblies
 
-```process_coverage_information``` contains a set of scripts to process the per base coverage of specific genes. It also includes scripts to determine gene length and contig length from the prokka annotation file. This information is used to apply length and coverage thresholds, the remaining data is imported to R and the number of genes, bases and contigs can be calculated there.
+`process_coverage_information` contains a set of scripts to process the per base coverage of specific genes. It also includes scripts to determine gene length and contig length from the prokka annotation file. This information is used to apply length and coverage thresholds, the remaining data is imported to R and the number of genes, bases and contigs can be calculated there.
 
-```read_abundance``` contains richness information and the script to perform a Mann-Whitney test in R on the reads mapping to a certain gene, testing treatment against control.
+`read_abundance` contains richness information and the script to perform a Mann-Whitney test in R on the reads mapping to a certain gene, testing treatment against control.
 
-```samtools_depth``` gives the per base coverage of a certain gene by using samtools
+`samtools_depth` gives the per base coverage of a certain gene by using samtools
