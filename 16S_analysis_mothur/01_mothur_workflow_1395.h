@@ -89,7 +89,7 @@ summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.
 # from each other (1 nt per 100 bp) -> 
 # this allows to take mutations into account (Katis V4 reads were 250 bp reads)
 
-# I will stick to 2 nt diff although I have 300 bp reads
+# I will stick to diffs=2 (which is conservative for 300 bp reads) to keep more possible OTUs
 pre.cluster(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.count_table, diffs = 2)
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.fasta, count = stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.count_table)
 
