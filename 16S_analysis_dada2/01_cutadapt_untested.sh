@@ -51,6 +51,13 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+	-*) 
+	echo "Unknown argument: \"$key\""; 
+	exit 1
+	;;
+	*)
+	break
+	;;
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
