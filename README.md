@@ -8,11 +8,11 @@ The widespread herbicide glyphosate has been detected in aquatic coastal zones o
 
 ### 16S amplicon analysis
 
-The program `mothur` (1.39.5) and the R package `dada2` 1.8 (together with `cutadapt` 1.8.3) were used to process amplicon reads.
+The program `mothur` (1.39.5) and the R package `dada2` (1.8) (together with `cutadapt` (1.8.3)) were used to process amplicon reads.
 
 #### set up mothur
 
-set up the directories: some of the structure was already generated for the `dada2`-analysis. We will use the same raw reads and add a directory which will become the working directory
+We can start using the directory structure that was already generated for the `dada2`-analysis. We will use the same raw reads and add a directory which will become the working directory. We then need to download and extract reference databases for alignment and classification. `mothur` and vsearch will be installed within an conda environment.
 
 ```bash
 # the dirs with raw reads
@@ -32,25 +32,21 @@ ln -s /data/db/silva.seed_v132.align /data/projects/glyphosate/reads/mothur_proc
 # create soft links to reads from different dirs to mothur input dir
 ln -s /data/projects/glyphosate/reads/raw_reads_16S/*/*.gz /data/projects/glyphosate/reads/raw_reads_16S/
 
-# you can remove the controls
-cd /data/projects/glyphosate/reads/raw_reads_16S/
-rm *pos*.gz
-rm *neg*.gz
-
-# install mothur into conda environment (versions from 1.4* are slow)
-conda env create -f conda_mothur.conf 
-
 # you will also need a file called `oligo.txt` in your working directory which specifies the primers. Below is an example for the primer pair 341f - 805r
 cat oligo.txt
 forward CCTACGGGNGGCWGCAG
 reverse GACTACHVGGGTATCTAATCC
 
-# additionally you will have to find out where your primers bind. This allows you to generate a database for only this region, which reduces the computational effort
+# additionally you will have to find out where your primers bind (using SINA). This allows you to generate a database for only this region, which reduces the computational effort
+
+# install mothur into conda environment (versions from 1.4* are slow)
+conda env create -f conda_mothur.conf 
 
 # run mothur with
 conda activate mothur_1395
 mothur
 ```
+
 #### mothur workflow
 
 The mothur workflow is described in  `01_mothur_workflow_1395.h`. The goal of this script is to perform all steps to generate an OTU table, a taxonomic annotation and the amplicon sequences representing each OTUs. Relative abundance, singleton removal and tree building will later be performed within `phyloseq`.
