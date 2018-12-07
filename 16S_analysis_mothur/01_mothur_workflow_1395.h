@@ -28,14 +28,16 @@ set.dir(input = /data/projects/glyphosate/reads/mothur_processed, output = /data
 summary.seqs(fasta = stability.trim.contigs.fasta, processors = 28)
 count.groups(group = stability.contigs.groups)
 
-# file oligo.txt copied from Lars Möller, 
-# sequence of 341f-805r as would be described in paper-style 
-# --> (805r not reversed-complementary)
+# oligo.txt contains the primer sequences to be removed 
+# see outcommented example below for formatting
+// cat oligo.txt
+// forward CCTACGGGNGGCWGCAG
+// reverse GACTACHVGGGTATCTAATCC 
 trim.seqs(fasta = stability.trim.contigs.fasta, oligos = oligo.txt, processors = 28)	
 
-# check quality of primer-trimmed reads
+# check stats of remaining reads after primer removal
 summary.seqs(fasta = stability.trim.contigs.trim.fasta, processors = 28)
-# and the removed reads
+# and the stats of the removed reads
 summary.seqs(fasta = stability.trim.contigs.scrap.fasta, processors = 28)
 
 # we have to create a new group file now
