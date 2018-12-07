@@ -61,18 +61,12 @@ unique.seqs(fasta = stability.trim.contigs.trim.good.fasta)
 count.seqs(name = stability.trim.contigs.trim.good.names, group = stability.contigs.pick.good.groups)
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, count = stability.trim.contigs.trim.good.count_table, processors = 28)
 
-# I copied the pcr.seqs and silva files from Lars Möller, 
-# as he used the same primers.
+# pcr.seqs() trims the curated sequences of the reference database to a certain section (i.e. start/end)
+# I copied the pcr.seqs and silva files from Lars Möller (we both used 341f-805r primer set).
+# If you don't know the start/end parameters of your primers, use SINA to identify the regions
 pcr.seqs(fasta = /data/db/silva.seed_v132.align, start = 6387, end = 23442, keepdots = F, processors = 28)
 	
-# pcr.seqs() trims the curated sequences of the reference database to a 
-# certain section (i.e. start/end) -->  this needs to be done only once
-# you can use the silva.nr_v132.pcr.align file for all your next analyses, 
-# as long as you are working with the same primer set (--> same fragment!) 
-# and there is no newer version of the reference database 
-# (check https://mothur.org/wiki/Silva_reference_files)
-
-# we use seed_v132 to align, this is the reduced database
+# we use seed_v132 to align, this is the reduced SILVA database
 align.seqs(fasta = stability.trim.contigs.trim.good.unique.fasta, reference = silva.seed_v132.pcr.align, processors = 28)
 summary.seqs(fasta = stability.trim.contigs.trim.good.unique.align, count = stability.trim.contigs.trim.good.count_table, processors = 28)
 
