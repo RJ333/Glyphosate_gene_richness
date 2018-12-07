@@ -1,19 +1,18 @@
 #!/bin/sh
 
-: 'multiline comment in bash
-This script is a wrapper around cutadapt to remove oligos such as primers.
-It assumes that forward and reverse reads are separate. The output is 
-prepended by "cut_"
+: '
+This script is a wrapper around cutadapt to remove oligonucleotides 
+e.g. primers. It requires that forward and reverse reads are separate. 
+The output is prepended by "cut_"
 '
 
 : '
 Args:
-    -i|--input 			: the input path, containing gzipped reads
-	-o|--output 		: the output path
-	-c|--cores 			: the number of cores
+    -i|--input 			: the absolute input path, containing gzipped reads
+	-o|--output 		: the absolute output path
+	-c|--cores 			: the number of cores to use
 	-p|--primersequence : the oligonucleotide sequence to be removed from the beginning of the read!
 	-d|--direction 		: select between forward reads "R1" and reverse reads "R2"
-       --default 		: I dont know what this is for, but I will see whether it is required
 
 Return:
 	the selected read libraries without the specified sequence, gzipped.
