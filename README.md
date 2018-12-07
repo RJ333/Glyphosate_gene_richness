@@ -38,11 +38,7 @@ rm *pos*.gz
 rm *neg*.gz
 
 # install mothur into conda environment (versions from 1.4* are slow)
-conda create -n mothur_1395 mothur=1.39.5
-
-# it is possible that the executable `vsearch` is missing (chimera check), you can copy it from any other mothur installation
-# e.g. from bio-48
-scp -i /.../ /data/bin/mothur/vsearch centos@193.196.20.103:/home/centos/miniconda3/envs/mothur_1395/bin/
+conda env create -f conda_mothur.conf 
 
 # you will also need a file called `oligo.txt` in your working directory which specifies the primers, such as
 cat oligo.txt
