@@ -1,16 +1,24 @@
 # this script uses mothur interactively!
 
 # use screen, tmux or byobu!
+# Group names (sample names) must not include :, -, or / characters
 
 # set input dir for raw reads and output dir for to make stability file
 set.dir(input = /data/projects/glyphosate/reads/raw_reads_16S/, output = /data/projects/glyphosate/reads/mothur_processed)
 set.logfile(name = glyphosate_1395.log, append = T)
 
-# Group names should not include :, -, or / characters
-# gives error ( inputdir not exist or not writable) and writes to output dir
+
+# this command returns error and then writes to output dir
 make.file(inputdir = /data/projects/glyphosate/reads/raw_reads_16S, type = gz)
 
-# the generated stability.files is not correct, use the awk command from README.md (in another terminal) to adjust the file
+# the generated stability.files is not correct, use the awk command (see below) from README.md (in another terminal) to adjust the file
+// # move file into required dir
+// cd /data/projects/glyphosate/reads/mothur_processed
+// mv stability.files /data/projects/glyphosate/reads/raw_reads_16S/stabil.temp
+// cd /data/projects/glyphosate/reads/raw_reads_16S/
+// # adjust group name and path
+// awk 'BEGIN{OFS="\t"}; {sub(".*/", "", $2); sub(".*/", "", $3); print $1, $2, $3}' stabil.temp |\
+// awk 'BEGIN{FS = "_| "; OFS = "\t"}; {print $1, $0}' | awk 'BEGIN{OFS = "\t"}; {print $2, $4, $5}' > stability.files
 
 # make contigs from forward and reverse, using the stability.files
 make.contigs(file = stability.files, processors = 27)
