@@ -12,8 +12,8 @@ Args:
 	-o|--output 		: the output path
 	-c|--cores 			: the number of cores
 	-p|--primersequence : the oligonucleotide sequence to be removed from the beginning of the read!
-	-d|--direction 		: choose the reads to work on: "R1" for forward, "R2" is reverse, "R" for both directions
-       --default 		: I dont know what it does, but I will see whether it is required
+	-d|--direction 		: select between forward reads "R1" and reverse reads "R2"
+       --default 		: I dont know what this is for, but I will see whether it is required
 
 Return:
 	the selected read libraries without the specified sequence, gzipped.
@@ -51,14 +51,6 @@ case $key in
     shift # past argument
     shift # past value
     ;;
-	--default)
-    DEFAULT=YES
-    shift # past argument
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
-    ;;
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
@@ -74,13 +66,4 @@ cd ${INPUT}
 for library in *${DIRECTION}*.gz
 do
   cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
-  echo $library
-  echo $CORES
-  echo ${OUTPUT}/cut_${library} 
 done
-
-# return unused arguments (I guess?)
-if [[ -n $1 ]]; then
-    echo "Last line of file specified as non-opt/last argument:"
-    tail -1 "$1"
-fi
