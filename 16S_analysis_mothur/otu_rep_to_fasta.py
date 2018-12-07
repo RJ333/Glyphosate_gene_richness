@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 """
 script takes the output from mothurs get.oturep() command and turns it into a
