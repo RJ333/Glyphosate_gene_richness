@@ -29,6 +29,10 @@ tar -xvzf /data/db/Silva.nr_v132.tgz
 # link databases to working dir
 ln -s /data/db/silva.seed_v132.align /data/projects/glyphosate/reads/mothur_processed
 
+# print download time stamp for Silva databases
+cd /data/db
+for db in Silva*.tgz; do stat $db | grep "File" -A 5 | sed -e 1b -e '$!d'; done
+
 # create soft links to reads from different dirs to mothur input dir
 ln -s /data/projects/glyphosate/reads/raw_reads_16S/*/*.gz /data/projects/glyphosate/reads/raw_reads_16S/
 
