@@ -76,6 +76,8 @@ for library in ${INPUT}/*${DIRECTION}*.gz
 do
   #cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
   echo $library
+  echo $CORES
+  echo ${OUTPUT}/cut_${library} 
 done
 
 # return unused arguments (I guess?)
