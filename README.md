@@ -1,4 +1,4 @@
-**Abstract**
+##Abstract
 
 The widespread herbicide glyphosate has been detected in aquatic coastal zones of the southern Baltic Sea with yet unknown consequences for this brackish ecosystem. We investigated the impact of glyphosate on the succession of bacterial community assemblages and functions in brackish and phosphorus-limited microcosms. These were incubated for 69 days prior adding of glyphosate to obtain stable community dynamics; eventually, the microcosms were incubated for further 72 days. The system was sampled up to twice a week for the whole incubation period and analyzed concerning glyphosate degradation and bacterial succession. Succession of bacterial assemblages and their functions was determined by cell count analyses, next generation 16S rRNA (gene) amplicon as well as shotgun metagenomic sequencing, respectively. As result, glyphosate was degraded without detectable amounts of aminomethylphosphonic acid. Glyphosate addition revealed shifts in the bacterial community compositions, as well as increases in cell counts, the abundance of specific clusters on genus level, microbial diversity, and cluster richness. Metagenomic analyses revealed a shift in the stoichiometric composition of the phn operon, resulting in increased numbers of the phnM gene. The phn operon shift was detected till the end of the experiment whereas all the other described responses disappeared at latest after 29 days when glyphosate concentrations were below 1 mg∙L-1. The phn operon probably encoded for cleaving the C-P bond in glyphosate, yielding sarcosine. Its shift towards clusters harboring more phnM copies was probably an effect of glyphosate utilization as a P resource by a P-limited bacterial community. Thus, glyphosate impacted bacterial assemblages in a brackish system on different levels, but especially their functional gene compositions for a prolonged period of time. Further analyses should deepen the understanding if whether accordant functional fingerprints could be used as an environmental glyphosate indicator.
 
@@ -6,9 +6,9 @@ The widespread herbicide glyphosate has been detected in aquatic coastal zones o
 
 **Scripts**
 
-***16S amplicon analysis***
+###16S amplicon analysis
 
-The program `mothur` and the R package `dada2` (together with `cutadapt`) were used to process amplicon reads.
+The program `mothur` (1.39.5) and the R package `dada2` 1.8 (together with `cutadapt` 1.8.3) were used to process amplicon reads.
 
 ****set up mothur****
 
@@ -40,7 +40,7 @@ rm *neg*.gz
 # install mothur into conda environment (versions from 1.4* are slow)
 conda env create -f conda_mothur.conf 
 
-# you will also need a file called `oligo.txt` in your working directory which specifies the primers, such as
+# you will also need a file called `oligo.txt` in your working directory which specifies the primers. Below is an example for the primer pair 341f - 805r
 cat oligo.txt
 forward CCTACGGGNGGCWGCAG
 reverse GACTACHVGGGTATCTAATCC
@@ -55,21 +55,12 @@ mothur
 
 The mothur workflow is described in  `01_mothur_workflow_1395.h`. The goal of this script is to perform all steps to generate an OTU table, a taxonomic annotation and the amplicon sequences representing each OTUs. Relative abundance, singleton removal and tree building will later be performed within `phyloseq`.
 
-I separately store the output from the `summary.seqs()`-command, which gives a good overview how your data set changes (`summary_seqs_1395_collected.txt`). 
+I suggest to separately store the output from the `summary.seqs()`-command, which gives a good overview how your data set changes (`summary_seqs_1395_collected.txt`). The output is also contained in the log file. 
 
 ****adjust stability.files****
 
 The first step in the workflow is to generate a file listing all the sample read pairs. The group names in this `stability.files` are wrong (they contain the full path) and it is created in the wrong directory, you have to adjust them using awk. "group" means sample or library here. . Use this two-liner, which renames `stability.files` and moves it to the input folder (where the reads are):
-
-```bash
-# move file into required dir and 
-cd /data/projects/glyphosate/reads/mothur_processed
-mv stability.files /data/projects/glyphosate/reads/raw_reads_16S/stabil.temp
-cd /data/projects/glyphosate/reads/raw_reads_16S/
-# adjust group name and path
-awk 'BEGIN{OFS="\t"}; {sub(".*/", "", $2); sub(".*/", "", $3); print $1, $2, $3}' stabil.temp |\
-awk 'BEGIN{FS = "_| "; OFS = "\t"}; {print $1, $0}' | awk 'BEGIN{OFS = "\t"}; {print $2, $4, $5}' > stability.files
-```
+The workflow contains the outcommented version of the required code, it has to be executed outside of mothur
 
 ****characteristics of mothur (1.39.5)****
 
