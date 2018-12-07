@@ -69,12 +69,11 @@ echo CORES = "${CORES}"
 echo PRIMER_SEQUENCE = "${PRIMER_SEQUENCE}"
 echo DIRECTION = "${DIRECTION}"
 
-echo ${INPUT}/*${DIRECTION}*.gz
-
 # run cutadapt
-for library in ${INPUT}/*${DIRECTION}*.gz
+cd ${INPUT}
+for library in *${DIRECTION}*.gz
 do
-  #cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
+  cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
   echo $library
   echo $CORES
   echo ${OUTPUT}/cut_${library} 
