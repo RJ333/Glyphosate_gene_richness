@@ -80,7 +80,7 @@ do
 done
 
 # return unused arguments (I guess?)
-# if [[ -n $1 ]]; then
-    # echo "Last line of file specified as non-opt/last argument:"
-    # tail -1 "$1"
-# fi
+if [[ -n $1 ]]; then
+    echo "Last line of file specified as non-opt/last argument:"
+    tail -1 "$1"
+fi
