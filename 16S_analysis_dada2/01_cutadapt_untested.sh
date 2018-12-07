@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 : 'multiline comment in bash
 This script is a wrapper around cutadapt to remove oligos such as primers.
@@ -69,14 +69,17 @@ echo CORES = "${CORES}"
 echo PRIMER_SEQUENCE = "${PRIMER_SEQUENCE}"
 echo DIRECTION = "${DIRECTION}"
 
+echo ${INPUT}/*${DIRECTION}*.gz
+
 # run cutadapt
 for library in ${INPUT}/*${DIRECTION}*.gz
 do
-  cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
+  #cutadapt -j $CORES -g $PRIMER_SEQUENCE -o ${OUTPUT}/cut_${library} $library 
+  echo $library
 done
 
 # return unused arguments (I guess?)
-if [[ -n $1 ]]; then
-    echo "Last line of file specified as non-opt/last argument:"
-    tail -1 "$1"
-fi
+# if [[ -n $1 ]]; then
+    # echo "Last line of file specified as non-opt/last argument:"
+    # tail -1 "$1"
+# fi
