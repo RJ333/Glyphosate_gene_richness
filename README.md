@@ -1,4 +1,4 @@
-#### set up dada2
+#### set up dada2 V1.8
 
 dada2 is a R package provided by the bioconductor platform. Apart from primer removal, it can perform all steps required for the generation of an OTU table with taxonomic classification. dada2 does not call them OTUs, however, they use machine learning approaches to infer sequencing errors and sequence variants, resulting in one specific sequence for each ASV (amplicon sequence variant). Traditional OTUs use several parameters to cluster similar sequences and then define one representative sequence.
 
@@ -40,7 +40,7 @@ for db in silva*.tgz; do stat $db | grep "File" -A 5 | sed -e 1b -e '$!d'; done
 We are then ready to install dada2 and cutadapt in a conda environment
 ```bash
 # install Bioconductor and dada2 in conda, 
-conda create -n dada2 bioconductor-shortread=1.38.0 r-base=3.5.1 bioconductor-dada2=1.8 cutadapt=1.18
+conda env create -f conda_dada2.conf
 conda activate dada2
 R
 ```
@@ -71,6 +71,12 @@ if(any(!.inst)) {
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 ```
+
+some steps may take long, e.g. the error rate training. You can save a workspace to continue working from an advanced step. You should specify a working dir with the reads beforehand
+* set working directory `setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")`
+* save the workspace with `save.image(file = "dada2_water_dna.RData")`
+* and load it with `load(file = "dada2_water_dna.RData")`
+
 #### removal of primers
 
 The primers are removed using the provided cutadapt script. See the manual: https://cutadapt.readthedocs.io/en/stable/guide.html
