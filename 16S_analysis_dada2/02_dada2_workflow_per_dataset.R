@@ -33,8 +33,9 @@ raw_forward_libraries <- amplicon_libraries[grepl("R1", amplicon_libraries)]
 raw_reverse_libraries <- amplicon_libraries[grepl("R2", amplicon_libraries)]
 
 # plot sequence quality of 3 random samples before trimming
-# this doesn't work always, probably due to empty fastq lines
-# you can still select manually a couple of samples
+# to define the values for the filterAndTrim function
+# If a plot is empty, this is probably due to empty fastq lines
+# Select manually a couple of other samples random_sample_picks <- c(3, 20, 50, 80)
 random_sample_picks <- sample(length(raw_forward_libraries), 3)
 for(random_sample in random_sample_picks) {print(plotQualityProfile(raw_forward_libraries[i]) + ggtitle("Fwd"))}
 for(random_sample in random_sample_picks) {print(plotQualityProfile(raw_reverse_libraries[i]) + ggtitle("Rev"))}
