@@ -1,16 +1,15 @@
 #!/usr/bin/env R
 
-# this is the dada2 workflow for the water DNA sequencing run with specific
-# trimming parameters
+#' This is the general dada2 workflow for primer removed reads. It is intended to be run separately for a characteristic
+#' dataset, divided e.g. by sequencing runs or sampling types. The workflow needs to be performed interactively
+#' as we supervise the trimming process visually (using ggplot2). Additionally, we check manually the length  
+#' distribution of the combined forward and reverse read pairs which gives us information on how well the trimming
+#' and the chimera removal performed. We will finally save the output as phyloseq object, which can easily be merged
+#' with more phyloseq objects, e.g. from parallel runs of this workflow for other data sets from the same experiment.
 
 # define working directory
 setwd("/data/projects/glyphosate/reads/")
 #load(file = "dada2_water_dna.RData")
-
-# define paths
-cutadapt_reads_path <- file.path("../reads_16S_cutadapt", "water_dna")
-dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
-
 
 # Load packages into session, and print package version
 .cran_packages <- c("ggplot2", 
@@ -20,6 +19,10 @@ dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
 					"DECIPHER", 
 					"phangorn")
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
+
+# define paths
+cutadapt_reads_path <- file.path("../reads_16S_cutadapt", "water_dna")
+dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
 
 set.seed(100)
 
@@ -33,16 +36,19 @@ raw_reverse_libraries <- amplicon_libraries[grepl("R2", amplicon_libraries)]
 # this doesn't work always, probably due to empty fastq lines
 # you can still select manually a couple of samples
 random_sample_picks <- sample(length(raw_forward_libraries), 3)
-for(random_sample in random_sample_picks) { print(plotQualityProfile(raw_forward_libraries[i]) + ggtitle("Fwd")) }
-for(random_sample in random_sample_picks) { print(plotQualityProfile(raw_reverse_libraries[i]) + ggtitle("Rev")) }
+for(random_sample in random_sample_picks) {print(plotQualityProfile(raw_forward_libraries[i]) + ggtitle("Fwd"))}
+for(random_sample in random_sample_picks) {print(plotQualityProfile(raw_reverse_libraries[i]) + ggtitle("Rev"))}
 
 if(!file_test("-d", dada2_trimmed_path)) dir.create(dada2_trimmed_path)
 filtered_forward_libraries <- file.path(dada2_trimmed_path, basename(raw_forward_libraries))
 filtered_reverse_libraries <- file.path(dada2_trimmed_path, basename(raw_reverse_libraries))
 
 # Trim and Filter
-# if we trim too much, the pairing is based on few bases and very unspecific
-# this can result in many paired reads with very different length
+# if we trim too much, the pairing is based on too few overlapping bases and very unspecific
+# this may result in many merged_reads with very different length
+# what we will see below when we check the length distribution 
+
+# the values used below are based on testing and the plotQualityProfile function
 filter_result <- filterAndTrim(raw_forward_libraries, filtered_forward_libraries, 
 							   raw_reverse_libraries, filtered_reverse_libraries, 
 							   truncLen = c(280, 225),
@@ -55,7 +61,7 @@ filter_result <- filterAndTrim(raw_forward_libraries, filtered_forward_libraries
 							   compress = TRUE, 
 							   multithread = TRUE)
 
-# reads after trimming absolute and relative
+# reads after trimming in absolute and relative values
 head(filter_result)
 filter_result[,2]/filter_result[,1]*100
 
@@ -104,7 +110,7 @@ merged_reads <- mergePairs(corrected_reads_forward, dereplicated_forward, correc
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(merged_reads)
 
-# number of samples and uniq seqs
+# check number of samples and uniq seqs
 dim(seqtab.all)
 
 # Inspect distribution of sequence lengths
@@ -112,18 +118,18 @@ table(nchar(getSequences(seqtab.all)))
 hist(nchar(getSequences(seqtab.all)), 
 	 main = "Distribution of sequence lengths", 
 	 breaks = (seq(250, 
-				   500, 
-				   by = 10)))
+                   500, 
+                   by = 10)))
 
-# pick expected and abundant sequence lengths and check again
+# keep expected and/or abundant sequence lengths and check distribution again
 seqtab2 <- seqtab.all[,nchar(colnames(seqtab.all)) %in% seq(392, 448)]
 
 table(nchar(getSequences(seqtab2)))
 hist(nchar(getSequences(seqtab2)), 
-	 main = "Distribution of sequence lengths", 
-	 breaks = (seq(390, 
-				   450, 
-				   by = 5)))
+	 main = "Distribution of picked sequence lengths", 
+	 breaks = (seq(390,
+                   450,
+                   by = 5)))
 
 # remove chimera based on denoised sequences
 # checks if both parts of a contig represents either part of more abundant seqs
