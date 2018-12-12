@@ -12,78 +12,97 @@ cutadapt_reads_path <- file.path("../reads_16S_cutadapt", "water_dna")
 dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
 
 
-
+# Load packages into session, and print package version
 .cran_packages <- c("ggplot2", 
 					"gridExtra")
 .bioc_packages <- c("dada2", 
 					"phyloseq", 
 					"DECIPHER", 
 					"phangorn")
-					
-# Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 set.seed(100)
 
 
 # collect reads
-fns <- sort(list.files(cutadapt_reads_path, full.names = TRUE))
-fnFs <- fns[grepl("R1", fns)]
-fnRs <- fns[grepl("R2", fns)]
+amplicon_libraries <- sort(list.files(cutadapt_reads_path, full.names = TRUE))
+raw_forward_libraries <- amplicon_libraries[grepl("R1", amplicon_libraries)]
+raw_reverse_libraries <- amplicon_libraries[grepl("R2", amplicon_libraries)]
 
 # plot sequence quality of 3 random samples before trimming
 # this doesn't work always, probably due to empty fastq lines
 # you can still select manually a couple of samples
-ii <- sample(length(fnFs), 3)
-for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
-for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
+random_sample_picks <- sample(length(raw_forward_libraries), 3)
+for(random_sample in random_sample_picks) { print(plotQualityProfile(raw_forward_libraries[i]) + ggtitle("Fwd")) }
+for(random_sample in random_sample_picks) { print(plotQualityProfile(raw_reverse_libraries[i]) + ggtitle("Rev")) }
 
 if(!file_test("-d", dada2_trimmed_path)) dir.create(dada2_trimmed_path)
-filtFs <- file.path(dada2_trimmed_path, basename(fnFs))
-filtRs <- file.path(dada2_trimmed_path, basename(fnRs))
+filtered_forward_libraries <- file.path(dada2_trimmed_path, basename(raw_forward_libraries))
+filtered_reverse_libraries <- file.path(dada2_trimmed_path, basename(raw_reverse_libraries))
 
 # Trim and Filter
 # if we trim too much, the pairing is based on few bases and very unspecific
 # this can result in many paired reads with very different length
-out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen = c(280, 225),
-                  maxN = 0, maxEE = c(2.5, 5), truncQ = 2, rm.phix = FALSE,
-                  trimLeft = c(10, 0), minLen = c(270, 220), 
-				  compress = TRUE, multithread = TRUE)
+filter_result <- filterAndTrim(raw_forward_libraries, filtered_forward_libraries, 
+							   raw_reverse_libraries, filtered_reverse_libraries, 
+							   truncLen = c(280, 225),
+							   maxN = 0, 
+							   maxEE = c(2.5, 5), 
+							   truncQ = 2, 
+							   rm.phix = FALSE,
+							   trimLeft = c(10, 0), 
+							   minLen = c(270, 220), 
+							   compress = TRUE, 
+							   multithread = TRUE)
 
-# reads after trimming
-head(out)
-out[,2]/out[,1]*100
+# reads after trimming absolute and relative
+head(filter_result)
+filter_result[,2]/filter_result[,1]*100
 
 # now check the quality after trimming
-for(i in ii) { print(plotQualityProfile(filtFs[i]) + ggtitle("Fwd filt")) }
-for(i in ii) { print(plotQualityProfile(filtRs[i]) + ggtitle("Rev filt")) }
+for(random_sample in random_sample_picks) {print(plotQualityProfile(filtered_forward_libraries[i]) + ggtitle("Fwd filt"))} 
+for(random_sample in random_sample_picks) {print(plotQualityProfile(filtered_reverse_libraries[i]) + ggtitle("Rev filt"))}
 
 # dereplicate reads, keep abundance and quality information
-derepFs <- derepFastq(filtFs)
-derepRs <- derepFastq(filtRs)
+dereplicated_forward <- derepFastq(filtered_forward_libraries)
+dereplicated_reverse <- derepFastq(filtered_reverse_libraries)
 
-# adjust sample name split character according to your samples
-sam.names <- sapply(strsplit(basename(filtFs), "_S"), `[`, 1)
-names(derepFs) <- sam.names
-names(derepRs) <- sam.names
+# generate sample name from full description
+# adjust split character according to your samples
+sample_names <- sapply(strsplit(basename(filtered_forward_libraries), "_S"), `[`, 1)
+names(dereplicated_forward) <- sample_names
+names(dereplicated_reverse) <- sample_names
 
 # Infer sequence variants with training, subset should be about 100 M bases
-ddF <- dada(derepFs[1:60], err = NULL, selfConsist = TRUE, multithread = TRUE) 
-ddR <- dada(derepRs[1:60], err = NULL, selfConsist = TRUE, multithread = TRUE) 
+# the first 60 samples should be enough
+error_rates_forward <- dada(dereplicated_forward[1:60], 
+							err = NULL, 
+							selfConsist = TRUE, 
+							multithread = TRUE) 
+error_rates_reverse <- dada(dereplicated_reverse[1:60], 
+							err = NULL, 
+							selfConsist = TRUE, 
+							multithread = TRUE) 
 
 # check the sequencing error distribution
-plotErrors(ddF, nominalQ = TRUE)
-plotErrors(ddR, nominalQ = TRUE)	
+plotErrors(error_rates_forward, nominalQ = TRUE)
+plotErrors(error_rates_reverse, nominalQ = TRUE)	
 
-# collect error correction for your reads
-dadaFs <- dada(derepFs, err = ddF[[1]]$err_out, pool = TRUE, multithread = TRUE) 
-dadaRs <- dada(derepRs, err = ddR[[1]]$err_out, pool = TRUE, multithread = TRUE)
+# correct seq errors by applying learned error rates on all seqs
+corrected_reads_forward <- dada(dereplicated_forward, 
+								err = error_rates_forward[[1]]$err_out, 
+								pool = TRUE, 
+								multithread = TRUE) 
+corrected_reads_reverse <- dada(dereplicated_reverse, 
+								err = error_rates_reverse[[1]]$err_out, 
+								pool = TRUE, 
+								multithread = TRUE)
 
-# Join forward and reverse reads, corrected for seq errors
-mergers <- mergePairs(dadaFs, derepFs, dadaRs, derepRs)
+# Join corrected forward and reverse reads, 
+merged_reads <- mergePairs(corrected_reads_forward, dereplicated_forward, corrected_reads_reverse, dereplicated_reverse)
 
 # Construct sequence table and remove chimeras
-seqtab.all <- makeSequenceTable(mergers)
+seqtab.all <- makeSequenceTable(merged_reads)
 
 # number of samples and uniq seqs
 dim(seqtab.all)
