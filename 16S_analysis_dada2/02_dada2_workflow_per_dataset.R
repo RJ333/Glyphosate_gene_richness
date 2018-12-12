@@ -4,16 +4,14 @@
 # trimming parameters
 
 # define working directory
-setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")
+setwd("/data/projects/glyphosate/reads/")
 #load(file = "dada2_water_dna.RData")
 
-# setup bioconductor software including dada2 and phyloseq
-source("http://bioconductor.org/biocLite.R")
-# these might be required beforehand
-biocLite(c("knitr", "BiocStyle"))
+# define paths
+cutadapt_reads_path <- file.path("../reads_16S_cutadapt", "water_dna")
+dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
 
-library("knitr")
-library("BiocStyle")
+
 
 .cran_packages <- c("ggplot2", 
 					"gridExtra")
@@ -22,30 +20,14 @@ library("BiocStyle")
 					"DECIPHER", 
 					"phangorn")
 					
-# check if packages are installed
-.inst <- .cran_packages %in% installed.packages()
-if(any(!.inst)) {
-   install.packages(.cran_packages[!.inst])
-}
-
-.inst <- .bioc_packages %in% installed.packages()
-if(any(!.inst)) {
-   source("http://bioconductor.org/biocLite.R")
-   biocLite(.bioc_packages[!.inst], ask = F)
-}
-
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 set.seed(100)
-# define input and output dirs
-miseq_path <- file.path("/data/projects/glyphosate/reads/reads_16S_cutadapt", 
-						"water_dna")
-filt_path <- file.path("/data/projects/glyphosate/reads/dada2_processed", 
-						"water_dna")
+
 
 # collect reads
-fns <- sort(list.files(miseq_path, full.names = TRUE))
+fns <- sort(list.files(cutadapt_reads_path, full.names = TRUE))
 fnFs <- fns[grepl("R1", fns)]
 fnRs <- fns[grepl("R2", fns)]
 
@@ -56,9 +38,9 @@ ii <- sample(length(fnFs), 3)
 for(i in ii) { print(plotQualityProfile(fnFs[i]) + ggtitle("Fwd")) }
 for(i in ii) { print(plotQualityProfile(fnRs[i]) + ggtitle("Rev")) }
 
-if(!file_test("-d", filt_path)) dir.create(filt_path)
-filtFs <- file.path(filt_path, basename(fnFs))
-filtRs <- file.path(filt_path, basename(fnRs))
+if(!file_test("-d", dada2_trimmed_path)) dir.create(dada2_trimmed_path)
+filtFs <- file.path(dada2_trimmed_path, basename(fnFs))
+filtRs <- file.path(dada2_trimmed_path, basename(fnRs))
 
 # Trim and Filter
 # if we trim too much, the pairing is based on few bases and very unspecific
