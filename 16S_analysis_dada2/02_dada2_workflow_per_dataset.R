@@ -1,7 +1,9 @@
+#!/usr/bin/env R
+
 # this is the dada2 workflow for the water DNA sequencing run with specific
 # trimming parameters
 
-# define working directory to story RData image
+# define working directory
 setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")
 #load(file = "dada2_water_dna.RData")
 
