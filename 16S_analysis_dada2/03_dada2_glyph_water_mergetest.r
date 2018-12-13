@@ -4,8 +4,7 @@
 
 # define working directory to story RData image
 setwd("/data/projects/glyphosate/reads/dada2_processed/")
-# set path to data base for taxonomic annotation
-ref_fasta <- "/data/db/silva_nr_v132_train_set.fa.gz"
+
 # define required packages
 .cran_packages <- c("ggplot2", 
 					"gridExtra")
@@ -14,6 +13,9 @@ ref_fasta <- "/data/db/silva_nr_v132_train_set.fa.gz"
 					"DECIPHER", 
 					"phangorn")
 
+# set path to data base for taxonomic annotation
+ref_fasta <- "/data/db/silva_nr_v132_train_set.fa.gz"					
+					
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
