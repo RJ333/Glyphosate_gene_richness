@@ -80,6 +80,8 @@ Some steps may take long, e.g. the error rate training. You can save a workspace
 * save the workspace with `save.image(file = "dada2_water_dna.RData")`
 * and load it with `load(file = "dada2_water_dna.RData")`
 
+
+
 #### Removal of primers
 
 The primers are removed using the provided cutadapt script. See the manual: https://cutadapt.readthedocs.io/en/stable/guide.html
@@ -95,6 +97,28 @@ My workflows are based upon this published one https://f1000research.com/article
 TODO: the parallel runs somehow need to be optimized, only very small parts of code differ between the data sets.
 
 I performed parallel runs of `dada2`, as each sequencing run data needs interactive and individual caretaking: the plotting of the sequence quality will show you where to trim your reads. The outcome of the scripts `02_dada2...r` are `.RData`-files, which contain a sequence table (Seqtab). At the moment, all workspaces need to be loaded to merge the Seqtabs from the parallel runs into one object (`03_dada2_glyph_water_mergetest.r`). Those sequences will then be assigned taxonomically and turned into an `phyloseq`-object.
+
+#### File export such as sequences or count tables
+
+If you want to export files from the `dada2`-object such as the corrected ASV-sequences or the ASV-table with the counts, you can use the following code, here shown for a sequence table called `seqtab2.nochimera`. 
+
+```r
+# export the counts and the sequences, which also have their sequence as fasta header
+# this allows us to identify same OTUs when we combine more data sets, as the sequence is the same 
+asv_seqs <- colnames(seqtab2.nochimera)
+asv_headers <- paste0(">", asv_seqs)
+
+# combine fasta header and seq before saving ASV seqs:
+asv_fasta <- c(rbind(asv_headers, asv_seqs))
+write(asv_fasta, file = "ASV.fasta")
+
+# adjust and save according count table:
+asv_tab <- t(seqtab2.nochimera)
+row.names(asv_tab) <- sub(">", "", asv_headers)
+write.table(asv_tab, file = "ASVs_counts.tsv", 
+					 sep = "\t", 
+					 quote = FALSE)
+```
 
 #### Exporting ASV table for phyloseq analysis
 
