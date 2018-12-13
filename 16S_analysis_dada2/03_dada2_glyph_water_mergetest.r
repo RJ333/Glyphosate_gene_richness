@@ -23,9 +23,6 @@ water_seqtable <- mergeSequenceTables(table1 = dna_water_nochim,
 									  orderBy = "abundance")
   
 # assign taxonomy with specially prepared silva database
-# NOTE: it should be possible to use the mothur-like amplicon-trimmed database
-# to reduce memory amount. Not tested
-
 ref_fasta <- "/data/db/silva_nr_v132_train_set.fa.gz"
 taxtab <- assignTaxonomy(water_seqtable, 
 						 refFasta = ref_fasta, 
