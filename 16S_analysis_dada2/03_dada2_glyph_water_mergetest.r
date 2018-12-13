@@ -3,13 +3,7 @@
 
 
 # define working directory to story RData image
-setwd("/data/projects/glyphosate/reads/dada2_processed/water_dna")
-
-# load first workspace representing first amplicon sequencing run
-load(file = "dada2_water_dna.RData")
-
-# this will be the workspace for the combined dada2 objects
-save.image(file = "../dada2_water_comb.RData")
+setwd("/data/projects/glyphosate/reads/dada2_processed/")
 
 # define required packages
 .cran_packages <- c("ggplot2", 
@@ -18,18 +12,6 @@ save.image(file = "../dada2_water_comb.RData")
 					"phyloseq", 
 					"DECIPHER", 
 					"phangorn")
-					
-# check if packages are installed
-.inst <- .cran_packages %in% installed.packages()
-if(any(!.inst)) {
-   install.packages(.cran_packages[!.inst])
-}
-
-.inst <- .bioc_packages %in% installed.packages()
-if(any(!.inst)) {
-   source("http://bioconductor.org/biocLite.R")
-   biocLite(.bioc_packages[!.inst], ask = F)
-}
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
