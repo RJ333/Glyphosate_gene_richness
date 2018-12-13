@@ -37,6 +37,8 @@ wget -O /data/db/silva_species_assignment_v132.fa.gz\
 cd /data/db
 for db in silva*fa.gz; do stat $db | grep "File" -A 5 | sed -e 1b -e '$!d'; done
 ```
+Regarding the data bases: It should be possible to reduce the sequences within the taxonomic data base to the range of your primer object. This is e.g. done in `mothur` by applying the `pcr.seqs()` command. This would reduce the alignment effort. But the taxonomic annotation did not seem to take so long, so currently I will not follow this idea. But it could be important for someone with very large and diverse data sets. 
+
 We are then ready to install `dada2` and `cutadapt` in a `conda` environment
 ```bash
 # install Bioconductor and dada2 in conda
