@@ -1,6 +1,13 @@
-# in this script I tested how to combine objects from different workspaces
-# namely the processed dada2 objects, which were treated separately 
+#!/usr/bin/env R
 
+#' In this script we combine the sequence tables from the separately performed dada2 sequence processing runs.
+#' dada2 corrected the sequences for sequencing errors and therefore treats each unique reference as own OTU or ASV
+#' (Amplicon Sequence Variant). The sequence tables still contain the actual amplicon sequence as taxa. This allows 
+#' us to identify same ASVs from different runs (which otherwise could be called OTU3 in run 1 and OTU7 in run 2).
+#' The data was saved as RDS object. We will read it, merge it and assign taxonomy to it. Finally, all data will be stored
+#' within a phyloseq object.
+
+####### TO DO: so far only tested for the merging step..., go the full way
 
 # define working directory to story RData image
 setwd("/data/projects/glyphosate/reads/dada2_processed/")
@@ -19,14 +26,17 @@ ref_fasta <- "/data/db/silva_nr_v132_train_set.fa.gz"
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
-# merge the sequencetable from two different workspaces into one table
-water_seqtable <- mergeSequenceTables(table1 = dna_water_nochim, 
-									  table2 = cdna_water_nochim,
+# load the sequence tables
+seqtab_dna_water <- readRDS("./water_dna/seqtab_dna_water.RDS")
+seqtab_cdna_water <- readRDS("./water_cdna/seqtab_cdna_water.RDS")
+
+# merge the sequencetable from two different runs into one table
+water_seqtable <- mergeSequenceTables(table1 = seqtab_dna_water, 
+									  table2 = seqtab_cdna_water,
 									  repeats = "error", 
 									  orderBy = "abundance")
   
 # assign taxonomy with specially prepared silva database
-
 taxtab <- assignTaxonomy(water_seqtable, 
 						 refFasta = ref_fasta, 
 						 multithread = TRUE)
