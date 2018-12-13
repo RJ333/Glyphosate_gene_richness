@@ -16,17 +16,6 @@ setwd("/data/projects/glyphosate/reads/dada2_processed/")
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
-# rename respective object from workspace to differentiate from next workspace
-dna_water_nochim <- seqtab2.nochim
-
-# add other work spaces to temporary environment
-tmp.env <- new.env()
-load("../water_cdna/dada2_water_cdna.RData", envir = tmp.env)
-
-# get the objects you need into your globalenv and remove tmp.env
-cdna_water_nochim <- get("seqtab2.nochim", pos = tmp.env)
-rm(tmp.env)
-
 # merge the sequencetable from two different workspaces into one table
 water_seqtable <- mergeSequenceTables(table1 = dna_water_nochim, 
 									  table2 = cdna_water_nochim,
