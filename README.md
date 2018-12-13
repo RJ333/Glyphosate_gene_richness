@@ -123,3 +123,54 @@ write.table(asv_tab, file = "ASVs_counts.tsv",
 #### Exporting ASV table for phyloseq analysis
 
 TODO: explain `phyloseq`, the import of data, the repoducability and comparability of results processed by different workflows such as `mothur`, `dada2`, `qiime` or `Silva`
+
+#### Version info:
+
+```r
+> sessionInfo()
+R version 3.5.1 (2018-07-02)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: CentOS Linux 7 (Core)
+
+Matrix products: default
+BLAS: /home/centos/miniconda3/envs/dada2/lib/R/lib/libRblas.so
+LAPACK: /home/centos/miniconda3/envs/dada2/lib/R/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C
+
+attached base packages:
+[1] stats4    parallel  stats     graphics  grDevices utils     datasets
+[8] methods   base
+
+other attached packages:
+ [1] ShortRead_1.40.0            GenomicAlignments_1.18.0
+ [3] SummarizedExperiment_1.12.0 DelayedArray_0.8.0
+ [5] matrixStats_0.54.0          Biobase_2.42.0
+ [7] Rsamtools_1.34.0            GenomicRanges_1.34.0
+ [9] GenomeInfoDb_1.18.1         Biostrings_2.50.1
+[11] XVector_0.22.0              IRanges_2.16.0
+[13] S4Vectors_0.20.1            BiocParallel_1.16.1
+[15] BiocGenerics_0.28.0         dada2_1.10.0
+[17] Rcpp_1.0.0
+
+loaded via a namespace (and not attached):
+ [1] RColorBrewer_1.1-2     pillar_1.3.0           compiler_3.5.1
+ [4] plyr_1.8.4             bindr_0.1.1            bitops_1.0-6
+ [7] tools_3.5.1            zlibbioc_1.28.0        lattice_0.20-38
+[10] tibble_1.4.2           gtable_0.2.0           pkgconfig_2.0.2
+[13] rlang_0.3.0.1          Matrix_1.2-15          bindrcpp_0.2.2
+[16] GenomeInfoDbData_1.2.0 stringr_1.3.1          hwriter_1.3.2
+[19] dplyr_0.7.8            grid_3.5.1             tidyselect_0.2.5
+[22] data.table_1.11.8      glue_1.3.0             R6_2.3.0
+[25] latticeExtra_0.6-28    reshape2_1.4.3         ggplot2_3.1.0
+[28] purrr_0.2.5            magrittr_1.5           scales_1.0.0
+[31] assertthat_0.2.0       colorspace_1.3-2       stringi_1.2.4
+[34] RCurl_1.95-4.11        lazyeval_0.2.1         RcppParallel_4.4.1
+[37] munsell_0.5.0          crayon_1.3.4
+```
