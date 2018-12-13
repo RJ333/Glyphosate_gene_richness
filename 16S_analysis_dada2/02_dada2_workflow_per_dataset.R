@@ -9,7 +9,6 @@
 
 # define working directory
 setwd("/data/projects/glyphosate/reads/")
-#load(file = "dada2_water_dna.RData")
 
 # Load packages into session, and print package version
 .cran_packages <- c("ggplot2", 
@@ -25,7 +24,6 @@ cutadapt_reads_path <- file.path("../reads_16S_cutadapt", "water_dna")
 dada2_trimmed_path <- file.path("./dada2_processed", "water_dna")
 
 set.seed(100)
-
 
 # collect reads
 amplicon_libraries <- sort(list.files(cutadapt_reads_path, full.names = TRUE))
@@ -106,7 +104,8 @@ corrected_reads_reverse <- dada(dereplicated_reverse,
 								multithread = TRUE)
 
 # Join corrected forward and reverse reads, 
-merged_reads <- mergePairs(corrected_reads_forward, dereplicated_forward, corrected_reads_reverse, dereplicated_reverse)
+merged_reads <- mergePairs(corrected_reads_forward, dereplicated_forward, 
+						   corrected_reads_reverse, dereplicated_reverse)
 
 # Construct sequence table and remove chimeras
 seqtab.all <- makeSequenceTable(merged_reads)
@@ -146,4 +145,20 @@ dim(seqtab2.nochim)
 # chimeras can make up many but low abundant seqs
 sum(seqtab2.nochim)/sum(seqtab2)
 
-save.image(file = "dada2_water_dna.RData")
+# export the counts and the sequences, which also have their sequence as fasta header
+# this allows us to identify same OTUs when we combine more data sets, as the sequence is the same 
+asv_seqs <- colnames(seqtab2.nochim)
+asv_headers <- paste0(">", asv_seqs)
+
+# combine fasta header and seq before saving ASV seqs:
+asv_fasta <- c(rbind(asv_headers, asv_seqs))
+write(asv_fasta, file = paste0(dada2_trimmed_path, "/ASV_dna_water.fasta"))
+
+# adjust and save according count table:
+asv_tab <- t(seqtab2.nochim)
+row.names(asv_tab) <- sub(">", "", asv_headers)
+write.table(asv_tab, file = paste0(dada2_trimmed_path, "/ASVs_counts_dna_water.tsv"), 
+					 sep = "\t", 
+					 quote = FALSE)
+
+sessionInfo()
