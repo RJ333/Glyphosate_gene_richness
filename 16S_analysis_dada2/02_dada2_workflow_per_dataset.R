@@ -145,20 +145,7 @@ dim(seqtab2.nochim)
 # chimeras can make up many but low abundant seqs
 sum(seqtab2.nochim)/sum(seqtab2)
 
-# export the counts and the sequences, which also have their sequence as fasta header
-# this allows us to identify same OTUs when we combine more data sets, as the sequence is the same 
-asv_seqs <- colnames(seqtab2.nochim)
-asv_headers <- paste0(">", asv_seqs)
-
-# combine fasta header and seq before saving ASV seqs:
-asv_fasta <- c(rbind(asv_headers, asv_seqs))
-write(asv_fasta, file = paste0(dada2_trimmed_path, "/ASV_dna_water.fasta"))
-
-# adjust and save according count table:
-asv_tab <- t(seqtab2.nochim)
-row.names(asv_tab) <- sub(">", "", asv_headers)
-write.table(asv_tab, file = paste0(dada2_trimmed_path, "/ASVs_counts_dna_water.tsv"), 
-					 sep = "\t", 
-					 quote = FALSE)
+# save sequence table to be merged with other sequence tables
+saveRDS(seqtab2.nochim, paste0(dada2_trimmed_path, "/seqtab_dna_water.RDS"))
 
 sessionInfo()
