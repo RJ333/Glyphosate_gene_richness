@@ -59,9 +59,6 @@ print(div_subset_list)
 	print("list is not empty, abort to prevend appending...")
 }
 
-# if the list was empty, the function now wrote all subsets into the list
-
-
 # we can now estimate or determine different diversity parameters on our subsets
 all_measures <- list()						  
 counter <- 0
@@ -117,6 +114,7 @@ shannon <- lapply(div_subset_list,
 	print(paste("list is not empty, or counter not 0 (counter is", counter, 
 				"), abort to prevend appending..."))
 }
+
 do.call("grid.arrange", c(shannon, 
 						  nrow = 2, 
 						  top = "Chao1 est richness and Shannon Index"))
@@ -136,50 +134,69 @@ richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
 richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
 richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 
+
 waterdnaglyph <- subset_samples(mothur_div, habitat == "water" & 
 									   nucleic_acid == "dna" &
 									   treatment == "glyph" &
-									   days > 44,
+									   days > 43,
 									   prune = TRUE)
 # update the counts (singletons were removed already)
 waterdnaglyph2 <- filter_taxa(waterdnaglyph, function (x) {sum(x > 0) > 0}, prune = TRUE)
 # calculate measures
-erich <- estimate_richness(waterdnaglyph2, measures = c("Observed", 
-														"Chao1", 
-														"ACE", 
-														"Shannon", 
-														"Simpson", 
-														"InvSimpson", 
-														"Fisher"))
+# erich <- estimate_richness(waterdnaglyph2, measures = c("Observed", 
+														# "Chao1", 
+														# "ACE", 
+														# "Shannon", 
+														# "Simpson", 
+														# "InvSimpson", 
+														# "Fisher"))
 # perform t test with measures												   
-ttest <- t(sapply(erich, function(x) unlist(t.test(x~sample_data(waterdnaglyph2)$condition)[c("estimate",
-																							  "p.value",
-																							   "statistic",
-																							   "conf.int")])))
+# ttest <- t(sapply(erich, function(x) unlist(t.test(x~sample_data(waterdnaglyph2)$condition)[c("estimate",
+																							  # "p.value",
+																							   # "statistic",
+																							   # "conf.int")])))
 
 
-ttest_dnawaterglyph <- ttest																						 
+#ttest_dnawaterglyph <- ttest																						 
 
-ttest_list[["dnawaterglyph"]] <- ttest_dnawaterglyph	
-richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
+#ttest_list[["dnawaterglyph"]] <- ttest_dnawaterglyph	
+#richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
+
+#sample_data(mothur_div)$condition_diversity[sample_data(mothur_div)$condition_diversity == "start"] <- "untreated"
+
 # define order of factor levels
-condition_order <- c("start", "untreated", "treated", "22 to 36", "43 to 71")
+#condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
 
 # plot measures only divided by condition. NA marks samples neither treated or untreated
-richness_plot_dna <- plot_richness(waterdnaglyph2, x = "condition_diversity", 
-						 color = "new_day", 
-						 measures = c("Observed", 
+richness_plot_dna_water_glyph <- plot_richness(waterdnaglyph2, x = "condition_diversity", 
+						 color = "as.factor(new_day)",
+						 measures = c(
+									 #"Observed", 
 									  "Chao1", 
 									  #"ACE", 
 									  "Shannon" 
 									  #"Simpson", 
 									  #"InvSimpson", 
 									 # "Fisher"
-									  )) + geom_violin(alpha = 0.5)
+									  )) +ggtitle("richness_plot_dna_water_glyph")#+ geom_violin(alpha = 0.5)
+									      
 
-richness_plot_dna$data$condition_diversity <- as.character(richness_plot_dna$data$condition_diversity)
-richness_plot_dna$data$condition_diversity <- factor(richness_plot_dna$data$condition_diversity, levels=condition_order)
-print(richness_plot_dna)								  
+richness_plot_dna_water_glyph$data$condition_diversity <- as.character(richness_plot_dna_water_glyph$data$condition_diversity)
+richness_plot_dna_water_glyph$data$condition_diversity <- factor(richness_plot_dna_water_glyph$data$condition_diversity, levels=condition_order)
+print(richness_plot_cdna_water_control)	
+
+
+# put into list and plot together
+plots_div <- list()
+plots_div <- list(richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph,  richness_plot_cdna_water_control, richness_plot_dna_water_control)							  
+plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
+div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 2, top = "Chao1 and Shannon Diversity"))
+ggsave(div_plot_object, file = paste(plot_folder, "Richness_after43.png", 
+								  sep = ""),
+								  height = 13,
+								  width = 20)
+								  
+#scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/diversity/* /mnt/d/denbi/chandler/diversity/
 ########################### general commands to get information on genera and OTUs and their distribution
 										  								  
 # how many genera and how many OTUs per genera, abundant OTUs?
