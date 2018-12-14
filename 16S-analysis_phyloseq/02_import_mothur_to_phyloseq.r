@@ -7,26 +7,12 @@
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
 load("mothur_glyph_002.RData")
 
-save.image("mothur_glyph_002.RData")
-# if you load a workspace, you then only need to load the packages
-
-# define required packages
-# library("knitr")
-# library("BiocStyle")
-
-# .cran_packages <- c("ggplot2", "gridExtra")
-# .bioc_packages <- c("dada2", "phyloseq", "DECIPHER", "phangorn")
-
-# .inst <- .cran_packages %in% installed.packages()
-# if(any(!.inst)) {
-   # install.packages(.cran_packages[!.inst])
-# }
-
-# .inst <- .bioc_packages %in% installed.packages()
-# if(any(!.inst)) {
-   # source("http://bioconductor.org/biocLite.R")
-   # biocLite(.bioc_packages[!.inst], ask = F)
-# }
+.cran_packages <- c("ggplot2", 
+					"gridExtra")
+.bioc_packages <- c("dada2", 
+					"phyloseq", 
+					"DECIPHER", 
+					"phangorn")
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
@@ -82,6 +68,7 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 							  use.names = TRUE)
 # add meta data and OTU representative seqs to phyloseq object
 mothur_ps2 <- merge_phyloseq(mothur_ps, metafile2, refseq(OTU_seqs))
+mothur_ps2_ra <- transform_sample_counts(mothur_ps2, function(x){(x / sum(x)) * 100})
 # remove OTUs with less than 3 reads
 mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 2}, prune = TRUE)
 # transform into relative abundance, displayed in percentage!
@@ -131,3 +118,5 @@ detach("package:phangorn", unload = TRUE)
 
 # add the generated tree to phyloseq
 mothur_ps4_ra <- merge_phyloseq(mothur_ps3_ra, phy_tree(fitGTR$tree))
+
+save.image("mothur_glyph_002.RData")
