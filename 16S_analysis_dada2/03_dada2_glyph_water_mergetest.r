@@ -29,44 +29,44 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 # load the sequence tables
 seqtab_dna_water <- readRDS("./water_dna/seqtab_dna_water.RDS")
 seqtab_cdna_water <- readRDS("./water_cdna/seqtab_cdna_water.RDS")
+seqtab_biofilm <- readRDS("./biofilm/seqtab_biofilm.RDS")
 
 # merge the sequencetable from two different runs into one table
-water_seqtable <- mergeSequenceTables(table1 = seqtab_dna_water, 
+all_seqtables <- mergeSequenceTables(table1 = seqtab_dna_water, 
 									  table2 = seqtab_cdna_water,
+									  table3 = seqtab_biofilm,
 									  repeats = "error", 
 									  orderBy = "abundance")
   
 # assign taxonomy with specially prepared silva database
-taxtab <- assignTaxonomy(water_seqtable, 
+taxtab <- assignTaxonomy(all_seqtables, 
 						 refFasta = ref_fasta, 
 						 multithread = TRUE)
-colnames(taxtab) <- c("Kingdom", 
-					  "Phylum", 
-					  "Class", 
-					  "Order", 
-					  "Family", 
-					  "Genus")
-seqs <- getSequences(water_seqtable)
+# get unique sequences and name them also with their sequence
+seqs <- getSequences(all_seqtables)
+names(seqs) <- seqs
+seqs <- DNAStringSet(seqs)
 
-# turn dada2-output into phyloseq object
-# the sample data can be added later 
-# the tree can later be calculated based on the ps object, after filtering the
-# low abundant OTUs
-ps_dada <- phyloseq(tax_table(taxtab), 
-					otu_table(water_seqtable, 
-							  taxa_are_rows = FALSE), 
+# we use a phyloseq object here to conveniently change the headers of all interlinked data
+# combine sequences, counts and taxonomy into phyloseq object
+ps_dada <- phyloseq(tax_table(taxtab),
+					otu_table(all_seqtables,
+							  taxa_are_rows = FALSE),
 					#phy_tree(fitGTR$tree),
 					refseq(seqs))
-					
-### dada2 uses actual sequences as OTU headers
 
-# this changes the header from the actual sequence to Seq_001, Seq_002 etc
-taxa_names(ps_new)
+# this changes the header from the actual sequence to ASV_001, ASV_002 etc
+taxa_names(ps_dada)
 n_seqs <- seq(ntaxa(ps_dada))
 len_n_seqs <- nchar(max(n_seqs))
-taxa_names(ps_dada) <- paste("Seq", 
+taxa_names(ps_dada) <- paste("ASV", 
 							formatC(n_seqs, 
 									width = len_n_seqs, 
 									flag = "0"), 
 							sep = "_")
 taxa_names(ps_dada)
+
+# write otu table, taxonomy and seqs out
+write.table(as.data.frame(otu_table(ps_dada)), file = "dada2_otu.tsv", sep = "\t")
+write.table(as.data.frame(tax_table(ps_dada)), file = "dada2_tax.tsv", sep = "\t")
+writeXStringSet(refseq(ps_dada), "ASV_seqs.fasta", format = "fasta")
