@@ -5,7 +5,7 @@
 
 # Set the working dir with mothur files in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
-load("mothur_glyph.RData")
+load("mothur_glyph_002.RData")
 
 # Load packages into session, and print package version
 sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
@@ -23,10 +23,10 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 
 # set variables
 #ordinations <- c("NMDS", "CCA")
-mothur_ps_bla <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 0}, prune = TRUE)
+mothur_ps_bla <- filter_taxa(mothur_ps2, function (x) {sum(x > 2) >= 1}, prune = TRUE)
 mothur_ps2_ra <- transform_sample_counts(mothur_ps_bla, function(x){(x / sum(x)) * 100})
 
-ps <- mothur_ps2_ra
+ps <- mothur_ps2_ra 
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
@@ -34,18 +34,18 @@ after_day <- c(43, 44)
 
 
 
-# get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
-	# sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
-											# sample_data(ps)$habitat == habitat & 
-											# sample_data(ps)$days > days),]
-	# phy_subset <- merge_phyloseq(tax_table(ps), 
-								 # otu_table(ps),
-								 # phy_tree(ps),
-								 # refseq(ps),
-								 # sample_subset)
-	# phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) > threshold}, prune = TRUE)
-	# return(phy_subset2)
-# }
+get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
+	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
+											sample_data(ps)$habitat == habitat & 
+											sample_data(ps)$days > days),]
+	phy_subset <- merge_phyloseq(tax_table(ps), 
+								 otu_table(ps),
+								 #phy_tree(ps),
+								 refseq(ps),
+								 sample_subset)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1}, prune = TRUE)
+	return(phy_subset2)
+}
 
 
 # formula <- list("~ glyphosate", NULL)

@@ -5,7 +5,7 @@
 
 # let's generate an own ps-object for the diversity tests and
 # remove OTUs with less than 2 reads for diversity and richness analysis
-mothur_div <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 0}, prune = TRUE)
+mothur_div <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) >= 1}, prune = TRUE)
 
 # this is the function we call to split our data into different subsets
 get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
@@ -17,7 +17,7 @@ get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 								 #phy_tree(ps),
 								 refseq(ps),
 								 sample_subset)
-	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) > threshold}, prune = TRUE)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1}, prune = TRUE)
 	return(phy_subset2)
 }
 
@@ -134,6 +134,9 @@ richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
 richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
 richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 
+sample_data(mothur_div)$condition_diversity[sample_data(mothur_div)$condition_diversity == "start"] <- "untreated"
+# define order of factor levels
+condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
 
 waterdnaglyph <- subset_samples(mothur_div, habitat == "water" & 
 									   nucleic_acid == "dna" &
@@ -141,7 +144,7 @@ waterdnaglyph <- subset_samples(mothur_div, habitat == "water" &
 									   days > 43,
 									   prune = TRUE)
 # update the counts (singletons were removed already)
-waterdnaglyph2 <- filter_taxa(waterdnaglyph, function (x) {sum(x > 0) > 0}, prune = TRUE)
+waterdnaglyph2 <- filter_taxa(waterdnaglyph, function (x) {sum(x > 0) >= 1}, prune = TRUE)
 # calculate measures
 # erich <- estimate_richness(waterdnaglyph2, measures = c("Observed", 
 														# "Chao1", 
@@ -162,10 +165,8 @@ waterdnaglyph2 <- filter_taxa(waterdnaglyph, function (x) {sum(x > 0) > 0}, prun
 #ttest_list[["dnawaterglyph"]] <- ttest_dnawaterglyph	
 #richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 
-#sample_data(mothur_div)$condition_diversity[sample_data(mothur_div)$condition_diversity == "start"] <- "untreated"
 
-# define order of factor levels
-#condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
+
 
 # plot measures only divided by condition. NA marks samples neither treated or untreated
 richness_plot_dna_water_glyph <- plot_richness(waterdnaglyph2, x = "condition_diversity", 
@@ -183,7 +184,7 @@ richness_plot_dna_water_glyph <- plot_richness(waterdnaglyph2, x = "condition_di
 
 richness_plot_dna_water_glyph$data$condition_diversity <- as.character(richness_plot_dna_water_glyph$data$condition_diversity)
 richness_plot_dna_water_glyph$data$condition_diversity <- factor(richness_plot_dna_water_glyph$data$condition_diversity, levels=condition_order)
-print(richness_plot_cdna_water_control)	
+print(richness_plot_dna_water_glyph)	
 
 
 # put into list and plot together

@@ -81,7 +81,7 @@ get_sample_subsets <- function(ps, nucleic_acid, habitat, threshold, treatment){
 								 #phy_tree(ps),
 								 #refseq(ps),
 								 sample_subset)
-	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) > threshold}, prune = TRUE)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1}, prune = TRUE)
 	return(phy_subset2)
 }
 
@@ -196,7 +196,7 @@ Reduce(intersect, list(A,B,C))
 # plot from otu_id and ps_subset
 # we could use the OTU_list function from 04_abs_OTU_abundance_plots
 for_melt <- merge_phyloseq(deseq_ps, metafile2)
-for_melt2 <- filter_taxa(for_melt, function (x) {sum(x > 0) > 2}, prune = TRUE)
+for_melt2 <- filter_taxa(for_melt, function (x) {sum(x > 2) >= 1}, prune = TRUE)
 for_melt3 <- transform_sample_counts(for_melt2, function(x){(x / sum(x)) * 100})
 deseq_melt <- psmelt(for_melt3)
 

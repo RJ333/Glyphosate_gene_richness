@@ -28,9 +28,12 @@ OTU_list <- subset(aggregate(Abundance ~ OTU,
 				# "Otu000039", "Otu000111", "Otu000210", "Otu000024", "Otu000028",
 				# "Otu000096", "Otu000097", "Otu000103", "Otu000149", "Otu000181",
 				# "Otu000186")
+OTU300_list <- vector()			
+for (i in 1:300) {
+OTU300_list[i] <- sprintf("Otu000%03d", i)
+}
 			
-				
-define subset function for specific phyloseq-object
+# define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
 	subset(mothur_ra_melt, OTU == x)
 }
@@ -41,9 +44,9 @@ get_current_otu_data <- function(x) {
 
 # where the plots should be stored
 #plot_folder <- "/data/projects/glyphosate/plots/R/OTU_abundance/"
-plot_folder <- "/data/projects/glyphosate/plots/R/deseq/"
+plot_folder <- "/data/projects/glyphosate/plots/R/deseq/top300"
 # run a for loop to ggplot each OTU in list with own title and file name
-for (i in OTU_list){
+for (i in OTU300_list){
 current_otu_data <- get_current_otu_data(i)
 print(paste("OTU is", i))
 
@@ -110,4 +113,4 @@ scale_linetype_manual(values = c("dna" = 1,
 						 height = 7)
 }
 
-#scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.103:/data/projects/glyphosate/plots/R/deseq/* /mnt/d/denbi/phoebe/deseq/
+#scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/deseq/top300/* /mnt/d/denbi/chandler/deseq/top300

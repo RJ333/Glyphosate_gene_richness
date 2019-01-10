@@ -35,7 +35,7 @@ tree_plot <- plot_tree(ps_water_glyph,
 # goodTaxa <- setdiff(taxa_names(ps_water_glyph), badTaxa)
 # ps_water_glyph2 <- prune_taxa(goodTaxa, ps_water_glyph)
 													
-ps_water_glyph2 <- filter_taxa(ps_water_glyph, function (x) {sum(x > 0) > 80}, prune = TRUE)											
+ps_water_glyph2 <- filter_taxa(ps_water_glyph, function (x) {sum(x > 5) >= 1}, prune = TRUE)											
 			
 tree_plot <- plot_tree(ps_water_glyph2, "treeonly",
 								label.tips = "taxa_names", 
@@ -119,7 +119,7 @@ draw_phyloseq_ggtree <- function(phyloseq) {
 
 draw_phyloseq_ggtree(ps_dna_water_glyph2)
 										  
-ps_dna_water_glyph5 <- filter_taxa(ps_dna_water_glyph, function (x) {sum(x > 0) > 5}, prune = TRUE)
+ps_dna_water_glyph5 <- filter_taxa(ps_dna_water_glyph, function (x) {sum(x > 5) >= 1}, prune = TRUE)
 
 
 # one edge is super long, needs to be removed OTU000641

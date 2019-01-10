@@ -83,8 +83,8 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_water_003.fasta",
 							  use.names = TRUE)
 # add meta data and OTU representative seqs to phyloseq object
 mothur_ps2 <- merge_phyloseq(mothur_ps, metafile2, refseq(OTU_seqs))
-# remove OTUs with less than 3 reads
-mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) > 2}, prune = TRUE)
+# remove OTUs with less than 2 reads in at least one sample
+mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 1) >= 1}, prune = TRUE)
 # transform into relative abundance, displayed in percentage!
 mothur_ps3_ra <- transform_sample_counts(mothur_ps3, function(x){(x / sum(x)) * 100})
 mothur_ra_melt <- psmelt(mothur_ps3_ra)
