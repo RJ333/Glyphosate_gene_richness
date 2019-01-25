@@ -30,7 +30,7 @@ ps <- mothur_ps2_ra
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
-after_day <- c(43, 44)
+after_day <- 43
 
 
 
@@ -190,12 +190,16 @@ nmds_ordination_plots <- mapply(function(x,y) {
 										 color = "new_day", 
 										 shape = "treatment") + 
 							geom_polygon(aes(fill = disturbance)) + 
-							geom_point(size = 5) + 
+							geom_point(size = 6) + 
 							guides(color = FALSE) +
 							ggtitle(names(sample_subset_list)[counter]) +
 							geom_text(aes(label = new_day), 
 									  colour = "black", 
-									  size = 2)
+									  size = 3.5) +
+							theme(axis.text = element_text(size = 18),
+								  axis.title = element_text(size = 20, face = "bold"),
+								  legend.title = element_text(size = 15, face = "bold"), 
+								  legend.text = element_text(size = 13))
 }, x = sample_subset_list, 
    y = ordination_nmds, 
    SIMPLIFY = FALSE)
@@ -203,7 +207,8 @@ nmds_ordination_plots <- mapply(function(x,y) {
 	print(paste("list is not empty, or counter not 0 (counter is", counter, 
 				"), abort to prevend appending..."))
 }
-
+do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3)], nrow = 1, top = "NMDS"))
+do.call("grid.arrange", c(nmds_ordination_plots[c(2, 4)], nrow = 1, top = "NMDS"))
 
 # CCA, RDA function
 # cca_ordination_plots <- list()
@@ -232,17 +237,17 @@ require(gridExtra)
 								  # sep = ""),
 								  # height = 13,
 								  # width = 20)
-#do.call("grid.arrange", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))								  
-g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))	
-ggsave(g1, file = paste(plot_folder, threshold,"_nmds_after_43_AT.png", 
+#do.call("grid.arrange", c(nmds_ordination_plots[c(1:2)], nrow = 1, top = "NMDS"))								  
+g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1,3)], nrow = 1, top = "NMDS"))	
+ggsave(g1, file = paste(plot_folder, threshold,"water_nmds_after_43_AT_larger_font.png", 
 								  sep = ""),
-								  height = 13,
+								  height = 10,
 								  width = 20)
 #do.call("grid.arrange", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))								  
-g2 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))
-ggsave(g2, file = paste(plot_folder, threshold,"_nmds_after_44_AT.png", 
+g2 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(2,4)], nrow = 2, top = "NMDS"))
+ggsave(g2, file = paste(plot_folder, threshold,"biofilm_nmds_after_43_AT_larger_font.png", 
 								  sep = ""),
-								  height = 13,
+								  height = 10,
 								  width = 20)
 						  
 # do.call("arrangeGrob", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))

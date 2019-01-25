@@ -1,17 +1,30 @@
 # this interactive script subsets a specific OTU and plots it absolute
 # abundance in the water column over days per nucleic acid and treatment
 # absolute abundance is relative abundance * total cell count!
+
+# Set the working dir with mothur files in it
+setwd("/data/projects/glyphosate/reads/mothur_processed/")
+load("mothur_glyph_002.RData")
+
+.cran_packages <- c("ggplot2", 
+					"gridExtra")
+.bioc_packages <- c("dada2", 
+					"phyloseq", 
+					"DECIPHER", 
+					"phangorn")
+
+# Load packages into session, and print package version
+sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 require(scales)
-require(ggplot2)
 
 # where the plots should be stored
 plot_folder <- "/data/projects/glyphosate/plots/R/OTU_abundance/"
 
+# Gallaecimonas is Otu000011
 abs_OTU_abundance <- subset(mothur_ra_melt, OTU == "Otu000011" &
 										    habitat == "water")
 # add taxonomy										   
-species_title <- unique(paste(abs_OTU_abundance$family, 
-							  abs_OTU_abundance$genus, 
+species_title <- unique(paste(abs_OTU_abundance$genus, 
 							  abs_OTU_abundance$OTU, 
 							  sep = "_"))
 							  
@@ -59,12 +72,13 @@ ggplot(data = abs_OTU_abundance,
 										   gsub("e", " %*% 10^", 
 										     scientific_format()(x)))))}) +
 	theme_bw() +
-	ggtitle(species_title) +
+	#ggtitle(species_title) +
+	labs(x = "Days after glyphosate addition", y = "Absolute abundance [cells x mL ^-1]")+
 	theme(axis.text = element_text(size = 18))+
 	theme(panel.grid.major = element_line(colour = NA, size = 0.2))+
 	theme(panel.grid.minor = element_line(colour = NA, size = 0.5))+
 	#theme(legend.position = "none")+
-	theme(axis.title = element_blank()) #+
+	theme(axis.title = element_text(size = 20, face = "bold")) #+
 	ggsave(file = paste(plot_folder, 
 									  species_title, 
 									  "abs.png", 

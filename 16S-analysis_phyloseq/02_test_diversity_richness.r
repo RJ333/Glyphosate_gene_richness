@@ -5,8 +5,24 @@
 
 # let's generate an own ps-object for the diversity tests and
 # remove OTUs with less than 2 reads for diversity and richness analysis
-mothur_div <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) >= 1}, prune = TRUE)
+# mothur_div <- filter_taxa(mothur_ps2, function (x) {sum(x > 0) >= 1}, prune = TRUE)
+# Set the working dir with mothur files in it
+setwd("/data/projects/glyphosate/reads/mothur_processed/")
+load("mothur_glyph_002.RData")
 
+.cran_packages <- c("ggplot2", 
+					"gridExtra")
+.bioc_packages <- c("dada2", 
+					"phyloseq", 
+					"DECIPHER", 
+					"phangorn")
+
+# Load packages into session, and print package version
+sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
+
+# include singletons
+mothur_ps2
+mothur_div <- mothur_ps2
 # this is the function we call to split our data into different subsets
 get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
@@ -26,7 +42,7 @@ ps <- mothur_div
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
-after_day <- 44
+after_day <- 43
 
 # this is the nested for loop which calls the subsetting function 
 # for each combination of subsetting variables
@@ -138,61 +154,64 @@ sample_data(mothur_div)$condition_diversity[sample_data(mothur_div)$condition_di
 # define order of factor levels
 condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
 
-waterdnaglyph <- subset_samples(mothur_div, habitat == "water" & 
+waterdnacontrol <- subset_samples(mothur_div, habitat == "water" & 
 									   nucleic_acid == "dna" &
-									   treatment == "glyph" &
+									   treatment == "control" &
 									   days > 43,
 									   prune = TRUE)
-# update the counts (singletons were removed already)
-waterdnaglyph2 <- filter_taxa(waterdnaglyph, function (x) {sum(x > 0) >= 1}, prune = TRUE)
+
 # calculate measures
-# erich <- estimate_richness(waterdnaglyph2, measures = c("Observed", 
-														# "Chao1", 
-														# "ACE", 
-														# "Shannon", 
-														# "Simpson", 
-														# "InvSimpson", 
-														# "Fisher"))
+# erich_waterdnacontrol <- estimate_richness(waterdnacontrol, measures = c("Observed", 
+																	 # "Chao1", 
+																	 # "ACE", 
+																	 # "Shannon", 
+																	 # "Simpson", 
+																	 # "InvSimpson", 
+																	 # "Fisher"))
 # perform t test with measures												   
-# ttest <- t(sapply(erich, function(x) unlist(t.test(x~sample_data(waterdnaglyph2)$condition)[c("estimate",
-																							  # "p.value",
-																							   # "statistic",
-																							   # "conf.int")])))
+# ttest_waterdnacontrol <- t(sapply(erich_waterdnacontrol, function(x) unlist(t.test(x~sample_data(waterdnacontrol)$condition)[c("estimate",
+																														 # "p.value",
+																														 # "statistic",
+																														 # "conf.int")])))
 
 
-#ttest_dnawaterglyph <- ttest																						 
+#ttest_dnawatercontrol <- ttest																						 
 
-#ttest_list[["dnawaterglyph"]] <- ttest_dnawaterglyph	
-#richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
+#ttest_list[["dnawatercontrol"]] <- ttest_dnawatercontrol	
+#richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
 
 
 
 
 # plot measures only divided by condition. NA marks samples neither treated or untreated
-richness_plot_dna_water_glyph <- plot_richness(waterdnaglyph2, x = "condition_diversity", 
+richness_plot_dna_water_control <- plot_richness(waterdnacontrol, x = "condition_diversity", 
 						 color = "as.factor(new_day)",
 						 measures = c(
 									 #"Observed", 
-									  "Chao1", 
+									 #"Chao1", 
 									  #"ACE", 
 									  "Shannon" 
 									  #"Simpson", 
 									  #"InvSimpson", 
 									 # "Fisher"
-									  )) +ggtitle("richness_plot_dna_water_glyph")#+ geom_violin(alpha = 0.5)
-									      
+									  )) + geom_point(alpha = 0.8, size = 4) +
+									  ggtitle("richness_plot_dna_water_control") + #+ geom_violin(alpha = 0.5)
+									      theme(axis.text = element_text(size = 18),
+								  axis.title = element_text(size = 20, face = "bold"),
+								  legend.title = element_text(size = 15, face = "bold"), 
+								  legend.text = element_text(size = 13))
 
-richness_plot_dna_water_glyph$data$condition_diversity <- as.character(richness_plot_dna_water_glyph$data$condition_diversity)
-richness_plot_dna_water_glyph$data$condition_diversity <- factor(richness_plot_dna_water_glyph$data$condition_diversity, levels=condition_order)
-print(richness_plot_dna_water_glyph)	
+richness_plot_dna_water_control$data$condition_diversity <- as.character(richness_plot_dna_water_control$data$condition_diversity)
+richness_plot_dna_water_control$data$condition_diversity <- factor(richness_plot_dna_water_control$data$condition_diversity, levels=condition_order)
+print(richness_plot_dna_water_control)	
 
 
 # put into list and plot together
 plots_div <- list()
 plots_div <- list(richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph,  richness_plot_cdna_water_control, richness_plot_dna_water_control)							  
 plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
-div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 2, top = "Chao1 and Shannon Diversity"))
-ggsave(div_plot_object, file = paste(plot_folder, "Richness_after43.png", 
+div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 2, top = "Shannon Diversity"))
+ggsave(div_plot_object, file = paste(plot_folder, "Shannon_after43_larger_font.png", 
 								  sep = ""),
 								  height = 13,
 								  width = 20)
@@ -204,7 +223,7 @@ ggsave(div_plot_object, file = paste(plot_folder, "Richness_after43.png",
 str(mothur_ra_melt)
 
 # highest genus abundance per habitat
-genus_max <- aggregate(Abundance ~ genus + family + habitat, data = mothur_ra_melt, max)
+genus_max <- aggregate(Abundance ~ OTU + genus, data = mothur_ra_melt, max)
 #genus_max <- aggregate(Abundance ~ genus + family + habitat, data = deseq_melt, max)
 genus_max$Abundance <- round(genus_max$Abundance, 2)
 genus_max[order(-genus_max$Abundance),]
