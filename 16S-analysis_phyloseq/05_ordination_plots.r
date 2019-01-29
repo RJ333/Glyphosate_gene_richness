@@ -189,7 +189,7 @@ nmds_ordination_plots <- mapply(function(x,y) {
 										 type = "sample", 
 										 color = "new_day", 
 										 shape = "treatment") + 
-							geom_polygon(aes(fill = disturbance)) + 
+							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) + 
 							geom_point(size = 6) + 
 							guides(color = FALSE) +
 							ggtitle(names(sample_subset_list)[counter]) +
