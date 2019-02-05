@@ -83,7 +83,7 @@ mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 # need to remove "Sample" to average the parallels
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
-								+ cell_counts + glyphosate + glyphosate_gone + condition_diversity +
+								+ glyphosate + glyphosate_gone + condition_diversity +
 								+ kingdom + phylum + class + order + family + genus + otu_id, 
 								data = mothur_ra_melt, 
 								mean)

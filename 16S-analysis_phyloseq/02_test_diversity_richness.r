@@ -150,7 +150,11 @@ richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
 richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
 richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 
+
+# set factor levels for tests, first for plotting, second for ttest
 sample_data(mothur_div)$condition_diversity[sample_data(mothur_div)$condition_diversity == "start"] <- "untreated"
+sample_data(mothur_div)$condition[sample_data(mothur_div)$new_day == -25] <- "untreated"
+
 # define order of factor levels
 condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
 
@@ -161,24 +165,21 @@ waterdnacontrol <- subset_samples(mothur_div, habitat == "water" &
 									   prune = TRUE)
 
 # calculate measures
-# erich_waterdnacontrol <- estimate_richness(waterdnacontrol, measures = c("Observed", 
-																	 # "Chao1", 
-																	 # "ACE", 
-																	 # "Shannon", 
-																	 # "Simpson", 
-																	 # "InvSimpson", 
-																	 # "Fisher"))
+erich_waterdnacontrol <- estimate_richness(waterdnacontrol, measures = c("Observed", 
+																	 "Chao1", 
+																	 "ACE", 
+																	 "Shannon", 
+																	 "Simpson", 
+																	 "InvSimpson", 
+																	 "Fisher"))
 # perform t test with measures												   
-# ttest_waterdnacontrol <- t(sapply(erich_waterdnacontrol, function(x) unlist(t.test(x~sample_data(waterdnacontrol)$condition)[c("estimate",
-																														 # "p.value",
-																														 # "statistic",
-																														 # "conf.int")])))
+ttest_waterdnacontrol <- t(sapply(erich_waterdnacontrol, function(x) unlist(t.test(x~sample_data(waterdnacontrol)$condition)[c("estimate",
+																														 "p.value",
+																														 "statistic",
+																														 "conf.int")])))																					 
 
-
-#ttest_dnawatercontrol <- ttest																						 
-
-#ttest_list[["dnawatercontrol"]] <- ttest_dnawatercontrol	
-#richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
+ttest_list[["dnawatercontrol"]] <- ttest_waterdnacontrol	
+#richness_subset_list[["biofilm_dna_control"]] <- biofilmdnacontrol2
 
 
 
@@ -202,7 +203,7 @@ richness_plot_dna_water_control <- plot_richness(waterdnacontrol, x = "condition
 								  legend.text = element_text(size = 13))
 
 richness_plot_dna_water_control$data$condition_diversity <- as.character(richness_plot_dna_water_control$data$condition_diversity)
-richness_plot_dna_water_control$data$condition_diversity <- factor(richness_plot_dna_water_control$data$condition_diversity, levels=condition_order)
+richness_plot_dna_water_control$data$condition_diversity <- factor(richness_plot_dna_water_control$data$condition_diversity, levels = condition_order)
 print(richness_plot_dna_water_control)	
 
 
@@ -211,19 +212,26 @@ plots_div <- list()
 plots_div <- list(richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph,  richness_plot_cdna_water_control, richness_plot_dna_water_control)							  
 plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
 div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 2, top = "Shannon Diversity"))
-ggsave(div_plot_object, file = paste(plot_folder, "Shannon_after43_larger_font.png", 
+ggsave(div_plot_object, file = paste(plot_folder, "Shannon_water_after43_larger_font.png", 
 								  sep = ""),
 								  height = 13,
 								  width = 20)
 								  
 #scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/diversity/* /mnt/d/denbi/chandler/diversity/
 ########################### general commands to get information on genera and OTUs and their distribution
+
+
+# for biofilm
+genus_max <- aggregate(Abundance ~ OTU + genus + family + order + habitat + nucleic_acid, data = mothur_ra_melt, max)
+genus_max_biofilm <- subset(genus_max, habitat == "biofilm" & order == "Rhizobiales")
+max(genus_max_biofilm$Abundance)
+genus_max_biofilm <- genus_max_biofilm[order(-genus_max_biofilm$Abundance),]
 										  								  
 # how many genera and how many OTUs per genera, abundant OTUs?
 str(mothur_ra_melt)
 
 # highest genus abundance per habitat
-genus_max <- aggregate(Abundance ~ OTU + genus, data = mothur_ra_melt, max)
+genus_max <- aggregate(Abundance ~ OTU + genus + habitat, data = mothur_ra_melt, max)
 #genus_max <- aggregate(Abundance ~ genus + family + habitat, data = deseq_melt, max)
 genus_max$Abundance <- round(genus_max$Abundance, 2)
 genus_max[order(-genus_max$Abundance),]

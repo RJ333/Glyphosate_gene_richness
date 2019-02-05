@@ -2,15 +2,11 @@
 source("https://bioconductor.org/biocLite.R")
 biocLite("ggtree")
 
-# fine, but gives me a lot of sample points which I don't need
-plot_tree(ps, label.tips = "genus")
-# this is also fine, but the sequence header alone does not help me
-plot_tree(ps, "treeonly", label.tips = "taxa_names")
-# this would be what I want:
-plot_tree(ps, "treeonly", label.tips = "genus")
-# but gives
-
-ps <- ps_water_glyph2 
+# remove OTUs with less than 7 reads in at least 2 samples
+mothur_ps5 <- filter_taxa(mothur_ps2, function (x) {sum(x > 10) >= 2}, prune = TRUE)
+# add the generated tree to phyloseq
+mothur_tree <- merge_phyloseq(mothur_ps5, phy_tree(fitGTR$tree))
+mothur_tree2 <- filter_taxa(mothur_tree, function (x) {sum(x > 10) >= 2}, prune = TRUE)
 
 
 require(ggplot2)
@@ -19,15 +15,39 @@ require(phyloseq)
 require(scales)
 # plot phylogenetic trees for data subset
 
-ps_water_glyph <- subset_samples(mothur_ps4_ra,	habitat == "water" &
-													treatment == "glyph",
-													prune = TRUE)
 
-tree_plot <- plot_tree(ps_water_glyph, 
+
+ps_biofilm <- subset_samples(mothur_tree,	habitat == "biofilm",
+											prune = TRUE)
+											
+ps_water <- subset_samples(mothur_tree,	habitat == "water",
+											prune = TRUE)
+plot_tree(mothur_tree, 
 								label.tips = "genus", 
-							  color = "disturbance",
-							   #size = "Abundance",
-							   text.size = 2)
+							  color = "habitat",
+							  shape = "nucleic_acid",
+							   size = "Abundance",
+							   text.size = 2,
+							   ladderize = TRUE)
+
+											
+biofilm_6_tree <- plot_tree(ps_biofilm, 
+								label.tips = "genus", 
+							  color = "nucleic_acid",
+							  #shape = "nucleic_acid",
+							   size = "Abundance",
+							   text.size = 2,
+							   ladderize = TRUE)
+							   
+water_6_tree <- plot_tree(ps_water, 
+								label.tips = "genus", 
+							  color = "nucleic_acid",
+							  #shape = "nucleic_acid",
+							   size = "Abundance",
+							   text.size = 2,
+							   ladderize = TRUE)
+							   
+							   
 
 # cutoff 0.02 data contains some very different OTUs, which stretch the tree
 # let's remove those							   

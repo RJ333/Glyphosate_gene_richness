@@ -21,35 +21,37 @@ packageVersion("DESeq2")
 # generate a phyloseq object from scratch to avoid conflicts with packages
 
 # import mothur output into phyloseq
-deseq_ps <- import_mothur(mothur_list_file = NULL, 
-						   mothur_group_file = NULL,
-						   mothur_tree_file = NULL, 
-						   cutoff = NULL, 
-						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
-						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
-						   parseFunction = parse_taxonomy_default)
+# deseq_ps <- import_mothur(mothur_list_file = NULL, 
+						   # mothur_group_file = NULL,
+						   # mothur_tree_file = NULL, 
+						   # cutoff = NULL, 
+						   # mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
+						   # mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
+						   # parseFunction = parse_taxonomy_default)
   
 # adjust taxonomy header
-tax_table(deseq_ps) <- cbind(tax_table(deseq_ps), 
-    rownames(tax_table(deseq_ps)))
-colnames(tax_table(deseq_ps)) <- c("kingdom", 
-									"phylum", 
-									"class", 
-									"order", 
-									"family", 
-									"genus", 
-									"otu_id")
-rank_names(deseq_ps)
+# tax_table(deseq_ps) <- cbind(tax_table(deseq_ps), 
+    # rownames(tax_table(deseq_ps)))
+# colnames(tax_table(deseq_ps)) <- c("kingdom", 
+									# "phylum", 
+									# "class", 
+									# "order", 
+									# "family", 
+									# "genus", 
+									# "otu_id")
+# rank_names(deseq_ps)
 
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond3.tsv", 
-						row.names = 1, 
-						header = TRUE,
-						na.strings = "")
-metafile2 <- sample_data(metafile)
+# metafile <- read.delim("/data/projects/glyphosate/analysis/metadata/all_samples_with_meta_cond3.tsv", 
+						# row.names = 1, 
+						# header = TRUE,
+						# na.strings = "")
+# metafile2 <- sample_data(metafile)
 
+mothur_ps2
+deseq_ps2 <- mothur_ps2
 # add meta data and OTU representative seqs to phyloseq object
-deseq_ps2 <- merge_phyloseq(deseq_ps, metafile2)
+#deseq_ps2 <- merge_phyloseq(deseq_ps, metafile2)
 # test variable is not allowed to contain NA
 deseq_ps2 <- subset_samples(deseq_ps2, !(is.na(condition)))
 # check levels for test variable
@@ -57,15 +59,15 @@ head(sample_data(deseq_ps2)$condition, 50)
 
 ### for single tasks
 
-deseq_ps2_glyph_water <- subset_samples(deseq_ps2, treatment == "glyph" & habitat == "water", prune = TRUE)
-diagdds = phyloseq_to_deseq2(deseq_ps2_glyph_water, ~ condition)
+deseq_ps2_glyph_biofilm_cdna <- subset_samples(deseq_ps2, treatment == "glyph" & habitat == "biofilm" & nucleic_acid == "cdna", prune = TRUE)
+diagdds = phyloseq_to_deseq2(deseq_ps2_glyph_biofilm_cdna, ~ condition)
 diagdds$condition <- relevel(diagdds$condition, ref = "untreated")
 diagdds = DESeq(diagdds, test = "Wald", fitType = "parametric")
 
 res = results(diagdds, cooksCutoff = FALSE)
 alpha = 0.01
 sigtab = res[which(res$padj < alpha), ]
-sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(ps)[rownames(sigtab), ], "matrix"))
+sigtab = cbind(as(sigtab, "data.frame"), as(tax_table(deseq_ps2_glyph_biofilm_cdna)[rownames(sigtab), ], "matrix"))
 head(sigtab)
 
 
