@@ -192,6 +192,7 @@ nmds_ordination_plots <- mapply(function(x,y) {
 							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) + 
 							geom_point(size = 6) + 
 							guides(color = FALSE) +
+							coord_cartesian(ylim = c(-0.8, 1), xlim = c(-1, 0.8)) +
 							ggtitle(names(sample_subset_list)[counter]) +
 							geom_text(aes(label = new_day), 
 									  colour = "black", 
@@ -207,7 +208,7 @@ nmds_ordination_plots <- mapply(function(x,y) {
 	print(paste("list is not empty, or counter not 0 (counter is", counter, 
 				"), abort to prevend appending..."))
 }
-do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3)], nrow = 1, top = "NMDS"))
+do.call("grid.arrange", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))
 do.call("grid.arrange", c(nmds_ordination_plots[c(2, 4)], nrow = 1, top = "NMDS"))
 
 # CCA, RDA function
@@ -238,10 +239,10 @@ require(gridExtra)
 								  # height = 13,
 								  # width = 20)
 #do.call("grid.arrange", c(nmds_ordination_plots[c(1:2)], nrow = 1, top = "NMDS"))								  
-g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1,3)], nrow = 1, top = "NMDS"))	
-ggsave(g1, file = paste(plot_folder, threshold,"water_nmds_after_43_AT_larger_font.png", 
+g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))	
+ggsave(g1, file = paste(plot_folder, threshold,"nmds_after_43_AT_larger_font.png", 
 								  sep = ""),
-								  height = 10,
+								  height = 16,
 								  width = 20)
 #do.call("grid.arrange", c(nmds_ordination_plots[c(5:8)], nrow = 2, top = "NMDS"))								  
 g2 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(2,4)], nrow = 2, top = "NMDS"))

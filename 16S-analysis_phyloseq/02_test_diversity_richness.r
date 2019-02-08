@@ -23,6 +23,74 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 # include singletons
 mothur_ps2
 mothur_div <- mothur_ps2
+
+
+dnaglyph <- subset_samples(mothur_div, nucleic_acid == "dna" &
+									   days > 43,
+									   prune = TRUE)
+# plot indiviual richness
+dna_richness_plot <- plot_richness(dnaglyph, x = "new_day", 
+						 color = "treatment",
+						 shape = "habitat",
+						 measures = c(
+									 #"Observed", 
+									 #"Chao1", 
+									  #"ACE", 
+									  "Shannon" 
+									  #"Simpson", 
+									  #"InvSimpson", 
+									 # "Fisher"
+									  )) + geom_point(alpha = 0.8, size = 4) +
+									  geom_vline(aes(xintercept = 1), 
+			   linetype = "dashed", 
+			   size = 1.2) +
+			   	stat_summary(data = subset(dnaglyph, treatment == "control"), 
+	             aes(colour = "treatment"), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2, 
+				 alpha = 1) +
+	stat_summary(data = subset(dnaglyph, treatment == "glyph"), 
+	             aes(colour = "treatment"), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2) +
+									  ggtitle("Shannon index dna") + #+ geom_violin(alpha = 0.5)
+									  coord_cartesian(ylim = c(1, 3)) +
+									  	theme_bw() +
+									      theme(axis.text = element_text(size = 18),
+								  axis.title = element_text(size = 20, face = "bold"),
+								  legend.title = element_text(size = 15, face = "bold"), 
+								  legend.text = element_text(size = 13)) +
+								  	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+
+	labs( x = "Days") +
+	theme(panel.grid.major = element_line(colour = NA, size = 0.2))+
+	theme(panel.grid.minor = element_line(colour = NA, size = 0.5))+
+	#theme(legend.position = "none")+
+	#theme(axis.title = element_blank()) +
+								  facet_wrap(~ habitat, nrow = 2)
+
+# put into list and plot together
+plots_div <- list()
+plots_div <- list(dna_richness_plot, cdna_richness_plot)							  
+plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
+div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 1, top = "Shannon Diversity DNA and RNA"))
+ggsave(div_plot_object, file = paste(plot_folder, "Shannon_DNA_RNA.png", 
+								  sep = ""),
+								  height = 16,
+								  width = 20)
+
+
+
+
+
+
+
+
+
+
+
 # this is the function we call to split our data into different subsets
 get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
@@ -145,9 +213,9 @@ do.call("grid.arrange", c(shannon,
 
 ttest_list <- list()
 richness_subset_list <- list()
-richness_subset_list[["water_cdna_control"]] <- watercdnacontrol2
 richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
-richness_subset_list[["water_dna_control"]] <- waterdnacontrol2
+richness_subset_list[["water_cdna_glyph"]] <- watercdnaglyph2
+richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 richness_subset_list[["water_dna_glyph"]] <- waterdnaglyph2
 
 
@@ -158,14 +226,14 @@ sample_data(mothur_div)$condition[sample_data(mothur_div)$new_day == -25] <- "un
 # define order of factor levels
 condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
 
-waterdnacontrol <- subset_samples(mothur_div, habitat == "water" & 
+waterdnaglyph <- subset_samples(mothur_div, habitat == "water" & 
 									   nucleic_acid == "dna" &
-									   treatment == "control" &
+									   treatment == "glyph" &
 									   days > 43,
 									   prune = TRUE)
 
 # calculate measures
-erich_waterdnacontrol <- estimate_richness(waterdnacontrol, measures = c("Observed", 
+erich_waterdnaglyph <- estimate_richness(waterdnaglyph, measures = c("Observed", 
 																	 "Chao1", 
 																	 "ACE", 
 																	 "Shannon", 
@@ -173,19 +241,19 @@ erich_waterdnacontrol <- estimate_richness(waterdnacontrol, measures = c("Observ
 																	 "InvSimpson", 
 																	 "Fisher"))
 # perform t test with measures												   
-ttest_waterdnacontrol <- t(sapply(erich_waterdnacontrol, function(x) unlist(t.test(x~sample_data(waterdnacontrol)$condition)[c("estimate",
+ttest_waterdnaglyph <- t(sapply(erich_waterdnaglyph, function(x) unlist(t.test(x~sample_data(waterdnaglyph)$condition)[c("estimate",
 																														 "p.value",
 																														 "statistic",
 																														 "conf.int")])))																					 
 
-ttest_list[["dnawatercontrol"]] <- ttest_waterdnacontrol	
-#richness_subset_list[["biofilm_dna_control"]] <- biofilmdnacontrol2
+ttest_list[["dnawaterglyph"]] <- ttest_waterdnaglyph	
+#richness_subset_list[["biofilm_dna_glyph"]] <- biofilmdnaglyph2
 
 
 
 
 # plot measures only divided by condition. NA marks samples neither treated or untreated
-richness_plot_dna_water_control <- plot_richness(waterdnacontrol, x = "condition_diversity", 
+richness_plot_dna_water_glyph <- plot_richness(waterdnaglyph, x = "condition_diversity", 
 						 color = "as.factor(new_day)",
 						 measures = c(
 									 #"Observed", 
@@ -196,20 +264,20 @@ richness_plot_dna_water_control <- plot_richness(waterdnacontrol, x = "condition
 									  #"InvSimpson", 
 									 # "Fisher"
 									  )) + geom_point(alpha = 0.8, size = 4) +
-									  ggtitle("richness_plot_dna_water_control") + #+ geom_violin(alpha = 0.5)
+									  ggtitle("richness_plot_dna_water_glyph") + #+ geom_violin(alpha = 0.5)
 									      theme(axis.text = element_text(size = 18),
 								  axis.title = element_text(size = 20, face = "bold"),
 								  legend.title = element_text(size = 15, face = "bold"), 
 								  legend.text = element_text(size = 13))
 
-richness_plot_dna_water_control$data$condition_diversity <- as.character(richness_plot_dna_water_control$data$condition_diversity)
-richness_plot_dna_water_control$data$condition_diversity <- factor(richness_plot_dna_water_control$data$condition_diversity, levels = condition_order)
-print(richness_plot_dna_water_control)	
+richness_plot_dna_water_glyph$data$condition_diversity <- as.character(richness_plot_dna_water_glyph$data$condition_diversity)
+richness_plot_dna_water_glyph$data$condition_diversity <- factor(richness_plot_dna_water_glyph$data$condition_diversity, levels = condition_order)
+print(richness_plot_dna_water_glyph)	
 
 
 # put into list and plot together
 plots_div <- list()
-plots_div <- list(richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph,  richness_plot_cdna_water_control, richness_plot_dna_water_control)							  
+plots_div <- list(richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph,  richness_plot_cdna_water_glyph, richness_plot_dna_water_glyph)							  
 plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
 div_plot_object <- do.call("arrangeGrob", c(plots_div, nrow = 2, top = "Shannon Diversity"))
 ggsave(div_plot_object, file = paste(plot_folder, "Shannon_water_after43_larger_font.png", 
@@ -234,7 +302,7 @@ str(mothur_ra_melt)
 genus_max <- aggregate(Abundance ~ OTU + genus + habitat, data = mothur_ra_melt, max)
 #genus_max <- aggregate(Abundance ~ genus + family + habitat, data = deseq_melt, max)
 genus_max$Abundance <- round(genus_max$Abundance, 2)
-genus_max[order(-genus_max$Abundance),]
+genus_max[order(genus_max$Abundance),]
 
 # number of OTUs per genus
 genus_distribution <- aggregate(Abundance ~ OTU + habitat + genus, 
@@ -300,3 +368,44 @@ OTUs_per_genus_max[grep("Escherichia", OTUs_per_genus_max$genus),]
 
 # max abundance of an OTU of a certain genus
 max(subset(mothur_ra_melt, grepl('Pseudomonas', genus))$Abundance)
+
+# test for plot overlay
+
+# define order of factor levels
+condition_order <- c("untreated", "treated", "22 to 36", "43 to 71")
+
+biofilmglyph <- subset_samples(mothur_div, habitat == "biofilm" & 
+									   #nucleic_acid == "dna" &
+									   treatment == "glyph" &
+									   days > 43,
+									   prune = TRUE)
+																					 
+# plot measures only divided by condition. NA marks samples neither treated or untreated
+richness_plot_biofilm_glyph <- plot_richness(biofilmglyph, x = "condition_diversity", 
+						 color = "as.factor(new_day)",
+						 shape = "nucleic_acid",
+						 measures = c("Shannon",
+									  "Chao1")) + 
+						 geom_point(alpha = 0.8, size = 4) +
+						 ggtitle("richness_plot_biofilm_glyph") +
+						 theme(axis.text = element_text(size = 18),
+								  axis.title = element_text(size = 20, face = "bold"),
+								  legend.title = element_text(size = 15, face = "bold"), 
+								  legend.text = element_text(size = 13))
+
+richness_plot_biofilm_glyph$data$condition_diversity <- as.character(richness_plot_biofilm_glyph$data$condition_diversity)
+richness_plot_biofilm_glyph$data$condition_diversity <- factor(richness_plot_biofilm_glyph$data$condition_diversity, levels = condition_order)
+print(richness_plot_biofilm_glyph)
+
+# put into list and plot together
+plots1_div <- list()
+plots1_div <- list(richness_plot_water_glyph, 
+				   richness_plot_biofilm_glyph,  
+				   richness_plot_water_glyph, 
+				   richness_plot_biofilm_glyph)							  
+plot_folder <- "/data/projects/glyphosate/plots/R/diversity/"
+div_plot_object1 <- do.call("arrangeGrob", c(plots1_div, nrow = 2, top = "Shannon Diversity"))
+ggsave(div_plot_object1, file = paste(plot_folder, "Shannon_biofilm_water.png", 
+								  sep = ""),
+								  height = 16,
+								  width = 20)
