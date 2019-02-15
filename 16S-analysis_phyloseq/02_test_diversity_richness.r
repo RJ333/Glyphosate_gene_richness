@@ -24,10 +24,18 @@ sapply(c(.cran_packages, .bioc_packages), require, character.only = TRUE)
 mothur_ps2
 mothur_div <- mothur_ps2
 
-
 dnaglyph <- subset_samples(mothur_div, nucleic_acid == "dna" &
 									   days > 43,
 									   prune = TRUE)
+									   
+erich_waterdnaglyph <- estimate_richness(waterdnaglyph, measures = c("Observed", 
+																	 "Chao1", 
+																	 "ACE", 
+																	 "Shannon", 
+																	 "Simpson", 
+																	 "InvSimpson", 
+																	 "Fisher"))
+
 # plot indiviual richness
 dna_richness_plot <- plot_richness(dnaglyph, x = "new_day", 
 						 color = "treatment",
@@ -288,6 +296,17 @@ ggsave(div_plot_object, file = paste(plot_folder, "Shannon_water_after43_larger_
 #scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/diversity/* /mnt/d/denbi/chandler/diversity/
 ########################### general commands to get information on genera and OTUs and their distribution
 
+# how many Pseudomonas OTUs are more abundant than x?
+pseudo <- subset(mothur_ra_melt, genus == "Pseudomonas")
+droplevels(pseudo$OTU) # 2320 OTUs (depending on mothur_ra_melt- threshold)
+pseudo001 <- subset(pseudo, Abundance > 0.01)
+droplevels(pseudo001$OTU) # 187 OTUs
+pseudo002 <- subset(pseudo, Abundance > 0.02)
+droplevels(pseudo002$OTU) # 103 OTUs
+pseudo005 <- subset(pseudo, Abundance > 0.05)
+droplevels(pseudo005$OTU) # 51 OTUs
+pseudo010 <- subset(pseudo, Abundance > 0.10)
+droplevels(pseudo010$OTU) # 32 OTUs
 
 # for biofilm
 genus_max <- aggregate(Abundance ~ OTU + genus + family + order + habitat + nucleic_acid, data = mothur_ra_melt, max)

@@ -64,92 +64,97 @@ plot_folder <- "/data/projects/glyphosate/plots/R/community_composition/"
 # prepare phyloseq object
 
 # remove OTUs with less than 2 reads in at least 1 sample
-mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 1) >= 1}, prune = TRUE)
+mothur_ps3 <- filter_taxa(mothur_ps2, function (x) {sum(x > 1) >= 1}, prune = TRUE) # 12852
+
+mothur_ps3_ra <- transform_sample_counts(mothur_ps3, function(x){(x / sum(x)) * 100})
+mothur_ps3.1 <- filter_taxa(mothur_ps3_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE) # 835
 # transform into relative abundance, displayed in percentage!
 mothur_melt <- psmelt(mothur_ps3)
 mothur_melt$OTU <- as.factor(mothur_melt$OTU)
+mothur_melt.1 <- psmelt(mothur_ps3.1)
+mothur_melt.1$OTU <- as.factor(mothur_melt.1$OTU)
 
 # generate subsets for each category (based on treatment or nucleic acid)
 
 # treatment
-water_glyph_otus <- subset(mothur_melt, habitat == "water" & treatment == "glyph" & Abundance > 1)
-water_glyph_unique_otus<-water_glyph_otus[which(!duplicated(water_glyph_otus[,"OTU"])),]
+water_glyph_otus <- subset(mothur_melt.1, habitat == "water" & treatment == "glyph" & Abundance > 0.05)
+water_glyph_unique_otus<-water_glyph_otus[which(!duplicated(water_glyph_otus[,"genus"])),]
 nrow(water_glyph_unique_otus)
 # 4476
 
-water_control_otus <- subset(mothur_melt, habitat == "water" & treatment == "control" & Abundance > 1)
-water_control_unique_otus<-water_control_otus[which(!duplicated(water_control_otus[,"OTU"])),]
+water_control_otus <- subset(mothur_melt.1, habitat == "water" & treatment == "control" & Abundance > 0.05)
+water_control_unique_otus<-water_control_otus[which(!duplicated(water_control_otus[,"genus"])),]
 nrow(water_control_unique_otus)
 # 6785
 
-biofilm_glyph_otus <- subset(mothur_melt, habitat == "biofilm" & treatment == "glyph" & Abundance > 1)
-biofilm_glyph_unique_otus<-biofilm_glyph_otus[which(!duplicated(biofilm_glyph_otus[,"OTU"])),]
+biofilm_glyph_otus <- subset(mothur_melt.1, habitat == "biofilm" & treatment == "glyph" & Abundance > 0.05)
+biofilm_glyph_unique_otus<-biofilm_glyph_otus[which(!duplicated(biofilm_glyph_otus[,"genus"])),]
 nrow(biofilm_glyph_unique_otus)
 # 1684
 
-biofilm_control_otus <- subset(mothur_melt, habitat == "biofilm" & treatment == "control" & Abundance > 1)
-biofilm_control_unique_otus<-biofilm_control_otus[which(!duplicated(biofilm_control_otus[,"OTU"])),]
+biofilm_control_otus <- subset(mothur_melt.1, habitat == "biofilm" & treatment == "control" & Abundance > 0.05)
+biofilm_control_unique_otus<-biofilm_control_otus[which(!duplicated(biofilm_control_otus[,"genus"])),]
 nrow(biofilm_control_unique_otus)
 # 1765
 
 # nucleic_acid
-water_dna_otus <- subset(mothur_melt, habitat == "water" & nucleic_acid == "dna" & Abundance > 1)
-water_dna_unique_otus<-water_dna_otus[which(!duplicated(water_dna_otus[,"OTU"])),]
+water_dna_otus <- subset(mothur_melt.1, habitat == "water" & nucleic_acid == "dna" & Abundance > 0.05)
+water_dna_unique_otus<-water_dna_otus[which(!duplicated(water_dna_otus[,"genus"])),]
 nrow(water_dna_unique_otus)
 # 3912
 
-water_cdna_otus <- subset(mothur_melt, habitat == "water" & nucleic_acid == "cdna" & Abundance > 1)
-water_cdna_unique_otus<-water_cdna_otus[which(!duplicated(water_cdna_otus[,"OTU"])),]
+water_cdna_otus <- subset(mothur_melt.1, habitat == "water" & nucleic_acid == "cdna" & Abundance > 0.05)
+water_cdna_unique_otus<-water_cdna_otus[which(!duplicated(water_cdna_otus[,"genus"])),]
 nrow(water_cdna_unique_otus)
 # 7447
 
-biofilm_dna_otus <- subset(mothur_melt, habitat == "biofilm" & nucleic_acid == "dna" & Abundance > 1)
-biofilm_dna_unique_otus<-biofilm_dna_otus[which(!duplicated(biofilm_dna_otus[,"OTU"])),]
+biofilm_dna_otus <- subset(mothur_melt.1, habitat == "biofilm" & nucleic_acid == "dna" & Abundance > 0.05)
+biofilm_dna_unique_otus<-biofilm_dna_otus[which(!duplicated(biofilm_dna_otus[,"genus"])),]
 nrow(biofilm_dna_unique_otus)
 # 1646
 
-biofilm_cdna_otus <- subset(mothur_melt, habitat == "biofilm" & nucleic_acid == "cdna" & Abundance > 1)
-biofilm_cdna_unique_otus<-biofilm_cdna_otus[which(!duplicated(biofilm_cdna_otus[,"OTU"])),]
+biofilm_cdna_otus <- subset(mothur_melt.1, habitat == "biofilm" & nucleic_acid == "cdna" & Abundance > 0.05)
+biofilm_cdna_unique_otus<-biofilm_cdna_otus[which(!duplicated(biofilm_cdna_otus[,"genus"])),]
 nrow(biofilm_cdna_unique_otus)
 # 1842
 
 # plot Venn diagram (adjust labels in function)
-fourway.Venn(water_glyph_unique_otus$OTU,
-			 biofilm_glyph_unique_otus$OTU,
-			 water_control_unique_otus$OTU,
-			 biofilm_control_unique_otus$OTU)
+fourway.Venn(water_glyph_unique_otus$genus,
+			 biofilm_glyph_unique_otus$genus,
+			 water_control_unique_otus$genus,
+			 biofilm_control_unique_otus$genus)
 			 
 dev.copy(png, paste(plot_folder, "4wayVenn_treatments.png"))
 dev.off()
 
-fourway.Venn(water_dna_unique_otus$OTU,
-			 biofilm_dna_unique_otus$OTU,
-			 water_cdna_unique_otus$OTU,
-			 biofilm_cdna_unique_otus$OTU)
+fourway.Venn(water_dna_unique_otus$genus,
+			 biofilm_dna_unique_otus$genus,
+			 water_cdna_unique_otus$genus,
+			 biofilm_cdna_unique_otus$genus)
 			 
-dev.copy(png, paste(plot_folder, "4wayVenn_nucleic_acids.png"))
+dev.copy(png, paste(plot_folder, "4wayVenn_nucleic_acids_genus_0.05.png"))
 dev.off()
 
 
 # only biofilm vs water
-water_otus <- subset(mothur_melt, habitat == "water" & Abundance > 1)
-water_unique_otus<-water_otus[which(!duplicated(water_otus[,"OTU"])),]
+water_otus <- subset(mothur_melt.1, habitat == "water" & Abundance > 0.05)
+water_unique_otus<-water_otus[which(!duplicated(water_otus[,"genus"])),]
 nrow(water_unique_otus)
 # 10692
-
-biofilm_otus <- subset(mothur_melt, habitat == "biofilm" & Abundance > 1)
-biofilm_unique_otus<-biofilm_otus[which(!duplicated(biofilm_otus[,"OTU"])),]
+# 75
+biofilm_otus <- subset(mothur_melt.1, habitat == "biofilm" & Abundance > 0.05)
+biofilm_unique_otus<-biofilm_otus[which(!duplicated(biofilm_otus[,"genus"])),]
 nrow(biofilm_unique_otus)
 # 2903
-
-length(intersect(water_unique_otus$OTU, biofilm_unique_otus$OTU))
+# 90
+length(intersect(water_unique_otus$genus, biofilm_unique_otus$genus))
 # 743
-
+#59
 # plot pairwise venn diagram
 grid.newpage()
-venn.plot <- draw.pairwise.venn(area1        = 10692,
-                                area2        = 2903,
-                                cross.area   = 743,
+venn.plot <- draw.pairwise.venn(area1        = 75,
+                                area2        = 90,
+                                cross.area   = 59,
                                 scaled       = T,
                                 category     = c("Water", "Biofilm"),
                                 fill         = c("blue", "red"),
@@ -157,15 +162,16 @@ venn.plot <- draw.pairwise.venn(area1        = 10692,
                                 lty          = "blank",
                                 cex          = 2,
                                 cat.cex      = 2,
-                                cat.pos      = c(285, 105),
-                                cat.dist     = 0.09,
+                                cat.pos      = c(180, 140),
+                                cat.dist     = - 0.01,
                                 cat.just     = list(c(-1, -1), c(1, 1)),
-                                ext.pos      = 30,
+                                ext.text	 = FALSE,
+								ext.pos      = 30,
                                 ext.dist     = -0.05,
                                 ext.length   = 0.85,
                                 ext.line.lwd = 2,
                                 ext.line.lty = "dashed")
 grid.draw(venn.plot)
-dev.copy(png, paste(plot_folder, "Venn_water_biofilm.png"))
+dev.copy(png, paste(plot_folder, "Venn_water_biofilm_genus_0.05.png"))
 dev.off()
 

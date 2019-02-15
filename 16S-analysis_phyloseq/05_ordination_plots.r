@@ -186,17 +186,25 @@ if(length(nmds_ordination_plots) == 0 &
 nmds_ordination_plots <- mapply(function(x,y) {
 						 counter <<- counter + 1 
 						 plot_ordination(x, y, 
-										 type = "sample", 
-										 color = "new_day", 
-										 shape = "treatment") + 
-							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) + 
-							geom_point(size = 6) + 
+										 type = "sample",
+										 color = "treatment",
+										 shape = "new_day") + 
+							geom_polygon(aes(), fill = "grey20", alpha = 0.5, size = 0.01) + 
+							geom_point(aes(colour = treatment), size = 6, alpha = 0.7) +
+							scale_colour_manual(values = c("glyph" = "black", 
+								   "control" = "grey50"), 
+						name = "Microcosm  ", 
+						breaks = c("glyph", 
+								   "control"), 
+						labels = c("Treatment", 
+								   "Control")) +
 							guides(color = FALSE) +
 							coord_cartesian(ylim = c(-0.8, 1), xlim = c(-1, 0.8)) +
-							ggtitle(names(sample_subset_list)[counter]) +
+							#ggtitle(names(sample_subset_list)[counter]) +
 							geom_text(aes(label = new_day), 
-									  colour = "black", 
+									  colour = "white", 
 									  size = 3.5) +
+							theme_bw() +
 							theme(axis.text = element_text(size = 18),
 								  axis.title = element_text(size = 20, face = "bold"),
 								  legend.title = element_text(size = 15, face = "bold"), 
@@ -208,7 +216,7 @@ nmds_ordination_plots <- mapply(function(x,y) {
 	print(paste("list is not empty, or counter not 0 (counter is", counter, 
 				"), abort to prevend appending..."))
 }
-do.call("grid.arrange", c(nmds_ordination_plots[c(1:4)], nrow = 2, top = "NMDS"))
+do.call("grid.arrange", c(nmds_ordination_plots[c(1)], nrow = 1))
 do.call("grid.arrange", c(nmds_ordination_plots[c(2, 4)], nrow = 1, top = "NMDS"))
 
 # CCA, RDA function

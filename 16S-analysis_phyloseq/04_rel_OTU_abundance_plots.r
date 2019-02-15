@@ -5,10 +5,10 @@
 
 
 # first a vector of OTUs to be plotted with abundance threshold
-OTU_list <- subset(aggregate(Abundance ~ OTU, 
-							 data = mothur_ra_melt, 
-							 max), 
-				   Abundance > 0.05)[,1]
+# OTU_list <- subset(aggregate(Abundance ~ OTU, 
+							 # data = mothur_ra_melt, 
+							 # max), 
+				   # Abundance > 0.05)[,1]
 				
 
 # OTU_list <- c("Otu000001", "Otu000003", "Otu000004", "Otu000007", "Otu000008",
@@ -28,11 +28,41 @@ OTU_list <- subset(aggregate(Abundance ~ OTU,
 				# "Otu000039", "Otu000111", "Otu000210", "Otu000024", "Otu000028",
 				# "Otu000096", "Otu000097", "Otu000103", "Otu000149", "Otu000181",
 				# "Otu000186")
-OTU300_list <- vector()			
-for (i in 1:300) {
-OTU300_list[i] <- sprintf("Otu000%03d", i)
-}
-			
+# OTU300_list <- vector()			
+# for (i in 1:300) {
+# OTU300_list[i] <- sprintf("Otu000%03d", i)
+# }
+
+OTU_list <- c("Otu000007",
+"Otu000011",
+"Otu000018",
+"Otu000025",
+"Otu000032",
+"Otu000036",
+"Otu000037",
+"Otu000038",
+"Otu000023",
+"Otu000046",
+"Otu000049",
+"Otu000056",
+"Otu000058",
+"Otu000059",
+"Otu000070",
+"Otu000072",
+"Otu000078",
+"Otu000094",
+"Otu000109",
+"Otu000129",
+"Otu000139",
+"Otu000176",
+"Otu000191",
+"Otu000320",
+"Otu000098",
+"Otu000042",
+"Otu000044",
+"Otu000006",
+"Otu000001")
+		
 # define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
 	subset(mothur_ra_melt, OTU == x)
@@ -43,18 +73,20 @@ get_current_otu_data <- function(x) {
 # }
 
 # where the plots should be stored
-#plot_folder <- "/data/projects/glyphosate/plots/R/OTU_abundance/"
-plot_folder <- "/data/projects/glyphosate/plots/R/deseq/top300"
+plot_folder <- "/data/projects/glyphosate/plots/R/OTU_abundance/"
+#plot_folder <- "/data/projects/glyphosate/plots/R/deseq/"
 # run a for loop to ggplot each OTU in list with own title and file name
-for (i in OTU300_list){
+for (i in OTU_list){
 current_otu_data <- get_current_otu_data(i)
 print(paste("OTU is", i))
 
 species_title <- unique(paste(current_otu_data$family, 
 							  current_otu_data$genus, 
 							  current_otu_data$OTU, 
-							  sep = "_"))
+							  sep = " "))
 
+# species_title <- bquote(paste("hello", italic(parse = text(unique(current_otu_data$family)))))				  
+							  
 current_otu_data$treatment2 <- factor(current_otu_data$treatment, 
 											  labels = c("Control", "Treatment"))
 		
@@ -99,11 +131,12 @@ scale_linetype_manual(values = c("dna" = 1,
 	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
 	theme_bw() +
 	ggtitle(species_title) +
-	theme(axis.text = element_text(size = 18))+
+	theme(axis.text = element_text(size = 18),
+		  axis.title = element_text(size = 20, face = "bold"))+
 	theme(panel.grid.major = element_line(colour = NA, size = 0.2))+
 	theme(panel.grid.minor = element_line(colour = NA, size = 0.5))+
 	#theme(legend.position = "none")+
-	theme(axis.title = element_blank()) +
+	labs(x = "Days", y = "Relative abundance [%]") +
 	facet_wrap(~ habitat, scales = "free")
 	ggsave(current_plot, file = paste(plot_folder, 
 									  species_title, 
@@ -111,6 +144,7 @@ scale_linetype_manual(values = c("dna" = 1,
 									  sep = ""), 
 						 width = 13, 
 						 height = 7)
+	#print(current_plot)
 }
 
 #scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.111:/data/projects/glyphosate/plots/R/deseq/top300/* /mnt/d/denbi/chandler/deseq/top300
