@@ -309,9 +309,6 @@ species_title <- unique(paste(current_otu_data$family,
 							  current_otu_data$genus, 
 							  current_otu_data$OTU, 
 							  sep = " "))
-							  
-current_otu_data$treatment2 <- factor(current_otu_data$treatment, 
-									  labels = c("Control", "Treatment"))
 
 levels(current_otu_data$habitat) <- labs_habitat
                                       
@@ -340,7 +337,7 @@ current_plot <- ggplot(data = current_otu_data,
 	geom_point(data = subset(current_otu_data, treatment == "glyph"), 
 	           aes(colour = treatment)) +
 scale_linetype_manual(values = c("dna" = 1, 
-									 "cdna" = 6), 
+								 "cdna" = 6), 
 						name = "Nucleic acid  ", 
 						breaks = c("cdna", 
 								   "dna"), 

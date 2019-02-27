@@ -33,35 +33,36 @@
 # OTU300_list[i] <- sprintf("Otu000%03d", i)
 # }
 
+# list of OTUs mentioned in paper or supplement 
 OTU_list <- c("Otu000007",
-"Otu000011",
-"Otu000018",
-"Otu000025",
-"Otu000032",
-"Otu000036",
-"Otu000037",
-"Otu000038",
-"Otu000023",
-"Otu000046",
-"Otu000049",
-"Otu000056",
-"Otu000058",
-"Otu000059",
-"Otu000070",
-"Otu000072",
-"Otu000078",
-"Otu000094",
-"Otu000109",
-"Otu000129",
-"Otu000139",
-"Otu000176",
-"Otu000191",
-"Otu000320",
-"Otu000098",
-"Otu000042",
-"Otu000044",
-"Otu000006",
-"Otu000001")
+              "Otu000011",
+              "Otu000018",
+              "Otu000025",
+              "Otu000032",
+              "Otu000036",
+              "Otu000037",
+              "Otu000038",
+              "Otu000023",
+              "Otu000046",
+              "Otu000049",
+              "Otu000056",
+              "Otu000058",
+              "Otu000059",
+              "Otu000070",
+              "Otu000072",
+              "Otu000078",
+              "Otu000094",
+              "Otu000109",
+              "Otu000129",
+              "Otu000139",
+              "Otu000176",
+              "Otu000191",
+              "Otu000320",
+              "Otu000098",
+              "Otu000042",
+              "Otu000044",
+              "Otu000006",
+              "Otu000001")
 		
 # define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
@@ -132,10 +133,10 @@ scale_linetype_manual(values = c("dna" = 1,
 	theme_bw() +
 	ggtitle(species_title) +
 	theme(axis.text = element_text(size = 18),
-		  axis.title = element_text(size = 20, face = "bold"))+
-	theme(panel.grid.major = element_line(colour = NA, size = 0.2))+
-	theme(panel.grid.minor = element_line(colour = NA, size = 0.5))+
-	#theme(legend.position = "none")+
+		  axis.title = element_text(size = 20, face = "bold"),
+          panel.grid.major = element_line(colour = NA, size = 0.2),
+          panel.grid.minor = element_line(colour = NA, size = 0.5),
+          strip.text.x = element_text(size = 15, face = "bold")) +
 	labs(x = "Days", y = "Relative abundance [%]") +
 	facet_wrap(~ habitat, scales = "free")
 	ggsave(current_plot, file = paste(plot_folder, 
