@@ -88,8 +88,8 @@ species_title <- unique(paste(current_otu_data$family,
 
 # species_title <- bquote(paste("hello", italic(parse = text(unique(current_otu_data$family)))))				  
 							  
-current_otu_data$treatment2 <- factor(current_otu_data$treatment, 
-											  labels = c("Control", "Treatment"))
+# current_otu_data$treatment2 <- factor(current_otu_data$treatment, 
+											  # labels = c("Control", "Treatment"))
 		
 current_plot <- ggplot(data = current_otu_data, 
 	                   aes(x = days - 69, 
