@@ -1,5 +1,5 @@
 # Set the working dir with shared file, constaxonomy, sample and OTU_rep files in it
-setwd("D:/Arbeit/denbi/chandler/")
+setwd("/data/projects/glyphosate/analysis_16S/dada2/")
 
 # mkdir for plots
 plot_path <- "./plots/"
@@ -8,7 +8,9 @@ plot_path <- "./plots/"
 library(scales)
 library(ggplot2)
 library(phyloseq)
+library(DESeq2)
 
+## TO DO: copy data files from cloud for OTU reps and tree
 
 # import mothur output into phyloseq
 mothur_ps <- import_mothur(mothur_list_file = NULL, 
@@ -18,6 +20,8 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
 						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
 						   parseFunction = parse_taxonomy_default)
+# or load from workspace
+load("mothur_glyph_002.RData")   
 						   
 # add taxonomy columns and adjust header
 wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
@@ -38,7 +42,7 @@ colnames(tax_table(mothur_ps)) <- c("kingdom",
 									"wholetax")
 											
 # read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("all_samples_with_metacond3.tsv", 
+metafile <- read.delim("metafile.tsv", 
 						row.names = 1, 
 						header = TRUE,
 						na.strings = "")
@@ -56,6 +60,66 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 							  use.names = TRUE)
 # add meta data and OTU representative seqs to phyloseq object
 mothur_full <- merge_phyloseq(mothur_ps, metafile, refseq(OTU_seqs))
+
+############## Alpha diversity (including singletons)
+erich_mothur <- estimate_richness(mothur_full, measures = c("Observed", 
+															"Chao1", 
+															"ACE", 
+															"Shannon", 
+															"Simpson", 
+															"InvSimpson", 
+															"Fisher"))
+erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_full)[,c(1:7)])
+
+# reorder and rename factor levels for plotting, adjust lab names
+erich_mothur_meta$habitat <- relevel(erich_mothur_meta$habitat, "water")
+erich_mothur_meta$nucleic_acid <- relevel(erich_mothur_meta$nucleic_acid, "dna")
+labs_nucleic_acid <- c("DNA", "RNA")
+labs_habitat <- c("Free-living", "Biofilm")
+levels(erich_mothur_meta$habitat) <- labs_habitat
+levels(erich_mothur_meta$nucleic_acid) <- labs_nucleic_acid
+
+# plotting Alpha diversity
+
+shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day, 
+											  y = Shannon, 
+											  colour = treatment)) + 
+	geom_point(alpha = 0.8, size = 4) +
+	geom_vline(aes(xintercept = 1), 
+			   linetype = "dashed", 
+			   size = 1.2) +
+	stat_summary(aes(colour = treatment), 
+				 fun.y = "mean",  
+				 geom = "line",
+				 alpha = 0.75,
+				 size = 2) +
+	scale_colour_manual(values = c("glyph" = "black", 
+								   "control" = "grey50"), 
+						name = "Microcosm  ", 
+						breaks = c("glyph", 
+								   "control"), 
+						labels = c("Treatment", 
+								   "Control")) +
+	coord_cartesian(ylim = c(1, 3)) +
+	theme_bw() +
+	theme(axis.text = element_text(size = 18),
+		  axis.title = element_text(size = 20, face = "bold"),
+		  legend.title = element_text(size = 15, face = "bold"), 
+		  legend.text = element_text(size = 13),
+		  panel.grid.major = element_line(colour = NA, size = 0.2),
+		  panel.grid.minor = element_line(colour = NA, size = 0.5),
+		  strip.text.x = element_text(size = 15, face = "bold")
+		  ) +
+  	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+	labs(x = "Days", y = "Shannon index") +
+	facet_wrap(~ habitat + nucleic_acid)
+
+ggsave(shannon_plot, file = paste(plot_path, "Shannon_DNA_RNA.png", 
+								  sep = ""),
+								  height = 10,
+								  width = 14)
+
+##############
 
 # remove OTUs with less than 2 reads in at least 1 sample
 mothur_greater_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
