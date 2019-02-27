@@ -9,7 +9,7 @@ library(scales)
 library(ggplot2)
 library(phyloseq)
 library(DESeq2)
-
+library(gridExtra)
 ## TO DO: copy data files from cloud for OTU reps and tree
 
 # import mothur output into phyloseq
@@ -426,6 +426,111 @@ ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyp
                                width = 14, 
                                height = 10)
 
+
+################### NMDS plots
+
+# exclude OTUs with less than 3 reads and transform to relative abundance
+mothur_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
+mothur_nmds_ra <- transform_sample_counts(mothur_nmds, function(x){(x / sum(x)) * 100})
+
+ps <- mothur_nmds_ra
+acids <- c("dna", "cdna")
+habitats <- c("water", "biofilm")
+threshold <- 0
+
+
+# define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
+get_sample_subsets <- function(ps, nucleic_acid, habitat, threshold){
+	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
+											sample_data(ps)$habitat == habitat),]
+	phy_subset <- merge_phyloseq(tax_table(ps), 
+								 otu_table(ps),
+								 sample_subset)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1}, prune = TRUE)
+	return(phy_subset2)
+}
+
+sample_subset_list <- list() 
+if(length(sample_subset_list) == 0) {
+		for (acid in acids) {
+			for (habitat in habitats) {
+				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+							 habitat))
+				tmp <-	get_sample_subsets(ps = ps, 
+									   nucleic_acid = acid, 
+									   habitat = habitat,  
+									   threshold = threshold)
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
+				sample_subset_list[[paste(habitat, 
+										  acid, 
+										  "min reads per OTU", 
+										  threshold, 
+										  sep = " ")]] <- tmp
+			}
+	}
+print(sample_subset_list)
+} else {
+	print("list is not empty, abort to prevend appending...")
+}
+
+ordination_nmds <- list()
+ordination_nmds <- lapply(sample_subset_list, ordinate, 
+											  method = "NMDS", 
+											  dist = "bray", 
+											  try = 100, 
+											  autotransform = TRUE)
+                                              
+# NMDS function
+nmds_ordination_plots <- list()
+counter <- 0
+if(length(nmds_ordination_plots) == 0 & 
+	all.equal(counter, 0)) {
+nmds_ordination_plots <- mapply(function(x,y) {
+						 counter <<- counter + 1 
+						 plot_ordination(x, y, 
+										 type = "sample",
+										 color = "days",
+										 shape = "treatment") + 
+							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) + 
+							geom_point(aes(colour = treatment), colour = "black", size = 4.5, alpha = 0.7) +
+							scale_shape_manual(values = c("glyph" = 16, 
+                                                          "control" = 17), 
+                            name = "Microcosm  ", 
+                            breaks = c("glyph", 
+                                       "control"), 
+                            labels = c("Treatment", 
+                                       "Control")) +
+							guides(color = FALSE, fill = FALSE, shape = FALSE) +
+							coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
+							#ggtitle(names(sample_subset_list)[counter]) +
+							geom_text(aes(label = new_day), 
+									  colour = "white", 
+									  size = 2.5) +
+							theme_bw() +
+							theme(panel.grid.major = element_line(colour = NA, size = 0.2),
+                                  panel.grid.minor = element_line(colour = NA, size = 0.5),
+                                  axis.text = element_text(size = 18),
+								  #axis.title = element_text(size = 20, face = "bold"),
+								  axis.title = element_blank(),
+                                  legend.title = element_text(size = 15, face = "bold"), 
+								  legend.text = element_text(size = 13))
+}, x = sample_subset_list, 
+   y = ordination_nmds, 
+   SIMPLIFY = FALSE)
+} else {
+	print(paste("list is not empty, or counter not 0 (counter is", counter, 
+				"), abort to prevend appending..."))
+}
+
+do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
+
+g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
+ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png", 
+								  sep = ""),
+								  height = 10,
+								  width = 10)
+                                              
 # factorize OTUs
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
