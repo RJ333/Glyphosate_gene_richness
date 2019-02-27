@@ -114,13 +114,152 @@ shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day,
 	labs(x = "Days", y = "Shannon index") +
 	facet_wrap(~ habitat + nucleic_acid)
 
-ggsave(shannon_plot, file = paste(plot_path, "Shannon_DNA_RNA.png", 
+ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png", 
 								  sep = ""),
 								  height = 10,
 								  width = 14)
 
-##############
+############## community overview bar plot
 
+# transform into relative abundance, displayed in percentage!
+mothur_full_ra <- transform_sample_counts(mothur_full, function(x){(x / sum(x)) * 100})
+# remove low abundant OTUs
+mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
+# melt into long format for plotting
+mothur_ra_melt <- psmelt(mothur_ra_0.01)
+# calculate mean of technical replicates
+mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
+								+ treatment + nucleic_acid + habitat + disturbance 
+								+ glyphosate + glyphosate_gone + condition_diversity +
+								+ kingdom + phylum + class + order + family + genus + otu_id, 
+								data = mothur_ra_melt, 
+								mean)
+# get data per OTU, setting threshold for samples and clusters
+community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40 
+							& Abundance > 0.15
+							& habitat == "water" 
+							& treatment == "glyph"))
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset$class)))
+length(levels(droplevels(community_subset$order))) 
+# sort orders based on phylogenetic class for plotting
+community_subset$order <- factor(community_subset$order, 
+									   # alphaproteos
+							levels = c("Caulobacterales",
+									   "Rhizobiales",
+									   "Rhodobacterales",
+									   "Rhodospirillales",
+									   "Sneathiellales",
+									   "Sphingomonadales",
+									   "Parvibaculales",
+									   "Thalassobaculales",
+									   # gammaproteos
+									   "Alteromonadales",
+									   "Betaproteobacteriales",
+									   "Pseudomonadales",
+									   # bacteroidetes/
+									   "Chitinophagales",
+									   "Sphingobacteriales",
+									   "Flavobacteriales"))
+# assign specific colour to make plot distuingishable
+fill_values <- c("Alteromonadales" = "orange",
+					"Betaproteobacteriales" = "pink",
+					"Caulobacterales" = "black",
+					"Chitinophagales" = "purple",
+					"Flavobacteriales" = "green",
+					"Sneathiellales" = "white",
+					"Parvibaculales" = "green3",
+					"Pseudomonadales" = "grey30",
+					"Rhizobiales" = "red",
+					"Rhodobacterales" = "lightblue",
+					"Rhodospirillales" = "yellow",
+					"Sphingobacteriales" = "darkred",
+					"Sphingomonadales" = "grey",
+					"Thalassobaculales" = "blue2")	
+
+# plotting all selected clusters in bar plot ordered by class 
+# and displaying orders over time for DNA and RNA
+community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
+	scale_fill_manual(breaks = levels(community_subset$order), 
+				      values = fill_values) +
+	geom_bar(data = subset(community_subset, nucleic_acid == "dna" & 
+                                             treatment == "glyph"),
+			 aes(x = new_day - 0.5, 
+				 y = Abundance), 
+			 fill = "black", 
+		     width = 0.9, 
+		     stat = "sum") +
+	geom_bar(data = subset(community_subset, nucleic_acid == "dna" & 
+                                             treatment == "glyph"),
+			 aes(x = new_day - 0.5, 
+				 y = Abundance, 
+				 fill = order), 
+			 width = 0.6, 
+			 stat = "identity") +
+	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" & 
+                                             treatment == "glyph"),
+			 aes(x = new_day + 0.5, 
+				 y = Abundance), 
+			 fill = "black", 
+			 width = 0.9, 
+			 stat = "sum") +
+	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" & 
+                                             treatment == "glyph"),
+			 aes(x = new_day + 0.5, 
+				 y = Abundance, 
+				 fill = order), 
+			 width = 0.6, 
+			 stat = "identity") +
+	geom_vline(data = subset(community_subset, treatment == "glyph"),
+			   aes(xintercept = 1.5),
+			   linetype = "dashed", size = 1.2) +
+	guides(colour = FALSE, 
+		   size = FALSE, 
+		   width = FALSE,
+		   fill = guide_legend(ncol = 1,
+							   keyheight = 1.5,
+							   label.theme = element_text(size = 15,
+														  face = "italic",
+														  angle = 0),
+											(title = NULL))) +
+	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+	scale_y_continuous(expand = c(0,0)) +
+	theme_bw() +
+	theme(axis.text = element_text(size = 17)) +
+	theme(axis.title = element_text(size = 20,
+									face = "bold")) +
+	theme(legend.background = element_rect(fill = "grey90", 
+										   linetype = "solid")) +
+	theme(panel.grid.major = element_line(colour = NA, 
+										  size = 0.2)) +
+	theme(panel.grid.minor = element_line(colour = NA, 
+										  size = 0.5)) +
+	labs(x = "Days", 
+		 y = "Relative abundance [%]") +
+  annotate("text", 
+		   x = -27, 
+		   y = 90, 
+		   label = "a)", 
+		   color = "black", 
+		   size = 6, 
+		   angle = 0, 
+		   fontface = "bold") +
+  annotate("text", 
+		   x = -22.5, 
+		   y = 90, 
+		   label = "b)", 
+		   color = "black", 
+		   size = 6, 
+		   angle = 0, 
+		   fontface = "bold")
+
+ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_overview.png", 
+                                    sep = ""),
+                                    width = 16, 
+                                    height = 8)
+
+############# OTU abundance plot                                    
+                                    
 # remove OTUs with less than 2 reads in at least 1 sample
 mothur_greater_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
 # transform counts into relative abundances, displayed as percentage
