@@ -123,7 +123,7 @@ ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
 
 # transform into relative abundance, displayed in percentage!
 mothur_full_ra <- transform_sample_counts(mothur_full, function(x){(x / sum(x)) * 100})
-# remove low abundant OTUs
+# remove low abundant OTUs (you may decrease the threshold, but it will increase melting time)
 mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
 # melt into long format for plotting
 mothur_ra_melt <- psmelt(mothur_ra_0.01)
@@ -259,24 +259,120 @@ ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_over
                                     height = 8)
 
 ############# OTU abundance plot                                    
-                                    
-# remove OTUs with less than 2 reads in at least 1 sample
-mothur_greater_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
-# transform counts into relative abundances, displayed as percentage
-mothur_relative <- transform_sample_counts(mothur_greater_1, function(x){(x / sum(x)) * 100})
-mothur_ra_melt <- psmelt(mothur_relative)
-# add absolute abundance (rel abundance * total cell counts)
-mothur_ra_melt$abs_Abundance <- (mothur_ra_melt$Abundance * mothur_ra_melt$cell_counts)/100
+
+# define subset function for specific phyloseq-object
+get_current_otu_data <- function(x) {
+	subset(mothur_ra_melt, OTU == x)
+}
+
+# list of OTUs mentioned in paper and supplement 
+OTU_list <- c("Otu000007",
+              # "Otu000011",
+              # "Otu000018",
+              # "Otu000025",
+              # "Otu000032",
+              # "Otu000036",
+              # "Otu000037",
+              # "Otu000038",
+              # "Otu000023",
+              # "Otu000046",
+              # "Otu000049",
+              # "Otu000056",
+              # "Otu000058",
+              # "Otu000059",
+              # "Otu000070",
+              # "Otu000072",
+              # "Otu000078",
+              # "Otu000094",
+              # "Otu000109",
+              # "Otu000129",
+              # "Otu000139",
+              # "Otu000176",
+              # "Otu000191",
+              # "Otu000320",
+              # "Otu000098",
+              # "Otu000042",
+              # "Otu000044",
+              # "Otu000006",
+              "Otu000001"
+              )
+              
+# rename for plotting
+labs_habitat <- c("Biofilm", "Free-living")
+
+# run a for loop to plot each OTU in list with own title and file name
+for (i in OTU_list){
+    current_otu_data <- get_current_otu_data(i)
+    print(paste("OTU is", i))
+
+species_title <- unique(paste(current_otu_data$family, 
+							  current_otu_data$genus, 
+							  current_otu_data$OTU, 
+							  sep = " "))
+							  
+current_otu_data$treatment2 <- factor(current_otu_data$treatment, 
+									  labels = c("Control", "Treatment"))
+
+levels(current_otu_data$habitat) <- labs_habitat
+                                      
+current_plot <- ggplot(data = current_otu_data, 
+	                   aes(x = days - 69, 
+						   y = Abundance, 
+						   group = nucleic_acid, 
+						   lty = nucleic_acid)) + 
+	geom_vline(aes(xintercept = 0), 
+			   linetype = "dashed", 
+			   size = 1.2) +
+	geom_point(data = subset(current_otu_data, treatment == "control"), 
+		       aes(colour = treatment), 
+			   alpha = 1) +
+	stat_summary(data = subset(current_otu_data, treatment == "control"), 
+	             aes(colour = treatment), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2, 
+				 alpha = 1) +
+	stat_summary(data = subset(current_otu_data, treatment == "glyph"), 
+	             aes(colour = treatment), 
+				 fun.y = "mean",  
+				 geom = "line", 
+				 size = 2) +
+	geom_point(data = subset(current_otu_data, treatment == "glyph"), 
+	           aes(colour = treatment)) +
+scale_linetype_manual(values = c("dna" = 1, 
+									 "cdna" = 6), 
+						name = "Nucleic acid  ", 
+						breaks = c("cdna", 
+								   "dna"), 
+						labels = c("16S rRNA", 
+								   "16S rRNA gene")) +
+	scale_colour_manual(values = c("glyph" = "black", 
+								   "control" = "grey50"), 
+						name = "Microcosm  ", 
+						breaks = c("glyph", 
+								   "control"), 
+						labels = c("Treatment", 
+								   "Control")) +
+	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+	theme_bw() +
+	ggtitle(species_title) +
+	theme(axis.text = element_text(size = 18),
+		  axis.title = element_text(size = 20, face = "bold"),
+          panel.grid.major = element_line(colour = NA, size = 0.2),
+          panel.grid.minor = element_line(colour = NA, size = 0.5),
+          strip.text.x = element_text(size = 15, face = "bold")) +
+	labs(x = "Days", y = "Relative abundance [%]") +
+	facet_wrap(~ habitat, scales = "free")
+	# ggsave(current_plot, file = paste(plot_path, 
+									  # species_title, 
+									  # ".png", 
+									  # sep = ""), 
+						 # width = 13, 
+						 # height = 7)
+	print(current_plot)
+}
+
 # factorize OTUs
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
-
-### depending on the plot, we need the parallels separately or averaged
-# need to remove "Sample" to average the parallels
-mothur_ra_melt_mean <- aggregate(cbind(Abundance, abs_Abundance) ~ OTU + time + days + new_day
-								+ treatment + nucleic_acid + habitat + disturbance 
-								+ cell_counts + glyphosate + glyphosate_gone + condition_diversity +
-								+ kingdom + phylum + class + order + family + genus + otu_id + wholetax, 
-								data = mothur_ra_melt, 
-								mean)
 
 save.image("mothur_glyph.RData")
