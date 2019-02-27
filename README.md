@@ -1,5 +1,8 @@
 # Scripts
 
+#### TODO: include phyloseq, check structure
+#### TODO: for tree graphics: remember to install pkg-config and then cairo-devel on cloud to then install svglite in R to export svg-graphics, such as the tree, which can be opened and textmanipulated in inkscape
+
 ## 16S amplicon analysis
 
 The program `mothur` (1.39.5) and the R package `dada2` (1.8) (together with `cutadapt` (1.8.3)) were used to process amplicon reads.
