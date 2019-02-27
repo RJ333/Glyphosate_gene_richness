@@ -24,7 +24,7 @@ erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_div)[,c(1:7)])
 erich_mothur_meta$habitat <- relevel(erich_mothur_meta$habitat, "water")
 erich_mothur_meta$nucleic_acid <- relevel(erich_mothur_meta$nucleic_acid, "dna")
 labs_nucleic_acid <- c("DNA", "RNA")
-labs_habitat <- c("Water column", "Biofilm")
+labs_habitat <- c("Free-living", "Biofilm")
 levels(erich_mothur_meta$habitat) <- labs_habitat
 levels(erich_mothur_meta$nucleic_acid) <-labs_nucleic_acid
 	
