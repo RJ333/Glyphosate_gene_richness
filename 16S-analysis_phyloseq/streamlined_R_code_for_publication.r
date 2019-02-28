@@ -530,7 +530,100 @@ ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png",
 								  sep = ""),
 								  height = 10,
 								  width = 10)
-                                              
+                
+#################### DESeq2
+
+# test variable is not allowed to contain NA
+mothur_deseq <- subset_samples(mothur_full, !(is.na(condition)))
+
+# these are the parameters passed to function
+ps <- mothur_deseq
+acids <- c("dna", "cdna")
+habitats <- c("water", "biofilm")
+treatments <- c("glyph", "control")
+threshold <- 0
+
+# this is the function we call to split our data into different subsets
+get_sample_subsets <- function(ps, nucleic_acid, habitat, treatment){
+	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
+											sample_data(ps)$habitat == habitat & 
+											sample_data(ps)$treatment == treatment),]
+	phy_subset <- merge_phyloseq(tax_table(ps), 
+								 otu_table(ps),
+								 sample_subset)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) >= 1}, prune = TRUE)
+	return(phy_subset2)
+}
+
+# this is the nested for loop which calls the subsetting function 
+# for each combination of subsetting variables
+deseq_subsets <- list() 
+if(length(deseq_subsets) == 0) {
+	for (treatment in treatments){
+		for (acid in acids) {
+			for (habitat in habitats) {
+				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+							 habitat, " and treatment is ", treatment))
+				tmp <-	get_sample_subsets(ps = ps, 
+									   nucleic_acid = acid, 
+									   habitat = habitat, 
+									   treatment = treatment)
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
+				deseq_subsets[[paste(habitat,
+									 treatment, 
+									 acid, 
+							   sep = "_")]] <- tmp
+			}
+		}
+	}
+print(deseq_subsets)
+} else {
+	print("list is not empty, abort to prevend appending...")
+}
+
+# we can now estimate or determine different diversity parameters on our subsets
+deseq_tests <- list()						  
+counter <- 0
+if(length(deseq_tests) == 0 & 
+	all.equal(counter, 0)) {						  
+deseq_tests <- lapply(deseq_subsets, 
+					   function(deseqs) {
+								counter  <<- counter + 1
+                                tmp = phyloseq_to_deseq2(deseqs, ~ condition)
+								tmp$condition <- relevel(tmp$condition, ref = "untreated")
+								tmp_dds = DESeq(tmp, test = "Wald", fitType = "parametric")								
+})
+} else {
+	print(paste("list is not empty, or counter not 0 (counter is", counter, 
+				"), abort to prevend appending..."))
+}
+
+# try cbind with mapply
+sigtabs_list <- list()
+if(length(sigtabs_list) == 0) {
+sigtabs_list <- mapply(function(dds, ps) {res = results(dds, cooksCutoff = FALSE)
+									alpha = 0.01
+									sigtab = res[which(res$padj < alpha), ]
+									sigtab = cbind(as(sigtab, "data.frame"), 
+                                        as(tax_table(ps)[rownames(sigtab), ], "matrix"))
+									print(head(sigtab))
+									return(sigtab)
+}, dds = deseq_tests, ps = deseq_subsets, SIMPLIFY = FALSE)
+} else {
+	print(paste("list is not empty, abort to prevent appending..."))
+}
+
+# all significant changes are now in the list
+sigtabs_list
+# sort by log fold change
+sigs_ordered <- lapply(sigtabs_list, function(x) x[order(x$log2FoldChange),])
+
+# create a vector of all identified OTUs in sigtabs_list (can be used for plotting abundances!)
+deseq_otus <- row.names(sigtabs_list[[1]])
+for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[i]])))}
+
+               
 # factorize OTUs
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
