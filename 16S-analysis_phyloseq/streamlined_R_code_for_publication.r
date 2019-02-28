@@ -767,3 +767,5 @@ print(sample_subset_list)
 
 # the distribution of sequence length can be addressed using
 table(width(refseq(sample_subset_list[[1]])))
+
+sessionInfo()
