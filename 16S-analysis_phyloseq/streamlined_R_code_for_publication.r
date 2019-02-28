@@ -123,13 +123,15 @@ ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
 								  width = 14)
 
 ############## community overview bar plot
-
+# remove singletons
+mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
 # transform into relative abundance, displayed in percentage!
 mothur_full_ra <- transform_sample_counts(mothur_full, function(x){(x / sum(x)) * 100})
 # remove low abundant OTUs (you may decrease the threshold, but it will increase melting time)
 mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
 # melt into long format for plotting
 mothur_ra_melt <- psmelt(mothur_ra_0.01)
+mothur_1_melt <- psmelt(mothur_1)
 # calculate mean of technical replicates
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance 
@@ -440,13 +442,15 @@ threshold <- 0
 
 
 # define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
-get_sample_subsets <- function(ps, nucleic_acid, habitat, threshold){
+get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
-											sample_data(ps)$habitat == habitat),]
+											sample_data(ps)$habitat == habitat & 
+											sample_data(ps)$days > days),]
 	phy_subset <- merge_phyloseq(tax_table(ps), 
 								 otu_table(ps),
+								 refseq(ps),
 								 sample_subset)
-	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1}, prune = TRUE)
+	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1 }, prune = TRUE)
 	return(phy_subset2)
 }
 
@@ -624,7 +628,142 @@ deseq_otus <- row.names(sigtabs_list[[1]])
 for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[i]])))}
 
                
-# factorize OTUs
+################### Venn Diagrams
+               
+# define function to plot Venn diagram with 4 categories, here biofilm vs water column
+fourway.Venn <- function(A,B,C,D,cat.names = c("Water\nDNA",
+											   "Biofilm\nDNA",
+											   "Water\nRNA",
+											   "Biofilm\nRNA")){
+  grid.newpage()
+  area1 <- length(A)
+  area2 <- length(B)
+  area3 <- length(C)
+  area4 <- length(D)
+  n12<-length(Reduce(intersect, list(A,B)))
+  n13<-length(Reduce(intersect, list(A,C)))
+  n14<-length(Reduce(intersect, list(A,D)))
+  n23<-length(Reduce(intersect, list(B,C)))
+  n24<-length(Reduce(intersect, list(B,D)))
+  n34<-length(Reduce(intersect, list(C,D)))
+  n123<-length(Reduce(intersect, list(A,B,C)))
+  n124<-length(Reduce(intersect, list(A,B,D)))
+  n134<-length(Reduce(intersect, list(A,C,D)))
+  n234<-length(Reduce(intersect, list(B,C,D)))
+  n1234<-length(Reduce(intersect, list(A,B,C,D)))
+  
+venn.plot <- draw.quad.venn(
+  area1 = area1,
+  area2 = area2,
+  area3 = area3,
+  area4 = area4,
+  n12 = n12,
+  n13 = n13,
+  n14 = n14,
+  n23 = n23,
+  n24 = n24,
+  n34 = n34,
+  n123 = n123,
+  n124 = n124,
+  n134 = n134,
+  n234 = n234,
+  n1234 = n1234,
+  category = cat.names,
+  cat.pos = c(0,180,0,200),
+  fill = c("blue", "red", "green", "yellow"),
+  alpha = .3,
+  lty = "blank",
+  cex = 2,
+  cat.cex = 2,
+  cat.col = c("blue", "red", "green", "black")
+)
+grid.draw(venn.plot)
+}
+
+# factorize OTUs to count them
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
-save.image("mothur_glyph.RData")
+# generate subsets to count OTUs per subset
+# habitat * nucleic_acid
+water_dna_genera <- subset(mothur_ra_melt, habitat == "water" & nucleic_acid == "dna" & Abundance > 0.05)
+water_dna_unique_genera<-water_dna_genera[which(!duplicated(water_dna_genera[,"genus"])),]
+nrow(water_dna_unique_genera)
+
+water_cdna_genera <- subset(mothur_ra_melt, habitat == "water" & nucleic_acid == "cdna" & Abundance > 0.05)
+water_cdna_unique_genera<-water_cdna_genera[which(!duplicated(water_cdna_genera[,"genus"])),]
+nrow(water_cdna_unique_genera)
+
+biofilm_dna_genera <- subset(mothur_ra_melt, habitat == "biofilm" & nucleic_acid == "dna" & Abundance > 0.05)
+biofilm_dna_unique_genera<-biofilm_dna_genera[which(!duplicated(biofilm_dna_genera[,"genus"])),]
+nrow(biofilm_dna_unique_genera)
+
+biofilm_cdna_genera <- subset(mothur_ra_melt, habitat == "biofilm" & nucleic_acid == "cdna" & Abundance > 0.05)
+biofilm_cdna_unique_genera<-biofilm_cdna_genera[which(!duplicated(biofilm_cdna_genera[,"genus"])),]
+nrow(biofilm_cdna_unique_genera)
+
+# plot Venn diagram
+fourway.Venn(water_dna_unique_otus$genus,
+			 biofilm_dna_unique_otus$genus,
+			 water_cdna_unique_otus$genus,
+			 biofilm_cdna_unique_otus$genus)
+dev.copy(png, paste(plot_path, "Supplement_4wayVenn_nucleic_acids_genus_0.05.png"))
+dev.off()
+
+############################ OTU, sequence length and genera distribution
+
+# library sizes are returned using
+sample_sums(mothur_full)
+
+# how many OTUs belong to which genus?
+genus_distribution <- aggregate(Abundance ~ OTU + genus, 
+								data = mothur_1_melt, 
+								max)
+# separated by habitat and nucleic acid								
+genus_distribution2 <- aggregate(Abundance ~ OTU + habitat + genus + nucleic_acid, 
+								data = mothur_1_melt, 
+								max)
+
+# OTUs per genus ordered by amount of OTUs								
+otu_per_genus <- as.data.frame(table(genus_distribution$genus))
+otu_per_genus[order(otu_per_genus$Freq),]
+nrow(otu_per_genus)
+
+# these are the arguments for the subsetting function
+ps <- mothur_full
+acids <- c("dna", "cdna")
+habitats <- c("water", "biofilm")
+threshold <- 1
+after_day <- 43
+
+# in this list we store the different sample subsets, generated by the for loops
+sample_subset_list <- list() 
+if(length(sample_subset_list) == 0) {
+	for (each_day in after_day){
+		for (acid in acids) {
+			for (habitat in habitats) {
+				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+							 habitat, " and first day is ", each_day))
+				tmp <-	get_sample_subsets(ps = ps, 
+									   nucleic_acid = acid, 
+									   habitat = habitat, 
+									   days = each_day, 
+									   threshold = threshold)
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
+				sample_subset_list[[paste(habitat, 
+										  "after day", 
+										  each_day, 
+										  acid, 
+										  "min reads per OTU", 
+										  threshold, 
+										  sep = " ")]] <- tmp
+			}
+		}
+	}
+print(sample_subset_list)
+} else {
+	print("list is not empty, abort to prevend appending...")
+}
+
+# the distribution of sequence length can be addressed using
+table(width(refseq(sample_subset_list[[1]])))
