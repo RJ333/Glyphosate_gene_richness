@@ -1,5 +1,12 @@
 #!/usr/bin/env Rscript
 
+# load libraries
+library(scales)
+library(ggplot2)
+library(phyloseq)
+library(DESeq2)
+library(gridExtra)
+
 # Set the working dir with shared file, constaxonomy, sample and OTU_rep files in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
 
@@ -9,12 +16,7 @@ if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
 
-# load libraries
-library(scales)
-library(ggplot2)
-library(phyloseq)
-library(DESeq2)
-library(gridExtra)
+
 ## TO DO: copy data files from cloud for OTU reps and tree
 
 # import mothur output into phyloseq
