@@ -160,10 +160,11 @@ community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40
 length(levels(droplevels(community_subset$class)))
 length(levels(droplevels(community_subset$order)))
 
-# sort orders based on phylogenetic class for plotting
-community_subset$order <- factor(community_subset$order,
-									   # alphaproteos
-							levels = c("Caulobacterales",
+# sort orders for plotting based on phylogenetic 
+# classes (Alphaproteos, Gammaproteos and Bacteriodetes) 
+community_subset$order <- factor(community_subset$order,							   
+							levels = c(# alphaproteos
+                                       "Caulobacterales",
 									   "Rhizobiales",
 									   "Rhodobacterales",
 									   "Rhodospirillales",
