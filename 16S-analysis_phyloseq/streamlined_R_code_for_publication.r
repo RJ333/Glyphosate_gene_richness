@@ -16,9 +16,6 @@ if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
 
-
-## TO DO: copy data files from cloud for OTU reps and tree
-
 # import mothur output into phyloseq
 mothur_ps <- import_mothur(mothur_list_file = NULL, 
 						   mothur_group_file = NULL,
