@@ -141,7 +141,8 @@ mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1},
 mothur_ra_melt <- psmelt(mothur_ra_0.01)
 mothur_1_melt <- psmelt(mothur_1)
 
-# calculate mean of technical replicates
+# aggregate all columns except for "parallels" to 
+# calculate the mean abundance of technical replicates
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance
 								+ glyphosate + glyphosate_gone + condition_diversity +
