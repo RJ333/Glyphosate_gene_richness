@@ -3,8 +3,11 @@
 # Set the working dir with shared file, constaxonomy, sample and OTU_rep files in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
 
-# mkdir for plots
+# set path for plots, create dir if not existant
 plot_path <- "./plots/"
+if(!dir.exists(plot_path)) {
+  dir.create(plot_path)
+}
 
 # load libraries
 library(scales)
