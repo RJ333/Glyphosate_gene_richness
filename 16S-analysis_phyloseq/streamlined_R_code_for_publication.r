@@ -16,13 +16,19 @@ if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
 
+# mothur files that need to be imported
+# shared file is the OTU count table
+# constaxonomy contains the taxonomy of the OTUs
+our_shared_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared"
+our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"
+
 # import mothur output into phyloseq
 mothur_ps <- import_mothur(mothur_list_file = NULL, 
 						   mothur_group_file = NULL,
 						   mothur_tree_file = NULL, 
 						   cutoff = NULL, 
-						   mothur_shared_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared",
-						   mothur_constaxonomy_file = "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy", 
+						   mothur_shared_file = our_shared_file,
+						   mothur_constaxonomy_file = our_cons_taxonomy_file, 
 						   parseFunction = parse_taxonomy_default)
 # or load from workspace
 load("mothur_glyph_002.RData")   
