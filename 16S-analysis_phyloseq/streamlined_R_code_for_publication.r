@@ -1,26 +1,39 @@
 #!/usr/bin/env Rscript
-
 # load libraries
 library(scales)
 library(ggplot2)
 library(phyloseq)
 library(DESeq2)
 library(gridExtra)
-
-# Set the working dir with shared file, constaxonomy, sample and OTU_rep files in it
+# Set the working dir 
+# it should contain shared file, constaxonomy file, 
+# meta file, cell count file and OTU_rep fasta file in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
-
-# set path for plots, create dir if not existant
+# set path for plots, create directory if not existant
 plot_path <- "./plots/"
 if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
-
-# mothur files that need to be imported
+# mothur files and additional files that need to be imported from the working dir
 # shared file is the OTU count table
 # constaxonomy contains the taxonomy of the OTUs
 our_shared_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared"
-our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"
+our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"									
+# sample data is in the metafile
+metafile <- read.delim("metafile.tsv", 
+						row.names = 1, 
+						header = TRUE,
+						na.strings = "")
+metafile <- sample_data(metafile)
+# read table for cell count plot
+cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
+# read OTU representative sequences
+OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta", 
+							  format = "fasta",
+							  nrec = -1L, 
+							  skip = 0L, 
+							  seek.first.rec = FALSE, 
+							  use.names = TRUE)
 
 # import mothur output into phyloseq
 mothur_ps <- import_mothur(mothur_list_file = NULL, 
@@ -30,6 +43,9 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_shared_file = our_shared_file,
 						   mothur_constaxonomy_file = our_cons_taxonomy_file, 
 						   parseFunction = parse_taxonomy_default)
+
+
+
 						   
 # add taxonomy columns and adjust header
 wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
@@ -49,26 +65,7 @@ colnames(tax_table(mothur_ps)) <- c("kingdom",
 									"otu_id",
 									"wholetax")
 											
-# read meta data, turn into phyloseq object, merge with existing ps object									
-metafile <- read.delim("metafile.tsv", 
-						row.names = 1, 
-						header = TRUE,
-						na.strings = "")
-metafile <- sample_data(metafile)
 
-# read table for cell count plot
-cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
-
-# read OTU representative sequences
-
-### for generation of file check gitlab #59
-
-OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta", 
-							  format = "fasta",
-							  nrec = -1L, 
-							  skip = 0L, 
-							  seek.first.rec = FALSE, 
-							  use.names = TRUE)
 # add meta data and OTU representative seqs to phyloseq object
 mothur_full <- merge_phyloseq(mothur_ps, metafile, refseq(OTU_seqs))
 
