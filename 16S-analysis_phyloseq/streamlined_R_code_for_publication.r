@@ -5,8 +5,8 @@ library(ggplot2)
 library(phyloseq)
 library(DESeq2)
 library(gridExtra)
-# Set the working dir 
-# it should contain shared file, constaxonomy file, 
+# Set the working dir
+# it should contain shared file, constaxonomy file,
 # meta file, cell count file and OTU_rep fasta file in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
 # set path for plots, create directory if not existant
@@ -18,64 +18,61 @@ if(!dir.exists(plot_path)) {
 # shared file is the OTU count table
 # constaxonomy contains the taxonomy of the OTUs
 our_shared_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared"
-our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"									
+our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"
 # sample data is in the metafile
-metafile <- read.delim("metafile.tsv", 
-						row.names = 1, 
+metafile <- read.delim("metafile.tsv",
+						row.names = 1,
 						header = TRUE,
 						na.strings = "")
 metafile <- sample_data(metafile)
 # read table for cell count plot
 cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
 # read OTU representative sequences
-OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta", 
+OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 							  format = "fasta",
-							  nrec = -1L, 
-							  skip = 0L, 
-							  seek.first.rec = FALSE, 
+							  nrec = -1L,
+							  skip = 0L,
+							  seek.first.rec = FALSE,
 							  use.names = TRUE)
 
 # import mothur output into phyloseq
-mothur_ps <- import_mothur(mothur_list_file = NULL, 
+mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_group_file = NULL,
-						   mothur_tree_file = NULL, 
-						   cutoff = NULL, 
+						   mothur_tree_file = NULL,
+						   cutoff = NULL,
 						   mothur_shared_file = our_shared_file,
-						   mothur_constaxonomy_file = our_cons_taxonomy_file, 
+						   mothur_constaxonomy_file = our_cons_taxonomy_file,
 						   parseFunction = parse_taxonomy_default)
-
-
-
-						   
-# add taxonomy columns and adjust header
+# now all files are imported, we can adjust them to our needs
+# add further taxonomy columns "OTU" and "wholetax" and adjust column names
 wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
-                  [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")], 
+                  [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")],
 				  sep = "_"))
 
-tax_table(mothur_ps) <- cbind(tax_table(mothur_ps), 
-							  rownames(tax_table(mothur_ps)), 
+tax_table(mothur_ps) <- cbind(tax_table(mothur_ps),
+							  rownames(tax_table(mothur_ps)),
 							  wholetax)
-							  
-colnames(tax_table(mothur_ps)) <- c("kingdom", 
-									"phylum", 
-									"class", 
-									"order", 
-									"family", 
-									"genus", 
+
+colnames(tax_table(mothur_ps)) <- c("kingdom",
+									"phylum",
+									"class",
+									"order",
+									"family",
+									"genus",
 									"otu_id",
 									"wholetax")
-											
+
 
 # add meta data and OTU representative seqs to phyloseq object
 mothur_full <- merge_phyloseq(mothur_ps, metafile, refseq(OTU_seqs))
 
 ############## Alpha diversity (including singletons)
-erich_mothur <- estimate_richness(mothur_full, measures = c("Observed", 
-															"Chao1", 
-															"ACE", 
-															"Shannon", 
-															"Simpson", 
-															"InvSimpson", 
+erich_mothur <- estimate_richness(mothur_full, measures = c("Observed",
+															"Chao1",
+															"ACE",
+															"Shannon",
+															"Simpson",
+															"InvSimpson",
 															"Fisher"))
 erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_full)[,c(1:7)])
 
@@ -88,31 +85,30 @@ levels(erich_mothur_meta$habitat) <- labs_habitat
 levels(erich_mothur_meta$nucleic_acid) <- labs_nucleic_acid
 
 # plotting Alpha diversity
-
-shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day, 
-											  y = Shannon, 
-											  colour = treatment)) + 
+shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day,
+											  y = Shannon,
+											  colour = treatment)) +
 	geom_point(alpha = 0.8, size = 4) +
-	geom_vline(aes(xintercept = 1), 
-			   linetype = "dashed", 
+	geom_vline(aes(xintercept = 1),
+			   linetype = "dashed",
 			   size = 1.2) +
-	stat_summary(aes(colour = treatment), 
-				 fun.y = "mean",  
+	stat_summary(aes(colour = treatment),
+				 fun.y = "mean",
 				 geom = "line",
 				 alpha = 0.75,
 				 size = 2) +
-	scale_colour_manual(values = c("glyph" = "black", 
-								   "control" = "grey50"), 
-						name = "Microcosm  ", 
-						breaks = c("glyph", 
-								   "control"), 
-						labels = c("Treatment", 
+	scale_colour_manual(values = c("glyph" = "black",
+								   "control" = "grey50"),
+						name = "Microcosm  ",
+						breaks = c("glyph",
+								   "control"),
+						labels = c("Treatment",
 								   "Control")) +
 	coord_cartesian(ylim = c(1, 3)) +
 	theme_bw() +
 	theme(axis.text = element_text(size = 18),
 		  axis.title = element_text(size = 20, face = "bold"),
-		  legend.title = element_text(size = 15, face = "bold"), 
+		  legend.title = element_text(size = 15, face = "bold"),
 		  legend.text = element_text(size = 13),
 		  panel.grid.major = element_line(colour = NA, size = 0.2),
 		  panel.grid.minor = element_line(colour = NA, size = 0.5),
@@ -122,7 +118,7 @@ shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day,
 	labs(x = "Days", y = "Shannon index") +
 	facet_wrap(~ habitat + nucleic_acid)
 
-ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png", 
+ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
 								  sep = ""),
 								  height = 10,
 								  width = 14)
@@ -139,21 +135,21 @@ mothur_ra_melt <- psmelt(mothur_ra_0.01)
 mothur_1_melt <- psmelt(mothur_1)
 # calculate mean of technical replicates
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
-								+ treatment + nucleic_acid + habitat + disturbance 
+								+ treatment + nucleic_acid + habitat + disturbance
 								+ glyphosate + glyphosate_gone + condition_diversity +
-								+ kingdom + phylum + class + order + family + genus + otu_id, 
-								data = mothur_ra_melt, 
+								+ kingdom + phylum + class + order + family + genus + otu_id,
+								data = mothur_ra_melt,
 								mean)
 # get data per OTU, setting threshold for samples and clusters
-community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40 
+community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40
 							& Abundance > 0.15
-							& habitat == "water" 
+							& habitat == "water"
 							& treatment == "glyph"))
 # check required number of colours per order and number of classes
 length(levels(droplevels(community_subset$class)))
-length(levels(droplevels(community_subset$order))) 
+length(levels(droplevels(community_subset$order)))
 # sort orders based on phylogenetic class for plotting
-community_subset$order <- factor(community_subset$order, 
+community_subset$order <- factor(community_subset$order,
 									   # alphaproteos
 							levels = c("Caulobacterales",
 									   "Rhizobiales",
@@ -185,46 +181,46 @@ fill_values <- c("Alteromonadales" = "orange",
 					"Rhodospirillales" = "yellow",
 					"Sphingobacteriales" = "darkred",
 					"Sphingomonadales" = "grey",
-					"Thalassobaculales" = "blue2")	
+					"Thalassobaculales" = "blue2")
 
-# plotting all selected clusters in bar plot ordered by class 
+# plotting all selected clusters in bar plot ordered by class
 # and displaying orders over time for DNA and RNA
 community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
-	scale_fill_manual(breaks = levels(community_subset$order), 
+	scale_fill_manual(breaks = levels(community_subset$order),
 				      values = fill_values) +
-	geom_bar(data = subset(community_subset, nucleic_acid == "dna" & 
+	geom_bar(data = subset(community_subset, nucleic_acid == "dna" &
                                              treatment == "glyph"),
-			 aes(x = new_day - 0.5, 
-				 y = Abundance), 
-			 fill = "black", 
-		     width = 0.9, 
+			 aes(x = new_day - 0.5,
+				 y = Abundance),
+			 fill = "black",
+		     width = 0.9,
 		     stat = "sum") +
-	geom_bar(data = subset(community_subset, nucleic_acid == "dna" & 
+	geom_bar(data = subset(community_subset, nucleic_acid == "dna" &
                                              treatment == "glyph"),
-			 aes(x = new_day - 0.5, 
-				 y = Abundance, 
-				 fill = order), 
-			 width = 0.6, 
+			 aes(x = new_day - 0.5,
+				 y = Abundance,
+				 fill = order),
+			 width = 0.6,
 			 stat = "identity") +
-	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" & 
+	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" &
                                              treatment == "glyph"),
-			 aes(x = new_day + 0.5, 
-				 y = Abundance), 
-			 fill = "black", 
-			 width = 0.9, 
+			 aes(x = new_day + 0.5,
+				 y = Abundance),
+			 fill = "black",
+			 width = 0.9,
 			 stat = "sum") +
-	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" & 
+	geom_bar(data = subset(community_subset, nucleic_acid == "cdna" &
                                              treatment == "glyph"),
-			 aes(x = new_day + 0.5, 
-				 y = Abundance, 
-				 fill = order), 
-			 width = 0.6, 
+			 aes(x = new_day + 0.5,
+				 y = Abundance,
+				 fill = order),
+			 width = 0.6,
 			 stat = "identity") +
 	geom_vline(data = subset(community_subset, treatment == "glyph"),
 			   aes(xintercept = 1.5),
 			   linetype = "dashed", size = 1.2) +
-	guides(colour = FALSE, 
-		   size = FALSE, 
+	guides(colour = FALSE,
+		   size = FALSE,
 		   width = FALSE,
 		   fill = guide_legend(ncol = 1,
 							   keyheight = 1.5,
@@ -238,44 +234,44 @@ community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
 	theme(axis.text = element_text(size = 17)) +
 	theme(axis.title = element_text(size = 20,
 									face = "bold")) +
-	theme(legend.background = element_rect(fill = "grey90", 
+	theme(legend.background = element_rect(fill = "grey90",
 										   linetype = "solid")) +
-	theme(panel.grid.major = element_line(colour = NA, 
+	theme(panel.grid.major = element_line(colour = NA,
 										  size = 0.2)) +
-	theme(panel.grid.minor = element_line(colour = NA, 
+	theme(panel.grid.minor = element_line(colour = NA,
 										  size = 0.5)) +
-	labs(x = "Days", 
+	labs(x = "Days",
 		 y = "Relative abundance [%]") +
-  annotate("text", 
-		   x = -27, 
-		   y = 90, 
-		   label = "a)", 
-		   color = "black", 
-		   size = 6, 
-		   angle = 0, 
+  annotate("text",
+		   x = -27,
+		   y = 90,
+		   label = "a)",
+		   color = "black",
+		   size = 6,
+		   angle = 0,
 		   fontface = "bold") +
-  annotate("text", 
-		   x = -22.5, 
-		   y = 90, 
-		   label = "b)", 
-		   color = "black", 
-		   size = 6, 
-		   angle = 0, 
+  annotate("text",
+		   x = -22.5,
+		   y = 90,
+		   label = "b)",
+		   color = "black",
+		   size = 6,
+		   angle = 0,
 		   fontface = "bold")
 
-ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_overview.png", 
+ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_overview.png",
                                     sep = ""),
-                                    width = 16, 
+                                    width = 16,
                                     height = 8)
 
-############# OTU abundance plot                                    
+############# OTU abundance plot
 
 # define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
 	subset(mothur_ra_melt, OTU == x)
 }
 
-# list of OTUs mentioned in paper and supplement 
+# list of OTUs mentioned in paper and supplement
 OTU_list <- c("Otu000007",
               # "Otu000011",
               # "Otu000018",
@@ -306,7 +302,7 @@ OTU_list <- c("Otu000007",
               # "Otu000006",
               "Otu000001"
               )
-              
+
 # rename for plotting
 strip_text_habitat <- c("Biofilm", "Free-living")
 
@@ -315,50 +311,50 @@ for (i in OTU_list){
     current_otu_data <- get_current_otu_data(i)
     print(paste("OTU is", i))
 
-species_title <- unique(paste(current_otu_data$family, 
-							  current_otu_data$genus, 
-							  current_otu_data$OTU, 
+species_title <- unique(paste(current_otu_data$family,
+							  current_otu_data$genus,
+							  current_otu_data$OTU,
 							  sep = " "))
 
 levels(current_otu_data$habitat) <- strip_text_habitat
-                                      
-current_plot <- ggplot(data = current_otu_data, 
-	                   aes(x = days - 69, 
-						   y = Abundance, 
-						   group = nucleic_acid, 
-						   lty = nucleic_acid)) + 
-	geom_vline(aes(xintercept = 0), 
-			   linetype = "dashed", 
+
+current_plot <- ggplot(data = current_otu_data,
+	                   aes(x = days - 69,
+						   y = Abundance,
+						   group = nucleic_acid,
+						   lty = nucleic_acid)) +
+	geom_vline(aes(xintercept = 0),
+			   linetype = "dashed",
 			   size = 1.2) +
-	geom_point(data = subset(current_otu_data, treatment == "control"), 
-		       aes(colour = treatment), 
+	geom_point(data = subset(current_otu_data, treatment == "control"),
+		       aes(colour = treatment),
 			   alpha = 1) +
-	stat_summary(data = subset(current_otu_data, treatment == "control"), 
-	             aes(colour = treatment), 
-				 fun.y = "mean",  
-				 geom = "line", 
-				 size = 2, 
+	stat_summary(data = subset(current_otu_data, treatment == "control"),
+	             aes(colour = treatment),
+				 fun.y = "mean",
+				 geom = "line",
+				 size = 2,
 				 alpha = 1) +
-	stat_summary(data = subset(current_otu_data, treatment == "glyph"), 
-	             aes(colour = treatment), 
-				 fun.y = "mean",  
-				 geom = "line", 
+	stat_summary(data = subset(current_otu_data, treatment == "glyph"),
+	             aes(colour = treatment),
+				 fun.y = "mean",
+				 geom = "line",
 				 size = 2) +
-	geom_point(data = subset(current_otu_data, treatment == "glyph"), 
+	geom_point(data = subset(current_otu_data, treatment == "glyph"),
 	           aes(colour = treatment)) +
-    scale_linetype_manual(values = c("dna" = 1, 
-                                     "cdna" = 6), 
-						name = "Nucleic acid  ", 
-						breaks = c("cdna", 
-								   "dna"), 
-						labels = c("16S rRNA", 
+    scale_linetype_manual(values = c("dna" = 1,
+                                     "cdna" = 6),
+						name = "Nucleic acid  ",
+						breaks = c("cdna",
+								   "dna"),
+						labels = c("16S rRNA",
 								   "16S rRNA gene")) +
-	scale_colour_manual(values = c("glyph" = "black", 
-								   "control" = "grey50"), 
-						name = "Microcosm  ", 
-						breaks = c("glyph", 
-								   "control"), 
-						labels = c("Treatment", 
+	scale_colour_manual(values = c("glyph" = "black",
+								   "control" = "grey50"),
+						name = "Microcosm  ",
+						breaks = c("glyph",
+								   "control"),
+						labels = c("Treatment",
 								   "Control")) +
 	scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
 	theme_bw() +
@@ -370,11 +366,11 @@ current_plot <- ggplot(data = current_otu_data,
           strip.text.x = element_text(size = 15, face = "bold")) +
 	labs(x = "Days", y = "Relative abundance [%]") +
 	facet_wrap(~ habitat, scales = "free")
-	# ggsave(current_plot, file = paste(plot_path, 
-									  # species_title, 
-									  # ".png", 
-									  # sep = ""), 
-						 # width = 13, 
+	# ggsave(current_plot, file = paste(plot_path,
+									  # species_title,
+									  # ".png",
+									  # sep = ""),
+						 # width = 13,
 						 # height = 7)
 	print(current_plot)
 }
@@ -383,30 +379,30 @@ current_plot <- ggplot(data = current_otu_data,
 
 cell_counts_glyph_0 <- subset(cell_counts_glyph, new_day >= -7)
 
-cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day, 
-                                colour = treatment, 
-                                linetype = treatment, 
+cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
+                                colour = treatment,
+                                linetype = treatment,
                                 group = treatment)) +
-	geom_errorbar(aes(ymin = cells_ml - cells_se, 
+	geom_errorbar(aes(ymin = cells_ml - cells_se,
                       ymax = cells_ml + cells_se),
                   linetype = 1, width = 2, size = 1.2, alpha = 0.7) +
-	geom_errorbar(aes(ymin = (glyph_mg_L - glyph_se) * 2200000, 
-                      ymax = (glyph_mg_L + glyph_se) * 2200000), 
+	geom_errorbar(aes(ymin = (glyph_mg_L - glyph_se) * 2200000,
+                      ymax = (glyph_mg_L + glyph_se) * 2200000),
                   linetype = 1, width = 1, size = 1.0, alpha = 0.6) +
-    geom_line(aes(y = cells_ml, 
-                  group = treatment, 
-                  colour = treatment), 
+    geom_line(aes(y = cells_ml,
+                  group = treatment,
+                  colour = treatment),
               linetype = 1, size = 2, alpha = 0.8) +
-	geom_point(aes(y = glyph_theor * 2200000, 
-                   shape = "glyph"),  
+	geom_point(aes(y = glyph_theor * 2200000,
+                   shape = "glyph"),
                alpha = 0.5, size = 5) +
-	geom_point(aes(y = glyph_mg_L * 2200000, 
-                   shape = "glyph_deg"), 
+	geom_point(aes(y = glyph_mg_L * 2200000,
+                   shape = "glyph_deg"),
                alpha = 0.7, size = 4) +
 
 	geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.5, alpha = 0.5)+
-		
-	scale_y_continuous(label =  function(x) {ifelse(x == 0, "0", parse(text = gsub("[+]", "", gsub("e", " %*% 10^", scientific_format()(x)))))}, 
+
+	scale_y_continuous(label =  function(x) {ifelse(x == 0, "0", parse(text = gsub("[+]", "", gsub("e", " %*% 10^", scientific_format()(x)))))},
         sec.axis = sec_axis(~ . / 2200000, name = expression(paste("Glyphosate concentration  ", bgroup("[",mg~L^{-1},"]")))))+
 	scale_colour_manual(values = c("control" = "grey70", "glyph" = "black"),
                         name = "Microcosm",
@@ -423,14 +419,14 @@ cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
           axis.title = element_text(size = 20, face = "bold"),
           axis.title.y = element_text(angle = 90, vjust = 1),
           axis.text = element_text(size = 18),
-          legend.title=element_text(size = 14), 
+          legend.title=element_text(size = 14),
           legend.text=element_text(size = 12)) +
 	labs(x = "Days",
 		 y = expression(paste("Total cell count  ",bgroup("[",cells~mL^{-1},"]"))))
-			 
-ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyph.png", 
+
+ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyph.png",
                                             sep = ""),
-                               width = 14, 
+                               width = 14,
                                height = 10)
 
 
@@ -448,10 +444,10 @@ threshold <- 0
 
 # define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
 get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
-	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
-											sample_data(ps)$habitat == habitat & 
+	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid &
+											sample_data(ps)$habitat == habitat &
 											sample_data(ps)$days > days),]
-	phy_subset <- merge_phyloseq(tax_table(ps), 
+	phy_subset <- merge_phyloseq(tax_table(ps),
 								 otu_table(ps),
 								 refseq(ps),
 								 sample_subset)
@@ -459,22 +455,22 @@ get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold){
 	return(phy_subset2)
 }
 
-sample_subset_list <- list() 
+sample_subset_list <- list()
 if(length(sample_subset_list) == 0) {
 		for (acid in acids) {
 			for (habitat in habitats) {
-				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat))
-				tmp <-	get_sample_subsets(ps = ps, 
-									   nucleic_acid = acid, 
-									   habitat = habitat,  
+				tmp <-	get_sample_subsets(ps = ps,
+									   nucleic_acid = acid,
+									   habitat = habitat,
 									   threshold = threshold)
-				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)
 				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
-				sample_subset_list[[paste(habitat, 
-										  acid, 
-										  "min reads per OTU", 
-										  threshold, 
+				sample_subset_list[[paste(habitat,
+										  acid,
+										  "min reads per OTU",
+										  threshold,
 										  sep = " ")]] <- tmp
 			}
 	}
@@ -484,37 +480,37 @@ print(sample_subset_list)
 }
 
 ordination_nmds <- list()
-ordination_nmds <- lapply(sample_subset_list, ordinate, 
-											  method = "NMDS", 
-											  dist = "bray", 
-											  try = 100, 
+ordination_nmds <- lapply(sample_subset_list, ordinate,
+											  method = "NMDS",
+											  dist = "bray",
+											  try = 100,
 											  autotransform = TRUE)
-                                              
+
 # NMDS function
 nmds_ordination_plots <- list()
 counter <- 0
-if(length(nmds_ordination_plots) == 0 & 
+if(length(nmds_ordination_plots) == 0 &
 	all.equal(counter, 0)) {
 nmds_ordination_plots <- mapply(function(x,y) {
-						 counter <<- counter + 1 
-						 plot_ordination(x, y, 
+						 counter <<- counter + 1
+						 plot_ordination(x, y,
 										 type = "sample",
 										 color = "days",
-										 shape = "treatment") + 
-							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) + 
+										 shape = "treatment") +
+							geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) +
 							geom_point(aes(colour = treatment), colour = "black", size = 4.5, alpha = 0.7) +
-							scale_shape_manual(values = c("glyph" = 16, 
-                                                          "control" = 17), 
-                            name = "Microcosm  ", 
-                            breaks = c("glyph", 
-                                       "control"), 
-                            labels = c("Treatment", 
+							scale_shape_manual(values = c("glyph" = 16,
+                                                          "control" = 17),
+                            name = "Microcosm  ",
+                            breaks = c("glyph",
+                                       "control"),
+                            labels = c("Treatment",
                                        "Control")) +
 							guides(color = FALSE, fill = FALSE, shape = FALSE) +
 							coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
 							#ggtitle(names(sample_subset_list)[counter]) +
-							geom_text(aes(label = new_day), 
-									  colour = "white", 
+							geom_text(aes(label = new_day),
+									  colour = "white",
 									  size = 2.5) +
 							theme_bw() +
 							theme(panel.grid.major = element_line(colour = NA, size = 0.2),
@@ -522,24 +518,24 @@ nmds_ordination_plots <- mapply(function(x,y) {
                                   axis.text = element_text(size = 18),
 								  #axis.title = element_text(size = 20, face = "bold"),
 								  axis.title = element_blank(),
-                                  legend.title = element_text(size = 15, face = "bold"), 
+                                  legend.title = element_text(size = 15, face = "bold"),
 								  legend.text = element_text(size = 13))
-}, x = sample_subset_list, 
-   y = ordination_nmds, 
+}, x = sample_subset_list,
+   y = ordination_nmds,
    SIMPLIFY = FALSE)
 } else {
-	print(paste("list is not empty, or counter not 0 (counter is", counter, 
+	print(paste("list is not empty, or counter not 0 (counter is", counter,
 				"), abort to prevend appending..."))
 }
 
 do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
 
 g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
-ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png", 
+ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png",
 								  sep = ""),
 								  height = 10,
 								  width = 10)
-                
+
 #################### DESeq2
 
 # test variable is not allowed to contain NA
@@ -554,34 +550,34 @@ threshold <- 0
 
 # this is the function we call to split our data into different subsets
 get_sample_subsets <- function(ps, nucleic_acid, habitat, treatment){
-	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid & 
-											sample_data(ps)$habitat == habitat & 
+	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid &
+											sample_data(ps)$habitat == habitat &
 											sample_data(ps)$treatment == treatment),]
-	phy_subset <- merge_phyloseq(tax_table(ps), 
+	phy_subset <- merge_phyloseq(tax_table(ps),
 								 otu_table(ps),
 								 sample_subset)
 	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) >= 1}, prune = TRUE)
 	return(phy_subset2)
 }
 
-# this is the nested for loop which calls the subsetting function 
+# this is the nested for loop which calls the subsetting function
 # for each combination of subsetting variables
-deseq_subsets <- list() 
+deseq_subsets <- list()
 if(length(deseq_subsets) == 0) {
 	for (treatment in treatments){
 		for (acid in acids) {
 			for (habitat in habitats) {
-				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat, " and treatment is ", treatment))
-				tmp <-	get_sample_subsets(ps = ps, 
-									   nucleic_acid = acid, 
-									   habitat = habitat, 
+				tmp <-	get_sample_subsets(ps = ps,
+									   nucleic_acid = acid,
+									   habitat = habitat,
 									   treatment = treatment)
-				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)
 				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
 				deseq_subsets[[paste(habitat,
-									 treatment, 
-									 acid, 
+									 treatment,
+									 acid,
 							   sep = "_")]] <- tmp
 			}
 		}
@@ -592,19 +588,19 @@ print(deseq_subsets)
 }
 
 # we can now estimate or determine different diversity parameters on our subsets
-deseq_tests <- list()						  
+deseq_tests <- list()
 counter <- 0
-if(length(deseq_tests) == 0 & 
-	all.equal(counter, 0)) {						  
-deseq_tests <- lapply(deseq_subsets, 
+if(length(deseq_tests) == 0 &
+	all.equal(counter, 0)) {
+deseq_tests <- lapply(deseq_subsets,
 					   function(deseqs) {
 								counter  <<- counter + 1
                                 tmp = phyloseq_to_deseq2(deseqs, ~ condition)
 								tmp$condition <- relevel(tmp$condition, ref = "untreated")
-								tmp_dds = DESeq(tmp, test = "Wald", fitType = "parametric")								
+								tmp_dds = DESeq(tmp, test = "Wald", fitType = "parametric")
 })
 } else {
-	print(paste("list is not empty, or counter not 0 (counter is", counter, 
+	print(paste("list is not empty, or counter not 0 (counter is", counter,
 				"), abort to prevend appending..."))
 }
 
@@ -614,7 +610,7 @@ if(length(sigtabs_list) == 0) {
 sigtabs_list <- mapply(function(dds, ps) {res = results(dds, cooksCutoff = FALSE)
 									alpha = 0.01
 									sigtab = res[which(res$padj < alpha), ]
-									sigtab = cbind(as(sigtab, "data.frame"), 
+									sigtab = cbind(as(sigtab, "data.frame"),
                                         as(tax_table(ps)[rownames(sigtab), ], "matrix"))
 									print(head(sigtab))
 									return(sigtab)
@@ -632,9 +628,9 @@ sigs_ordered <- lapply(sigtabs_list, function(x) x[order(x$log2FoldChange),])
 deseq_otus <- row.names(sigtabs_list[[1]])
 for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[i]])))}
 
-               
+
 ################### Venn Diagrams
-               
+
 # define function to plot Venn diagram with 4 categories, here biofilm vs water column
 fourway.Venn <- function(A,B,C,D,cat.names = c("Water\nDNA",
 											   "Biofilm\nDNA",
@@ -656,7 +652,7 @@ fourway.Venn <- function(A,B,C,D,cat.names = c("Water\nDNA",
   n134<-length(Reduce(intersect, list(A,C,D)))
   n234<-length(Reduce(intersect, list(B,C,D)))
   n1234<-length(Reduce(intersect, list(A,B,C,D)))
-  
+
 venn.plot <- draw.quad.venn(
   area1 = area1,
   area2 = area2,
@@ -720,15 +716,15 @@ dev.off()
 sample_sums(mothur_full)
 
 # how many OTUs belong to which genus?
-genus_distribution <- aggregate(Abundance ~ OTU + genus, 
-								data = mothur_1_melt, 
+genus_distribution <- aggregate(Abundance ~ OTU + genus,
+								data = mothur_1_melt,
 								max)
-# separated by habitat and nucleic acid								
-genus_distribution2 <- aggregate(Abundance ~ OTU + habitat + genus + nucleic_acid, 
-								data = mothur_1_melt, 
+# separated by habitat and nucleic acid
+genus_distribution2 <- aggregate(Abundance ~ OTU + habitat + genus + nucleic_acid,
+								data = mothur_1_melt,
 								max)
 
-# OTUs per genus ordered by amount of OTUs								
+# OTUs per genus ordered by amount of OTUs
 otu_per_genus <- as.data.frame(table(genus_distribution$genus))
 otu_per_genus[order(otu_per_genus$Freq),]
 nrow(otu_per_genus)
@@ -741,26 +737,26 @@ threshold <- 1
 after_day <- 43
 
 # in this list we store the different sample subsets, generated by the for loops
-sample_subset_list <- list() 
+sample_subset_list <- list()
 if(length(sample_subset_list) == 0) {
 	for (each_day in after_day){
 		for (acid in acids) {
 			for (habitat in habitats) {
-				print(paste0("nucleic_acid is ", acid, " and habitat is ", 
+				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat, " and first day is ", each_day))
-				tmp <-	get_sample_subsets(ps = ps, 
-									   nucleic_acid = acid, 
-									   habitat = habitat, 
-									   days = each_day, 
+				tmp <-	get_sample_subsets(ps = ps,
+									   nucleic_acid = acid,
+									   habitat = habitat,
+									   days = each_day,
 									   threshold = threshold)
-				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)					   
+				sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)
 				sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
-				sample_subset_list[[paste(habitat, 
-										  "after day", 
-										  each_day, 
-										  acid, 
-										  "min reads per OTU", 
-										  threshold, 
+				sample_subset_list[[paste(habitat,
+										  "after day",
+										  each_day,
+										  acid,
+										  "min reads per OTU",
+										  threshold,
 										  sep = " ")]] <- tmp
 			}
 		}
