@@ -5,28 +5,34 @@ library(ggplot2)
 library(phyloseq)
 library(DESeq2)
 library(gridExtra)
+
 # Set the working dir
 # it should contain shared file, constaxonomy file,
 # meta file, cell count file and OTU_rep fasta file in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
+
 # set path for plots, create directory if not existant
 plot_path <- "./plots/"
 if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
+
 # mothur files and additional files that need to be imported from the working dir
 # shared file is the OTU count table
 # constaxonomy contains the taxonomy of the OTUs
 our_shared_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared"
 our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"
+
 # sample data is in the metafile
 metafile <- read.delim("metafile.tsv",
 						row.names = 1,
 						header = TRUE,
 						na.strings = "")
 metafile <- sample_data(metafile)
+
 # read table for cell count plot
 cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
+
 # read OTU representative sequences
 OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 							  format = "fasta",
@@ -43,16 +49,15 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_shared_file = our_shared_file,
 						   mothur_constaxonomy_file = our_cons_taxonomy_file,
 						   parseFunction = parse_taxonomy_default)
+
 # now all files are imported, we can adjust them to our needs
 # add further taxonomy columns "OTU" and "wholetax" and adjust column names
 wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
                   [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")],
 				  sep = "_"))
-
 tax_table(mothur_ps) <- cbind(tax_table(mothur_ps),
 							  rownames(tax_table(mothur_ps)),
 							  wholetax)
-
 colnames(tax_table(mothur_ps)) <- c("kingdom",
 									"phylum",
 									"class",
@@ -61,12 +66,11 @@ colnames(tax_table(mothur_ps)) <- c("kingdom",
 									"genus",
 									"otu_id",
 									"wholetax")
-
-
+                                    
 # add meta data and OTU representative seqs to phyloseq object
 mothur_full <- merge_phyloseq(mothur_ps, metafile, refseq(OTU_seqs))
 
-############## Alpha diversity (including singletons)
+# code for Figure 4: Alpha diversity (including singletons)
 erich_mothur <- estimate_richness(mothur_full, measures = c("Observed",
 															"Chao1",
 															"ACE",
@@ -76,13 +80,13 @@ erich_mothur <- estimate_richness(mothur_full, measures = c("Observed",
 															"Fisher"))
 erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_full)[,c(1:7)])
 
-# reorder and rename factor levels for plotting, adjust lab names
+# reorder and rename factor levels for plotting, adjust displayed label names
 erich_mothur_meta$habitat <- relevel(erich_mothur_meta$habitat, "water")
 erich_mothur_meta$nucleic_acid <- relevel(erich_mothur_meta$nucleic_acid, "dna")
-labs_nucleic_acid <- c("DNA", "RNA")
-labs_habitat <- c("Free-living", "Biofilm")
-levels(erich_mothur_meta$habitat) <- labs_habitat
-levels(erich_mothur_meta$nucleic_acid) <- labs_nucleic_acid
+labels_nucleic_acid <- c("DNA", "RNA")
+labels_habitat <- c("Free-living", "Biofilm")
+levels(erich_mothur_meta$habitat) <- labels_habitat
+levels(erich_mothur_meta$nucleic_acid) <- labels_nucleic_acid
 
 # plotting Alpha diversity
 shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day,
@@ -126,13 +130,17 @@ ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
 ############## community overview bar plot
 # remove singletons
 mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
+
 # transform into relative abundance, displayed in percentage!
 mothur_full_ra <- transform_sample_counts(mothur_full, function(x){(x / sum(x)) * 100})
+
 # remove low abundant OTUs (you may decrease the threshold, but it will increase melting time)
 mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
+
 # melt into long format for plotting
 mothur_ra_melt <- psmelt(mothur_ra_0.01)
 mothur_1_melt <- psmelt(mothur_1)
+
 # calculate mean of technical replicates
 mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ treatment + nucleic_acid + habitat + disturbance
@@ -140,14 +148,17 @@ mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 								+ kingdom + phylum + class + order + family + genus + otu_id,
 								data = mothur_ra_melt,
 								mean)
+                                
 # get data per OTU, setting threshold for samples and clusters
 community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40
 							& Abundance > 0.15
 							& habitat == "water"
 							& treatment == "glyph"))
+                            
 # check required number of colours per order and number of classes
 length(levels(droplevels(community_subset$class)))
 length(levels(droplevels(community_subset$order)))
+
 # sort orders based on phylogenetic class for plotting
 community_subset$order <- factor(community_subset$order,
 									   # alphaproteos
@@ -167,6 +178,7 @@ community_subset$order <- factor(community_subset$order,
 									   "Chitinophagales",
 									   "Sphingobacteriales",
 									   "Flavobacteriales"))
+                                       
 # assign specific colour to make plot distuingishable
 fill_values <- c("Alteromonadales" = "orange",
 					"Betaproteobacteriales" = "pink",
@@ -264,7 +276,7 @@ ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_over
                                     width = 16,
                                     height = 8)
 
-############# OTU abundance plot
+# Figure 5 and Supplement 5: OTU abundance plots
 
 # define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
@@ -375,8 +387,7 @@ current_plot <- ggplot(data = current_otu_data,
 	print(current_plot)
 }
 
-######## Total cell counts and glyphosate concentration
-
+# Figure 1: Total cell counts and glyphosate concentration
 cell_counts_glyph_0 <- subset(cell_counts_glyph, new_day >= -7)
 
 cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
@@ -430,8 +441,7 @@ ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyp
                                height = 10)
 
 
-################### NMDS plots
-
+# Figure 3: NMDS plots
 # exclude OTUs with less than 3 reads and transform to relative abundance
 mothur_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
 mothur_nmds_ra <- transform_sample_counts(mothur_nmds, function(x){(x / sum(x)) * 100})
@@ -536,8 +546,7 @@ ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png",
 								  height = 10,
 								  width = 10)
 
-#################### DESeq2
-
+# Table 1: differentially abundant OTUs tested by DESeq2
 # test variable is not allowed to contain NA
 mothur_deseq <- subset_samples(mothur_full, !(is.na(condition)))
 
@@ -621,6 +630,7 @@ sigtabs_list <- mapply(function(dds, ps) {res = results(dds, cooksCutoff = FALSE
 
 # all significant changes are now in the list
 sigtabs_list
+
 # sort by log fold change
 sigs_ordered <- lapply(sigtabs_list, function(x) x[order(x$log2FoldChange),])
 
@@ -628,9 +638,7 @@ sigs_ordered <- lapply(sigtabs_list, function(x) x[order(x$log2FoldChange),])
 deseq_otus <- row.names(sigtabs_list[[1]])
 for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[i]])))}
 
-
-################### Venn Diagrams
-
+# Supplement 3: Venn Diagrams for genera and OTU distribution
 # define function to plot Venn diagram with 4 categories, here biofilm vs water column
 fourway.Venn <- function(A,B,C,D,cat.names = c("Water\nDNA",
 											   "Biofilm\nDNA",
@@ -710,8 +718,7 @@ fourway.Venn(water_dna_unique_otus$genus,
 dev.copy(png, paste(plot_path, "Supplement_4wayVenn_nucleic_acids_genus_0.05.png"))
 dev.off()
 
-############################ OTU, sequence length and genera distribution
-
+# SI 3: values for sequence length and OTU/genera distribution
 # library sizes are returned using
 sample_sums(mothur_full)
 
@@ -719,6 +726,7 @@ sample_sums(mothur_full)
 genus_distribution <- aggregate(Abundance ~ OTU + genus,
 								data = mothur_1_melt,
 								max)
+                                
 # separated by habitat and nucleic acid
 genus_distribution2 <- aggregate(Abundance ~ OTU + habitat + genus + nucleic_acid,
 								data = mothur_1_melt,
