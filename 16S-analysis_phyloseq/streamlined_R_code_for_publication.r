@@ -643,26 +643,27 @@ for (i in 2:8) {deseq_otus <- unique(append(deseq_otus, row.names(sigtabs_list[[
 
 # Supplement 3: Venn Diagrams for genera and OTU distribution
 # define function to plot Venn diagram with 4 categories, here biofilm vs water column
-fourway.Venn <- function(A,B,C,D,cat.names = c("Water\nDNA",
+fourway.Venn <- function(A, B, C, D, cat.names = c("Water\nDNA",
 											   "Biofilm\nDNA",
 											   "Water\nRNA",
 											   "Biofilm\nRNA")) {
   grid.newpage()
+  # calculate the values for the different intersections and areas
   area1 <- length(A)
   area2 <- length(B)
   area3 <- length(C)
   area4 <- length(D)
-  n12<-length(Reduce(intersect, list(A,B)))
-  n13<-length(Reduce(intersect, list(A,C)))
-  n14<-length(Reduce(intersect, list(A,D)))
-  n23<-length(Reduce(intersect, list(B,C)))
-  n24<-length(Reduce(intersect, list(B,D)))
-  n34<-length(Reduce(intersect, list(C,D)))
-  n123<-length(Reduce(intersect, list(A,B,C)))
-  n124<-length(Reduce(intersect, list(A,B,D)))
-  n134<-length(Reduce(intersect, list(A,C,D)))
-  n234<-length(Reduce(intersect, list(B,C,D)))
-  n1234<-length(Reduce(intersect, list(A,B,C,D)))
+  n12 <- length(Reduce(intersect, list(A, B)))
+  n13 <- length(Reduce(intersect, list(A, C)))
+  n14 <- length(Reduce(intersect, list(A, D)))
+  n23 <- length(Reduce(intersect, list(B, C)))
+  n24 <- length(Reduce(intersect, list(B, D)))
+  n34 <- length(Reduce(intersect, list(C, D)))
+  n123 <- length(Reduce(intersect, list(A, B, C)))
+  n124 <- length(Reduce(intersect, list(A, B, D)))
+  n134 <- length(Reduce(intersect, list(A, C, D)))
+  n234 <- length(Reduce(intersect, list(B, C, D)))
+  n1234 <- length(Reduce(intersect, list(A, B, C, D)))
 
 venn.plot <- draw.quad.venn(
   area1 = area1,
@@ -681,9 +682,9 @@ venn.plot <- draw.quad.venn(
   n234 = n234,
   n1234 = n1234,
   category = cat.names,
-  cat.pos = c(0,180,0,200),
+  cat.pos = c(0, 180, 0, 200),
   fill = c("blue", "red", "green", "yellow"),
-  alpha = .3,
+  alpha = 0.3,
   lty = "blank",
   cex = 2,
   cat.cex = 2,
@@ -695,29 +696,56 @@ grid.draw(venn.plot)
 # factorize OTUs to count them
 mothur_ra_melt$OTU <- as.factor(mothur_ra_melt$OTU)
 
-# generate subsets to count OTUs per subset
-# habitat * nucleic_acid
-water_dna_genera <- subset(mothur_ra_melt, habitat == "water" & nucleic_acid == "dna" & Abundance > 0.05)
-water_dna_unique_genera<-water_dna_genera[which(!duplicated(water_dna_genera[,"genus"])),]
-nrow(water_dna_unique_genera)
+# these are the arguments for the Venn subsetting function
+melt_object<- mothur_ra_melt
+acids <- c("dna", "cdna")
+habitats <- c("water", "biofilm")
+abundance <- 0.05	
+    
+# function to generate subsets from a long format dataframe
+# this is the function we call to split our data into different subsets
+subset_melt <- function(melt_object, nucleic_acid, habitat, abundance) {
+	melt_subsetted <- melt_object[which(melt_object$nucleic_acid == nucleic_acid &
+											melt_object$habitat == habitat &
+											melt_object$Abundance > abundance),]
+    #return(melt_subsetted)
+}
 
-water_cdna_genera <- subset(mothur_ra_melt, habitat == "water" & nucleic_acid == "cdna" & Abundance > 0.05)
-water_cdna_unique_genera<-water_cdna_genera[which(!duplicated(water_cdna_genera[,"genus"])),]
-nrow(water_cdna_unique_genera)
+# here we pass the arguments for subsetting over three for loops
+# to create all possible combinations of habitat, nucleic acid and microcosm 
+Venn_subsets <- list()
+if(length(Venn_subsets) == 0) {
+	for (current_abundance in abundance) {
+		for (acid in acids) {
+			for (habitat in habitats) {
+				print(paste0("nucleic_acid is ", acid, " and habitat is ",
+							 habitat, " and threshold is ", current_abundance))
+				tmp <-	subset_melt(melt_object = melt_object,
+									   nucleic_acid = acid,
+									   habitat = habitat,
+									   abundance = current_abundance)
+               Venn_subsets[[paste(habitat,
+									 current_abundance,
+									 acid,
+							   sep = "_")]] <- tmp
+			}
+		}
+	}
+} else {
+	print("list is not empty, abort to prevend appending...")
+}
 
-biofilm_dna_genera <- subset(mothur_ra_melt, habitat == "biofilm" & nucleic_acid == "dna" & Abundance > 0.05)
-biofilm_dna_unique_genera<-biofilm_dna_genera[which(!duplicated(biofilm_dna_genera[,"genus"])),]
-nrow(biofilm_dna_unique_genera)
-
-biofilm_cdna_genera <- subset(mothur_ra_melt, habitat == "biofilm" & nucleic_acid == "cdna" & Abundance > 0.05)
-biofilm_cdna_unique_genera<-biofilm_cdna_genera[which(!duplicated(biofilm_cdna_genera[,"genus"])),]
-nrow(biofilm_cdna_unique_genera)
+# retrieve the unique genera per subset from the list
+water_dna_unique_genera <- Venn_subsets[[1]][which(!duplicated(Venn_subsets[[1]]$genus)),]
+biofilm_dna_unique_genera <- Venn_subsets[[2]][which(!duplicated(Venn_subsets[[2]]$genus)),]
+water_cdna_unique_genera <- Venn_subsets[[3]][which(!duplicated(Venn_subsets[[3]]$genus)),]
+biofilm_cdna_unique_genera <- Venn_subsets[[4]][which(!duplicated(Venn_subsets[[4]]$genus)),]
 
 # plot Venn diagram
-fourway.Venn(water_dna_unique_otus$genus,
-			 biofilm_dna_unique_otus$genus,
-			 water_cdna_unique_otus$genus,
-			 biofilm_cdna_unique_otus$genus)
+fourway.Venn(water_dna_unique_genera$genus,
+			 biofilm_dna_unique_genera$genus,
+			 water_cdna_unique_genera$genus,
+			 biofilm_cdna_unique_genera$genus)
 dev.copy(png, paste(plot_path, "Supplement_4wayVenn_nucleic_acids_genus_0.05.png"))
 dev.off()
 
@@ -741,7 +769,7 @@ otu_per_genus[order(otu_per_genus$Freq),]
 nrow(otu_per_genus)
 
 # these are the arguments for the subsetting function
-phyloseq_object<- mothur_full
+phyloseq_object <- mothur_full
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 1
