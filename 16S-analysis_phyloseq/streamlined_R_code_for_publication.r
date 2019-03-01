@@ -182,26 +182,26 @@ community_subset$order <- factor(community_subset$order,
 									   "Flavobacteriales"))
                                        
 # assign specific colour to make plot distuingishable
-fill_values <- c("Alteromonadales" = "orange",
-					"Betaproteobacteriales" = "pink",
-					"Caulobacterales" = "black",
-					"Chitinophagales" = "purple",
-					"Flavobacteriales" = "green",
-					"Sneathiellales" = "white",
-					"Parvibaculales" = "green3",
-					"Pseudomonadales" = "grey30",
-					"Rhizobiales" = "red",
-					"Rhodobacterales" = "lightblue",
-					"Rhodospirillales" = "yellow",
-					"Sphingobacteriales" = "darkred",
-					"Sphingomonadales" = "grey",
-					"Thalassobaculales" = "blue2")
+fill_values2 <- c("Alteromonadales" = "#e6194B",
+					"Betaproteobacteriales" = "#3cb44b",
+					"Caulobacterales" = "#ffe119",
+					"Chitinophagales" = "#4363d8",
+					"Flavobacteriales" = "#f58231",
+					"Sneathiellales" = "#42d4f4",
+					"Parvibaculales" = "#f032e6",
+					"Pseudomonadales" = "#fabebe",
+					"Rhizobiales" = "#469990",
+					"Rhodobacterales" = "#000000",
+					"Rhodospirillales" = "#9A6324",
+					"Sphingobacteriales" = "#fffac8",
+					"Sphingomonadales" = "#800000",
+					"Thalassobaculales" = "#a9a9a9")
 
 # plotting all selected clusters in bar plot ordered by class
 # and displaying orders over time for DNA and RNA
 community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
 	scale_fill_manual(breaks = levels(community_subset$order),
-				      values = fill_values) +
+				      values = fill_values2) +
 	geom_bar(data = subset(community_subset, nucleic_acid == "dna" &
                                              treatment == "glyph"),
 			 aes(x = new_day - 0.5,
