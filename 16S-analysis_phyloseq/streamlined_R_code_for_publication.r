@@ -127,7 +127,7 @@ ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
 								  height = 10,
 								  width = 14)
 
-############## community overview bar plot
+# Figure 2: treatment community overview bar plot
 # remove singletons
 mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
 
