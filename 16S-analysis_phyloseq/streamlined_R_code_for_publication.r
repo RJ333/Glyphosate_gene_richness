@@ -2,7 +2,7 @@
 # load libraries
 library(scales)
 library(ggplot2)
-library(phyloseq)
+library(phyloseq_object)
 library(DESeq2)
 library(gridExtra)
 
@@ -34,7 +34,7 @@ metafile <- sample_data(metafile)
 cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
 
 # read OTU representative sequences
-OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
+OTU_seqs <- readDNAStringSet(file = "OTU_rephyloseq_object_fasta_002.fasta",
 							  format = "fasta",
 							  nrec = -1L,
 							  skip = 0L,
@@ -42,7 +42,7 @@ OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 							  use.names = TRUE)
 
 # import mothur output into phyloseq
-mothur_ps <- import_mothur(mothur_list_file = NULL,
+mothur_phyloseq_object<- import_mothur(mothur_list_file = NULL,
 						   mothur_group_file = NULL,
 						   mothur_tree_file = NULL,
 						   cutoff = NULL,
@@ -52,13 +52,13 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 
 # now all files are imported, we can adjust them to our needs
 # add further taxonomy columns "OTU" and "wholetax" and adjust column names
-wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
+wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_phyloseq_object))
                   [c("Rank1", "Rank2", "Rank3", "Rank4", "Rank5", "Rank6")],
 				  sep = "_"))
-tax_table(mothur_ps) <- cbind(tax_table(mothur_ps),
-							  rownames(tax_table(mothur_ps)),
+tax_table(mothur_phyloseq_object) <- cbind(tax_table(mothur_phyloseq_object),
+							  rownames(tax_table(mothur_phyloseq_object)),
 							  wholetax)
-colnames(tax_table(mothur_ps)) <- c("kingdom",
+colnames(tax_table(mothur_phyloseq_object)) <- c("kingdom",
 									"phylum",
 									"class",
 									"order",
@@ -67,16 +67,16 @@ colnames(tax_table(mothur_ps)) <- c("kingdom",
 									"otu_id",
 									"wholetax")
                                     
-# add meta data and OTU representative seqs to phyloseq object
-mothur_full <- merge_phyloseq(mothur_ps, metafile, refseq(OTU_seqs))
+# add meta data and OTU representative seqs to phyloseq_objectobject
+mothur_full <- merge_phyloseq(mothur_phyloseq_object, metafile, refseq(OTU_seqs))
 
 # code for Figure 4: Alpha diversity (including singletons)
 erich_mothur <- estimate_richness(mothur_full, measures = c("Observed",
 															"Chao1",
 															"ACE",
 															"Shannon",
-															"Simpson",
-															"InvSimpson",
+															"Simphyloseq_objecton",
+															"InvSimphyloseq_objecton",
 															"Fisher"))
 erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_full)[,c(1:7)])
 
@@ -138,8 +138,8 @@ mothur_full_ra <- transform_sample_counts(mothur_full, function(x) {(x / sum(x))
 mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
 
 # melt into long format for plotting
-mothur_ra_melt <- psmelt(mothur_ra_0.01)
-mothur_1_melt <- psmelt(mothur_1)
+mothur_ra_melt <- phyloseq_objectmelt(mothur_ra_0.01)
+mothur_1_melt <- phyloseq_objectmelt(mothur_1)
 
 # aggregate all columns except for "parallels" to 
 # calculate the mean abundance of technical replicates
@@ -175,7 +175,7 @@ community_subset$order <- factor(community_subset$order,
 									   # gammaproteos
 									   "Alteromonadales",
 									   "Betaproteobacteriales",
-									   "Pseudomonadales",
+									   "phyloseq_objecteudomonadales",
 									   # bacteroidetes/
 									   "Chitinophagales",
 									   "Sphingobacteriales",
@@ -189,7 +189,7 @@ fill_values2 <- c("Alteromonadales" = "#e6194B",
 					"Flavobacteriales" = "#f58231",
 					"Sneathiellales" = "#42d4f4",
 					"Parvibaculales" = "#f032e6",
-					"Pseudomonadales" = "#fabebe",
+					"phyloseq_objecteudomonadales" = "#fabebe",
 					"Rhizobiales" = "#469990",
 					"Rhodobacterales" = "#000000",
 					"Rhodospirillales" = "#9A6324",
@@ -443,25 +443,25 @@ ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyp
 
 # Figure 3: NMDS plots
 # exclude OTUs with less than 3 reads and transform to relative abundance
-mothur_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
-mothur_nmds_ra <- transform_sample_counts(mothur_nmds, function(x) {(x / sum(x)) * 100})
+phyloseq_for_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
+phyloseq_for_nmds_rel_abund <- transform_sample_counts(phyloseq_for_nmds, function(x) {(x / sum(x)) * 100})
 
-ps <- mothur_nmds_ra
+phyloseq_object <- phyloseq_for_nmds_rel_abund
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
 
 # define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
-get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold) {
-	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid &
-											sample_data(ps)$habitat == habitat &
-											sample_data(ps)$days > days),]
-	phy_subset <- merge_phyloseq(tax_table(ps),
-								 otu_table(ps),
-								 refseq(ps),
+get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, days, threshold) {
+	sample_subset <- sample_data(phyloseq_object)[ which(sample_data(phyloseq_object)$nucleic_acid == nucleic_acid &
+											sample_data(phyloseq_object)$habitat == habitat &
+											sample_data(phyloseq_object)$days > days),]
+	phyloseq_subset <- merge_phyloseq(tax_table(phyloseq_object),
+								 otu_table(phyloseq_object),
+								 refseq(phyloseq_object),
 								 sample_subset)
-	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > threshold) >= 1 }, prune = TRUE)
-	return(phy_subset2)
+	phyloseq_subset2 <- filter_taxa(phyloseq_subset, function (x) {sum(x > threshold) >= 1 }, prune = TRUE)
+	return(phyloseq_subset2)
 }
 
 sample_subset_list <- list()
@@ -470,7 +470,7 @@ if(length(sample_subset_list) == 0) {
 			for (habitat in habitats) {
 				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat))
-				tmp <-	get_sample_subsets(ps = ps,
+				tmp <-	get_sample_subsets(phyloseq_object = phyloseq_object,
 									   nucleic_acid = acid,
 									   habitat = habitat,
 									   threshold = threshold)
@@ -550,22 +550,22 @@ ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png",
 mothur_deseq <- subset_samples(mothur_full, !(is.na(condition)))
 
 # these are the parameters passed to function
-ps <- mothur_deseq
+phyloseq_object<- mothur_deseq
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 treatments <- c("glyph", "control")
 threshold <- 0
 
 # this is the function we call to split our data into different subsets
-get_sample_subsets <- function(ps, nucleic_acid, habitat, treatment) {
-	sample_subset <- sample_data(ps)[ which(sample_data(ps)$nucleic_acid == nucleic_acid &
-											sample_data(ps)$habitat == habitat &
-											sample_data(ps)$treatment == treatment),]
-	phy_subset <- merge_phyloseq(tax_table(ps),
-								 otu_table(ps),
+get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, treatment) {
+	sample_subset <- sample_data(phyloseq_object)[ which(sample_data(phyloseq_object)$nucleic_acid == nucleic_acid &
+											sample_data(phyloseq_object)$habitat == habitat &
+											sample_data(phyloseq_object)$treatment == treatment),]
+	phyloseq_subset <- merge_phyloseq(tax_table(phyloseq_object),
+								 otu_table(phyloseq_object),
 								 sample_subset)
-	phy_subset2 <- filter_taxa(phy_subset, function (x) {sum(x > 0) >= 1}, prune = TRUE)
-	return(phy_subset2)
+	phyloseq_subset2 <- filter_taxa(phyloseq_subset, function (x) {sum(x > 0) >= 1}, prune = TRUE)
+	return(phyloseq_subset2)
 }
 
 # this is the nested for loop which calls the subsetting function
@@ -577,7 +577,7 @@ if(length(deseq_subsets) == 0) {
 			for (habitat in habitats) {
 				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat, " and treatment is ", treatment))
-				tmp <-	get_sample_subsets(ps = ps,
+				tmp <-	get_sample_subsets(phyloseq_object= phyloseq_object,
 									   nucleic_acid = acid,
 									   habitat = habitat,
 									   treatment = treatment)
@@ -615,14 +615,14 @@ deseq_tests <- lapply(deseq_subsets,
 # try cbind with mapply
 sigtabs_list <- list()
 if(length(sigtabs_list) == 0) {
-sigtabs_list <- mapply(function(dds, ps) {res = results(dds, cooksCutoff = FALSE)
+sigtabs_list <- mapply(function(dds, phyloseq_object) {res = results(dds, cooksCutoff = FALSE)
 									alpha = 0.01
 									sigtab = res[which(res$padj < alpha), ]
 									sigtab = cbind(as(sigtab, "data.frame"),
-                                        as(tax_table(ps)[rownames(sigtab), ], "matrix"))
+                                        as(tax_table(phyloseq_object)[rownames(sigtab), ], "matrix"))
 									print(head(sigtab))
 									return(sigtab)
-}, dds = deseq_tests, ps = deseq_subsets, SIMPLIFY = FALSE)
+}, dds = deseq_tests, phyloseq_object= deseq_subsets, SIMPLIFY = FALSE)
 } else {
 	print(paste("list is not empty, abort to prevent appending..."))
 }
@@ -737,13 +737,13 @@ otu_per_genus[order(otu_per_genus$Freq),]
 nrow(otu_per_genus)
 
 # these are the arguments for the subsetting function
-ps <- mothur_full
+phyloseq_object<- mothur_full
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 1
 after_day <- 43
 
-# in this list we store the different sample subsets, generated by the for loops
+# in this list we store the different sample subsets, generated by the for loophyloseq_object
 sample_subset_list <- list()
 if(length(sample_subset_list) == 0) {
 	for (each_day in after_day) {
@@ -751,7 +751,7 @@ if(length(sample_subset_list) == 0) {
 			for (habitat in habitats) {
 				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat, " and first day is ", each_day))
-				tmp <-	get_sample_subsets(ps = ps,
+				tmp <-	get_sample_subsets(phyloseq_object= phyloseq_object,
 									   nucleic_acid = acid,
 									   habitat = habitat,
 									   days = each_day,
