@@ -279,7 +279,6 @@ ggsave(community_plot, file = paste(plot_path, "Figure_4_relative_community_over
                                     height = 8)
 
 # Figure 5 and Supplement 5: OTU abundance plots
-
 # define subset function for specific phyloseq-object
 get_current_otu_data <- function(x) {
 	subset(mothur_ra_melt, OTU == x)
@@ -380,12 +379,12 @@ current_plot <- ggplot(data = current_otu_data,
           strip.text.x = element_text(size = 15, face = "bold")) +
 	labs(x = "Days", y = "Relative abundance [%]") +
 	facet_wrap(~ habitat, scales = "free")
-	# ggsave(current_plot, file = paste(plot_path,
-									  # species_title,
-									  # ".png",
-									  # sep = ""),
-						 # width = 13,
-						 # height = 7)
+	ggsave(current_plot, file = paste(plot_path,
+									  species_title,
+									  ".png",
+									  sep = ""),
+						 width = 13,
+						 height = 7)
 	print(current_plot)
 }
 
@@ -442,7 +441,6 @@ ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyp
                                width = 14,
                                height = 10)
 
-
 # Figure 3: NMDS plots
 # exclude OTUs with less than 3 reads and transform to relative abundance
 mothur_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
@@ -452,7 +450,6 @@ ps <- mothur_nmds_ra
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
-
 
 # define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
 get_sample_subsets <- function(ps, nucleic_acid, habitat, days, threshold) {
