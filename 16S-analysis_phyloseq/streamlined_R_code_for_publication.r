@@ -467,7 +467,8 @@ get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, days, thr
 }
 
 # here we pass the arguments for subsetting over two for loops
-# to create all possible combinations of habitat, nucleic acid etc. 
+# to create all possible combinations of habitat, nucleic acid etc.
+# the subsets are stored within a list, which has to be empty before running the loops 
 sample_subset_list <- list()
 if(length(sample_subset_list) == 0) {
 		for (acid in acids) {
@@ -492,6 +493,7 @@ print(sample_subset_list)
 	print("list is not empty, abort to prevend appending...")
 }
 
+# create a list where the distance metrics for the sample subsets are stored
 ordination_nmds <- list()
 ordination_nmds <- lapply(sample_subset_list, ordinate,
 											  method = "NMDS",
@@ -499,7 +501,7 @@ ordination_nmds <- lapply(sample_subset_list, ordinate,
 											  try = 100,
 											  autotransform = TRUE)
 
-# NMDS function
+# generate NMDS plots with distance information from the ordination list
 nmds_ordination_plots <- list()
 counter <- 0
 if(length(nmds_ordination_plots) == 0 &
@@ -541,10 +543,12 @@ nmds_ordination_plots <- mapply(function(x,y) {
 				"), abort to prevend appending..."))
 }
 
+# plot the NMDS ordinations in a 2 x 2 array
 do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
 
-g1 <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
-ggsave(g1, file = paste(plot_path, "Figure_3_NMDS.png",
+# write the NMDS ordinations array to an object
+NMDS_array <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
+ggsave(NMDS_array, file = paste(plot_path, "Figure_3_NMDS.png",
 								  sep = ""),
 								  height = 10,
 								  width = 10)
@@ -599,7 +603,7 @@ print(deseq_subsets)
 	print("list is not empty, abort to prevend appending...")
 }
 
-# we can now estimate or determine different diversity parameters on our subsets
+# run DESeq2 on the sample subsets to test for differentially abundant OTUs
 deseq_tests <- list()
 counter <- 0
 if(length(deseq_tests) == 0 &
@@ -616,7 +620,8 @@ deseq_tests <- lapply(deseq_subsets,
 				"), abort to prevend appending..."))
 }
 
-# try cbind with mapply
+# combine the DESeq2-test results with the corresponding taxonomy
+# and sort detected OTUs by log fold change
 sigtabs_list <- list()
 if(length(sigtabs_list) == 0) {
 sigtabs_list <- mapply(function(dds, phyloseq_object) {res = results(dds, cooksCutoff = FALSE)
@@ -630,11 +635,6 @@ sigtabs_list <- mapply(function(dds, phyloseq_object) {res = results(dds, cooksC
 } else {
 	print(paste("list is not empty, abort to prevent appending..."))
 }
-
-# all significant changes are now in the list
-sigtabs_list
-
-# sort by log fold change
 sigs_ordered <- lapply(sigtabs_list, function(x) x[order(x$log2FoldChange),])
 
 # create a vector of all identified OTUs in sigtabs_list (can be used for plotting abundances!)
