@@ -446,12 +446,14 @@ ggsave(cell_counts_glyph_plot, file = paste(plot_path, "Figure_1_cellcounts_glyp
 phyloseq_for_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
 phyloseq_for_nmds_rel_abund <- transform_sample_counts(phyloseq_for_nmds, function(x) {(x / sum(x)) * 100})
 
+# arguments for the subsetting function
 phyloseq_object <- phyloseq_for_nmds_rel_abund
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
 
-# define a function to obtain sample subsets per combination of habitat, nucleic acid, days and treatment
+# define a function to obtain sample subsets from the phyloseq object 
+# per combination of habitat, nucleic acid, days and minimum required reads per OTU
 get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, days, threshold) {
 	sample_subset <- sample_data(phyloseq_object)[ which(sample_data(phyloseq_object)$nucleic_acid == nucleic_acid &
 											sample_data(phyloseq_object)$habitat == habitat &
@@ -464,6 +466,8 @@ get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, days, thr
 	return(phyloseq_subset2)
 }
 
+# here we pass the arguments for subsetting over two for loops
+# to create all possible combinations of habitat, nucleic acid etc. 
 sample_subset_list <- list()
 if(length(sample_subset_list) == 0) {
 		for (acid in acids) {
@@ -557,7 +561,7 @@ treatments <- c("glyph", "control")
 threshold <- 0
 
 # this is the function we call to split our data into different subsets
-get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, treatment) {
+get_sample_subsets_deseq <- function(phyloseq_object, nucleic_acid, habitat, treatment) {
 	sample_subset <- sample_data(phyloseq_object)[ which(sample_data(phyloseq_object)$nucleic_acid == nucleic_acid &
 											sample_data(phyloseq_object)$habitat == habitat &
 											sample_data(phyloseq_object)$treatment == treatment),]
@@ -568,8 +572,8 @@ get_sample_subsets <- function(phyloseq_object, nucleic_acid, habitat, treatment
 	return(phyloseq_subset2)
 }
 
-# this is the nested for loop which calls the subsetting function
-# for each combination of subsetting variables
+# here we pass the arguments for subsetting over three for loops
+# to create all possible combinations of habitat, nucleic acid and microcosm 
 deseq_subsets <- list()
 if(length(deseq_subsets) == 0) {
 	for (treatment in treatments) {
@@ -577,7 +581,7 @@ if(length(deseq_subsets) == 0) {
 			for (habitat in habitats) {
 				print(paste0("nucleic_acid is ", acid, " and habitat is ",
 							 habitat, " and treatment is ", treatment))
-				tmp <-	get_sample_subsets(phyloseq_object= phyloseq_object,
+				tmp <-	get_sample_subsets_deseq(phyloseq_object = phyloseq_object,
 									   nucleic_acid = acid,
 									   habitat = habitat,
 									   treatment = treatment)
