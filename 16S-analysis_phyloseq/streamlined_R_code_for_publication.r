@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # Set the working dir with shared file, constaxonomy, sample and OTU_rep files in it
 setwd("/data/projects/glyphosate/analysis_16S/dada2/")
 
