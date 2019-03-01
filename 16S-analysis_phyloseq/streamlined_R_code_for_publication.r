@@ -30,8 +30,6 @@ mothur_ps <- import_mothur(mothur_list_file = NULL,
 						   mothur_shared_file = our_shared_file,
 						   mothur_constaxonomy_file = our_cons_taxonomy_file, 
 						   parseFunction = parse_taxonomy_default)
-# or load from workspace
-load("mothur_glyph_002.RData")   
 						   
 # add taxonomy columns and adjust header
 wholetax <- do.call(paste, c(as.data.frame(tax_table(mothur_ps))
