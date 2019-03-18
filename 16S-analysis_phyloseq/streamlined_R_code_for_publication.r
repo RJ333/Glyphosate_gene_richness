@@ -138,8 +138,8 @@ mothur_full_ra <- transform_sample_counts(mothur_full, function(x) {(x / sum(x))
 mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
 
 # melt into long format for plotting
-mothur_ra_melt <- phyloseq_objectmelt(mothur_ra_0.01)
-mothur_1_melt <- phyloseq_objectmelt(mothur_1)
+mothur_ra_melt <- psmelt(mothur_ra_0.01)
+mothur_1_melt <- psmelt(mothur_1)
 
 # aggregate all columns except for "parallels" to 
 # calculate the mean abundance of technical replicates
