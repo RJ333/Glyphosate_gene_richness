@@ -2,20 +2,24 @@
 # load libraries
 library(scales)
 library(ggplot2)
-library(phyloseq_object)
+library(phyloseq)
 library(DESeq2)
 library(gridExtra)
 
 # Set the working dir
 # it should contain shared file, constaxonomy file,
 # meta file, cell count file and OTU_rep fasta file in it
-setwd("/data/projects/glyphosate/analysis_16S/dada2/")
+setwd("/data/projects/glyphosate/reads/mothur_processed/")
 
 # set path for plots, create directory if not existant
 plot_path <- "./plots/"
 if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
+
+# test for sourcing
+source_test <- "/home/centos/scripts/Glyphosate_gene_richness/16S-analysis_phyloseq/source_test_read_mothur.r"
+source(source_test)
 
 # mothur files and additional files that need to be imported from the working dir
 # shared file is the OTU count table
