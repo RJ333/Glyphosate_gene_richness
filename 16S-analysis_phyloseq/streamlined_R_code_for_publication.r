@@ -5,6 +5,7 @@ library(ggplot2)
 library(phyloseq)
 library(DESeq2)
 library(gridExtra)
+library(Biostrings)
 
 # Set the working dir
 # it should contain shared file, constaxonomy file,
