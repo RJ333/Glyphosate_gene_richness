@@ -20,7 +20,7 @@ metafile <- sample_data(metafile)
 cell_counts_glyph <- read.csv(paste(sample_data_dir, "cell_counts_glyph.csv", sep = ""), sep = ";")
 
 # read OTU representative sequences
-OTU_seqs <- readDNAStringSet(file = paste(sample_data_dir, "OTU_reps_fasta_002.fasta"), sep =""),
+OTU_seqs <- readDNAStringSet(file = paste(sample_data_dir, "OTU_reps_fasta_002.fasta", sep =""),
 							  format = "fasta",
 							  nrec = -1L,
 							  skip = 0L,
