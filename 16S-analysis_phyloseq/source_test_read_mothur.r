@@ -5,18 +5,22 @@
 our_shared_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.shared"
 our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.unique.precluster.pick.pick.opti_mcc.unique_list.0.02.0.02.cons.taxonomy"
 
+# additional sample data is located in 
+sample_data_dir <- "/data/projects/glyphosate/analysis/metadata"
+
 # sample data is in the metafile
-metafile <- read.delim("metafile.tsv",
-						row.names = 1,
+metafile <- read.delim(paste(sample_data_dir, "metafile.tsv",
+sep = ""),						
+row.names = 1,
 						header = TRUE,
 						na.strings = "")
 metafile <- sample_data(metafile)
 
 # read table for cell count plot
-cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
+cell_counts_glyph <- read.csv(paste(sample_data_dir, "cell_counts_glyph.csv", sep = ""), sep = ";")
 
 # read OTU representative sequences
-OTU_seqs <- readDNAStringSet(file = "OTU_rephyloseq_object_fasta_002.fasta",
+OTU_seqs <- readDNAStringSet(file = paste(sample_data_dir, "OTU_rephyloseq_object_fasta_002.fasta"), sep =""),
 							  format = "fasta",
 							  nrec = -1L,
 							  skip = 0L,
