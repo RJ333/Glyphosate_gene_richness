@@ -79,7 +79,7 @@ erich_mothur_meta <- cbind(erich_mothur, sample_data(mothur_full)[,c(1:7)])
 # reorder and rename factor levels for plotting, adjust displayed label names
 erich_mothur_meta$habitat <- relevel(erich_mothur_meta$habitat, "water")
 erich_mothur_meta$nucleic_acid <- relevel(erich_mothur_meta$nucleic_acid, "dna")
-labels_nucleic_acid <- c("DNA", "RNA")
+labels_nucleic_acid <- c("16S rRNA gene", "16S rRNA")
 labels_habitat <- c("Free-living", "Biofilm")
 levels(erich_mothur_meta$habitat) <- labels_habitat
 levels(erich_mothur_meta$nucleic_acid) <- labels_nucleic_acid
@@ -343,6 +343,7 @@ phyloseq_object <- phyloseq_for_nmds_rel_abund
 acids <- c("dna", "cdna")
 habitats <- c("water", "biofilm")
 threshold <- 0
+days <- 40
 
 # define a function to obtain sample subsets from the phyloseq object 
 # per combination of habitat, nucleic acid, days and minimum required reads per OTU
@@ -366,7 +367,7 @@ if(length(sample_subset_list) == 0) {
 	for (habitat in habitats) {
 	  print(paste0("nucleic_acid is ", acid, " and habitat is ", habitat))
 	  tmp <- get_sample_subsets(phyloseq_object = phyloseq_object,
-		nucleic_acid = acid, habitat = habitat, threshold = threshold)
+		nucleic_acid = acid, habitat = habitat, threshold = threshold, days = days)
 	  sample_data(tmp)$days <- as.factor(sample_data(tmp)$days)
 	  sample_data(tmp)$new_day <- as.factor(sample_data(tmp)$new_day)
 	  sample_subset_list[[paste(habitat, acid, "min reads per OTU", threshold,
@@ -394,7 +395,10 @@ if(length(nmds_ordination_plots) == 0 & all.equal(counter, 0)) {
       geom_point(aes(colour = treatment), colour = "black", size = 4.5, alpha = 0.7) +
       scale_shape_manual(values = c("glyph" = 16, "control" = 17), name = "Microcosm  ",
         breaks = c("glyph", "control"), labels = c("Treatment", "Control")) +
-      guides(color = FALSE, fill = FALSE, shape = FALSE) +
+      scale_fill_manual(values = c("high" = "red", "low" = "orange", "none" = "green"),
+        name = "Present glyphosate\nconcentration", breaks = c("high", "low", "none"),
+        labels = c("High", "Low", "None")) +
+      guides(color = FALSE) +
       coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
       #ggtitle(names(sample_subset_list)[counter]) +
       geom_text(aes(label = new_day), colour = "white", size = 2.5) +
