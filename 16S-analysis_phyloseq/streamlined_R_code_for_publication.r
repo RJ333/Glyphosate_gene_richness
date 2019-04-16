@@ -384,6 +384,30 @@ ordination_nmds <- list()
 ordination_nmds <- lapply(sample_subset_list, ordinate, method = "NMDS",
   dist = "bray", try = 100, autotransform = TRUE)
 
+# test hypothesis that microcosms are different
+set.seed(1)
+
+# Calculate bray curtis distance matrix and collect sample data in lists
+sample_distances <- list()
+sample_data_list <- list()
+sample_distances <- lapply(sample_subset_list, phyloseq::distance, method = "bray")
+sample_data_list <- lapply(sample_subset_list, function(x) data.frame(sample_data(x)))
+
+# Adonis test against hardcoded "treatment", instead passing "treatment" as argument did not work
+adonis_results <- list()
+adonis_results <- mapply(function(distance_matrix, sample_data) {
+  adonis(distance_matrix ~ treatment, data = data.frame(sample_data))
+}, distance_matrix = sample_distances, sample_data = sample_data_list, SIMPLIFY = FALSE)
+
+# Homogeneity of dispersion test 
+# tests if dispersion might be reason for adonis results, should confirm null hypothesis
+beta_list <- list()
+beta_list <- mapply(function(distance_matrix, sample_data) {
+  betadisper(distance_matrix, sample_data$treatment)
+}, distance_matrix = sample_distances, sample_data = sample_data_list, SIMPLIFY = FALSE)
+dispersion_list <- list()
+dispersion_list <- lapply(beta_list, permutest)
+
 # generate NMDS plots with distance information from the ordination list
 nmds_ordination_plots <- list()
 counter <- 0
