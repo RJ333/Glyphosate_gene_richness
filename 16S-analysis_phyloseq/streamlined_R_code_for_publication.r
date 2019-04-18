@@ -5,6 +5,7 @@ library(ggplot2)
 library(phyloseq)
 library(DESeq2)
 library(gridExtra)
+library(vegan)
 library(Biostrings)
 
 # Set the working dir
@@ -217,6 +218,7 @@ get_current_otu_data <- function(x) {
 }
 
 # list of OTUs mentioned in paper and supplement
+OTU_list <- c("Otu000011")
 OTU_list <- c("Otu000007",
   "Otu000011",
   "Otu000018",
@@ -247,6 +249,23 @@ OTU_list <- c("Otu000007",
   "Otu000006",
   "Otu000001")
 
+Pseudomonas_OTUs <- c(
+  "Otu000006",
+  "Otu000007",
+  "Otu000009",
+  "Otu000019",
+  "Otu000024",
+  "Otu000028",
+  "Otu000029",
+  "Otu000034",
+  "Otu000035",
+  "Otu000036",
+  "Otu000043",
+  "Otu000050",
+  "Otu000069",
+  "Otu000078",
+  "Otu000086"
+  )
 # rename for plotting
 strip_text_habitat <- c("Biofilm", "Free-living")
 
@@ -288,7 +307,7 @@ current_plot <- ggplot(data = current_otu_data, aes(x = days - 69,
   facet_wrap(~ habitat, scales = "free")
   ggsave(current_plot, file = paste(plot_path, species_title,".png", sep = ""),
     width = 13, height = 7)
-  print(current_plot)
+  # print(current_plot)
 }
 
 # Figure 1: Total cell counts and glyphosate concentration
@@ -415,13 +434,13 @@ if(length(nmds_ordination_plots) == 0 & all.equal(counter, 0)) {
   nmds_ordination_plots <- mapply(function(x,y) {
     counter <<- counter + 1
     plot_ordination(x, y, type = "sample", color = "days", shape = "treatment") +
-      geom_polygon(aes(fill = disturbance), alpha = 0.5, size = 0.01) +
-      geom_point(aes(colour = treatment), colour = "black", size = 4.5, alpha = 0.7) +
+      geom_polygon(aes(fill = disturbance), alpha = 0.3, size = 0.01) +
+      geom_point(aes(colour = treatment), colour = "black", size = 3.5, alpha = 0.7) +
       scale_shape_manual(values = c("glyph" = 16, "control" = 17), name = "Microcosm  ",
         breaks = c("glyph", "control"), labels = c("Treatment", "Control")) +
-      scale_fill_manual(values = c("high" = "red", "low" = "orange", "none" = "green"),
-        name = "Present glyphosate\nconcentration", breaks = c("high", "low", "none"),
-        labels = c("High", "Low", "None")) +
+      scale_fill_manual(values = c("high" = "red3", "low" = "darkorange2", "none" = "forestgreen"),
+        name = "Glyphosate\nconcentration", breaks = c("high", "low", "none"),
+        labels = c("> 5 µM", "< 5 µM", "0 µM")) +
       guides(color = FALSE) +
       coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
       #ggtitle(names(sample_subset_list)[counter]) +
@@ -446,7 +465,7 @@ do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
 # write the NMDS ordinations array to an object
 NMDS_array <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
 ggsave(NMDS_array, file = paste(plot_path, "Figure_3_NMDS.png", sep = ""),
-  height = 10, width = 10)
+  height = 7, width = 11)
 
 # Table 1: differentially abundant OTUs tested by DESeq2
 # test variable is not allowed to contain NA
