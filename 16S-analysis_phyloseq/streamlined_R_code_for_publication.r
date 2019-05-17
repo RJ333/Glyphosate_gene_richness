@@ -134,10 +134,15 @@ mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
 # get data per OTU, setting threshold for samples and clusters
 community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40
   & Abundance > 0.15 & habitat == "water" & treatment == "glyph"))
-                            
+
+
 # check required number of colours per order and number of classes
 length(levels(droplevels(community_subset$class)))
 length(levels(droplevels(community_subset$order)))
+
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset_dna$class)))
+length(levels(droplevels(community_subset_dna$order)))
 
 # sort orders for plotting based on phylogenetic 
 # classes (Alphaproteos, Gammaproteos and Bacteriodetes) 
@@ -210,6 +215,47 @@ community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
 
 ggsave(community_plot, file = paste(plot_path, 
   "Figure_4_relative_community_overview.png", sep = ""), width = 16, height = 8)
+
+# get data per OTU, setting threshold for samples and clusters
+community_subset_dna <- droplevels(subset(mothur_ra_melt_mean, days > 40 & days < 77
+  & Abundance > 0.15 & habitat == "water" & treatment == "glyph" & nucleic_acid == "dna"))
+
+community_subset_dna <- community_subset_dna[, c(4, 15, 19)]
+dput(community_subset_dna)
+# scratch area plot
+ggplot(community_subset_dna, aes(x = new_day, y = Abundance, fill = order, group = order)) +
+  geom_area(stat = "identity", position = "stack") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2)
+   
+    
+# community area plot
+community_area_plot_dna <- ggplot(community_subset_dna, aes(x = as.factor(new_day))) +
+  #scale_fill_manual(breaks = levels(community_subset_dna$order), values = fill_values2) +
+  geom_area(aes(x = new_day, 
+  y = Abundance, 
+  fill = order), stat = "identity", position = "fill") +
+  geom_vline(data = subset(community_subset_dna, treatment == "glyph"), aes(xintercept = 1.5),
+    linetype = "dashed", size = 1.2) +
+  guides(colour = FALSE, size = FALSE, width = FALSE, fill = guide_legend(ncol = 1,
+    keyheight = 1.5, label.theme = element_text(size = 15, face = "italic",
+    angle = 0), (title = NULL))) +
+  #scale_x_discrete(breaks = c(-25, -7, 0, 3, 7, 10, 14, 17, 22, 29, 36, 43, 50, 57, 64, 71)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  # scale_y_continuous(expand = c(0,0)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 17),
+    axis.title = element_text(size = 20, face = "bold"),
+    legend.background = element_rect(fill = "grey90", linetype = "solid"),
+    panel.grid.major = element_line(colour = NA, size = 0.2),
+    panel.grid.minor = element_line(colour = NA, size = 0.5)) +
+  labs(x = "Days", y = "Relative abundance [%]") +
+  # annotate("text", x = -27, y = 90, label = "a)", color = "black", size = 6,
+    # angle = 0, fontface = "bold") +
+  # annotate("text", x = -22.5, y = 90, label = "b)", color = "black", size = 6,
+    # angle = 0, fontface = "bold")
+
+ggsave(community_area_plot_dna, file = paste(plot_path, 
+  "Figure_4_relative_community_area_dna.png", sep = ""), width = 16, height = 8)
 
 # Figure 5 and Supplement 5: OTU abundance plots
 # define subset function for specific phyloseq-object
