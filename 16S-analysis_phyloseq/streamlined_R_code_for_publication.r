@@ -7,6 +7,7 @@ library(DESeq2)
 library(gridExtra)
 library(vegan)
 library(Biostrings)
+library(tidyverse)
 
 # Set the working dir
 # it should contain shared file, constaxonomy file,
@@ -217,14 +218,21 @@ ggsave(community_plot, file = paste(plot_path,
   "Figure_4_relative_community_overview.png", sep = ""), width = 16, height = 8)
 
 # get data per OTU, setting threshold for samples and clusters
-community_subset_dna <- droplevels(subset(mothur_ra_melt_mean, days > 40 & days < 77
+community_subset_dna_water <- droplevels(subset(mothur_ra_melt_mean, days > 40
   & Abundance > 0.15 & habitat == "water" & treatment == "glyph" & nucleic_acid == "dna"))
 
-community_subset_dna <- community_subset_dna[, c(4, 15, 19)]
-dput(community_subset_dna)
+community_subset_dna_water %>%
+  group_by(new_day, order) %>%
+  summarise(Abundance2 = sum(Abundance)) %>%
+  ungroup() %>%
+  # Replace missing values by 0
+  spread(key = order, value = Abundance2) %>%
+  gather(key = order, value = Abundance2, -new_day) %>%
+  replace_na(list(Abundance2 = 0)) -> order_sums_dna_water
+
 # scratch area plot
-ggplot(community_subset_dna, aes(x = new_day, y = Abundance, fill = order, group = order)) +
-  geom_area(stat = "identity", position = "stack") +
+ggplot(order_sums_dna_water, aes(x = new_day, y = Abundance2, fill = order)) +
+  geom_area(stat = "identity") +
   geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2)
    
     
