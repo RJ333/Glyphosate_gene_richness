@@ -141,30 +141,27 @@ community_subset <- droplevels(subset(mothur_ra_melt_mean, days > 40
 length(levels(droplevels(community_subset$class)))
 length(levels(droplevels(community_subset$order)))
 
-# check required number of colours per order and number of classes
-length(levels(droplevels(community_subset_dna$class)))
-length(levels(droplevels(community_subset_dna$order)))
-
 # sort orders for plotting based on phylogenetic 
 # classes (Alphaproteos, Gammaproteos and Bacteriodetes) 
-community_subset$order <- factor(community_subset$order, levels = c(
-  # alphaproteos
-  "Caulobacterales",
-  "Rhizobiales",
-  "Rhodobacterales",
-  "Rhodospirillales",
-  "Sneathiellales",
-  "Sphingomonadales",
-  "Parvibaculales",
-  "Thalassobaculales",
-  # gammaproteos
-  "Alteromonadales",
-  "Betaproteobacteriales",
-  "Pseudomonadales",
-  # bacteroidetes/
-  "Chitinophagales",
-  "Sphingobacteriales",
-  "Flavobacteriales"))
+community_subset_dna_water$order <- factor(community_subset_dna_water$order, 
+  levels = c(
+    # alphaproteos
+    "Caulobacterales",
+    "Rhizobiales",
+    "Rhodobacterales",
+    "Rhodospirillales",
+    "Sneathiellales",
+    "Sphingomonadales",
+    "Parvibaculales",
+    "Thalassobaculales",
+    # gammaproteos
+    "Alteromonadales",
+    "Betaproteobacteriales",
+    "Pseudomonadales",
+    # bacteroidetes/
+    "Chitinophagales",
+    "Sphingobacteriales",
+    "Flavobacteriales"))
                                        
 # assign specific colour to make plot distuingishable
 fill_values2 <- c("Alteromonadales" = "#e6194B",
@@ -220,7 +217,10 @@ ggsave(community_plot, file = paste(plot_path,
 # get data per OTU, setting threshold for samples and clusters
 community_subset_dna_water <- droplevels(subset(mothur_ra_melt_mean, days > 40
   & Abundance > 0.15 & habitat == "water" & treatment == "glyph" & nucleic_acid == "dna"))
-
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset_dna_water$class)))
+length(levels(droplevels(community_subset_dna_water$order)))
+# make abundance values per order level unique by summarising per-OTU abundances
 community_subset_dna_water %>%
   group_by(new_day, order) %>%
   summarise(Abundance2 = sum(Abundance)) %>%
@@ -229,41 +229,279 @@ community_subset_dna_water %>%
   spread(key = order, value = Abundance2) %>%
   gather(key = order, value = Abundance2, -new_day) %>%
   replace_na(list(Abundance2 = 0)) -> order_sums_dna_water
+  
+# rearrange order factors
+order_sums_dna_water$order <- factor(order_sums_dna_water$order, 
+  levels = c(
+    # alphaproteos
+    "Caulobacterales",
+    "Rhizobiales",
+    "Rhodobacterales",
+    "Rhodospirillales",
+    "Sneathiellales",
+    "Sphingomonadales",
+    "Parvibaculales",
+    "Thalassobaculales",
+    # gammaproteos
+    "Alteromonadales",
+    "Betaproteobacteriales",
+    "Pseudomonadales",
+    # bacteroidetes/
+    "Chitinophagales",
+    "Sphingobacteriales",
+    "Flavobacteriales"))
 
-# scratch area plot
+# water dna area plot
 ggplot(order_sums_dna_water, aes(x = new_day, y = Abundance2, fill = order)) +
   geom_area(stat = "identity") +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2)
-   
-    
-# community area plot
-community_area_plot_dna <- ggplot(community_subset_dna, aes(x = as.factor(new_day))) +
-  #scale_fill_manual(breaks = levels(community_subset_dna$order), values = fill_values2) +
-  geom_area(aes(x = new_day, 
-  y = Abundance, 
-  fill = order), stat = "identity", position = "fill") +
-  geom_vline(data = subset(community_subset_dna, treatment == "glyph"), aes(xintercept = 1.5),
-    linetype = "dashed", size = 1.2) +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
+  scale_fill_manual(breaks = levels(order_sums_dna_water$order), values = fill_values2) +
   guides(colour = FALSE, size = FALSE, width = FALSE, fill = guide_legend(ncol = 1,
     keyheight = 1.5, label.theme = element_text(size = 15, face = "italic",
     angle = 0), (title = NULL))) +
-  #scale_x_discrete(breaks = c(-25, -7, 0, 3, 7, 10, 14, 17, 22, 29, 36, 43, 50, 57, 64, 71)) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  # scale_y_continuous(expand = c(0,0)) +
+  scale_x_continuous(expand = c(0, 0), breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(expand = c(0, 0)) +
   theme_bw() +
   theme(axis.text = element_text(size = 17),
     axis.title = element_text(size = 20, face = "bold"),
     legend.background = element_rect(fill = "grey90", linetype = "solid"),
     panel.grid.major = element_line(colour = NA, size = 0.2),
     panel.grid.minor = element_line(colour = NA, size = 0.5)) +
-  labs(x = "Days", y = "Relative abundance [%]") +
-  # annotate("text", x = -27, y = 90, label = "a)", color = "black", size = 6,
-    # angle = 0, fontface = "bold") +
-  # annotate("text", x = -22.5, y = 90, label = "b)", color = "black", size = 6,
-    # angle = 0, fontface = "bold")
+  labs(x = "Days", y = "Relative abundance [%]")
 
-ggsave(community_area_plot_dna, file = paste(plot_path, 
-  "Figure_4_relative_community_area_dna.png", sep = ""), width = 16, height = 8)
+ggsave(file = paste(plot_path, 
+  "Figure_4_relative_community_area_water_dna.png", sep = ""), width = 16, height = 8)
+
+
+# get data per OTU, setting threshold for samples and clusters
+community_subset_cdna_water <- droplevels(subset(mothur_ra_melt_mean, days > 40
+  & Abundance > 0.15 & habitat == "water" & treatment == "glyph" & nucleic_acid == "cdna"))
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset_cdna_water$class)))
+length(levels(droplevels(community_subset_cdna_water$order)))    
+
+# make abundance values per order level unique by summarising per-OTU abundances
+community_subset_cdna_water %>%
+  group_by(new_day, order) %>%
+  summarise(Abundance2 = sum(Abundance)) %>%
+  ungroup() %>%
+  # Replace missing values by 0
+  spread(key = order, value = Abundance2) %>%
+  gather(key = order, value = Abundance2, -new_day) %>%
+  replace_na(list(Abundance2 = 0)) -> order_sums_cdna_water
+
+# rearrange order factors
+order_sums_cdna_water$order <- factor(order_sums_cdna_water$order, 
+  levels = c(
+    # alphaproteos
+    "Caulobacterales",
+    "Rhizobiales",
+    "Rhodobacterales",
+    "Rhodospirillales",
+    "Sneathiellales",
+    "Sphingomonadales",
+    "Parvibaculales",
+    "Thalassobaculales",
+    # gammaproteos
+    "Alteromonadales",
+    "Betaproteobacteriales",
+    "Pseudomonadales"))
+
+# water cdna area plot
+ggplot(order_sums_cdna_water, aes(x = new_day, y = Abundance2, fill = order)) +
+  geom_area(stat = "identity") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
+  scale_fill_manual(breaks = levels(order_sums_cdna_water$order), values = fill_values2) +
+  guides(colour = FALSE, size = FALSE, width = FALSE, fill = guide_legend(ncol = 1,
+    keyheight = 1.5, label.theme = element_text(size = 15, face = "italic",
+    angle = 0), (title = NULL))) +
+  scale_x_continuous(expand = c(0, 0), breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 17),
+    axis.title = element_text(size = 20, face = "bold"),
+    legend.background = element_rect(fill = "grey90", linetype = "solid"),
+    panel.grid.major = element_line(colour = NA, size = 0.2),
+    panel.grid.minor = element_line(colour = NA, size = 0.5)) +
+  labs(x = "Days", y = "Relative abundance [%]")
+
+
+ggsave(file = paste(plot_path, 
+  "Figure_4_relative_community_area_water_cdna.png", sep = ""), width = 16, height = 8)
+
+# get data per OTU, setting threshold for samples and clusters
+community_subset_dna_biofilm <- droplevels(subset(mothur_ra_melt_mean, days > 40
+  & Abundance > 0.15 & habitat == "biofilm" & treatment == "glyph" & nucleic_acid == "dna"))
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset_dna_biofilm$class)))
+length(levels(droplevels(community_subset_dna_biofilm$order)))    
+
+# make abundance values per order level unique by summarising per-OTU abundances
+community_subset_dna_biofilm %>%
+  group_by(new_day, order) %>%
+  summarise(Abundance2 = sum(Abundance)) %>%
+  ungroup() %>%
+  # Replace missing values by 0
+  spread(key = order, value = Abundance2) %>%
+  gather(key = order, value = Abundance2, -new_day) %>%
+  replace_na(list(Abundance2 = 0)) -> order_sums_dna_biofilm
+
+# rearrange order factors
+order_sums_dna_biofilm$order <- factor(order_sums_dna_biofilm$order, 
+  levels = c(
+    # alphaproteos
+    "Caulobacterales",
+    "Rhizobiales",
+    "Rhodobacterales",
+    "Rhodospirillales",
+    "Sneathiellales",
+    "Sphingomonadales",
+    "Parvibaculales",
+    "Thalassobaculales",
+    # gammaproteos
+    "Aeromonadales",
+    "Alteromonadales",
+    "Betaproteobacteriales",
+    "Gammaproteobacteria_Incertae_Sedis",
+    "Pseudomonadales",
+    # Actinobacteria
+    "Corynebacteriales",
+    # Bacteroidia
+    "Bacteroidia_unclassified",
+    "Chitinophagales",
+    "Flavobacteriales",
+    "Sphingobacteriales",
+    # Planctomycetacia
+    "Planctomycetales"
+    ))
+
+# assign specific colour to make plot distuingishable
+fill_values2_biofilm_dna <- c(
+  "Aeromonadales" = "green",
+  "Alteromonadales" = "#e6194B",
+  "Bacteroidia_unclassified" = "red",
+  "Betaproteobacteriales" = "#3cb44b",
+  "Caulobacterales" = "#ffe119",
+  "Chitinophagales" = "#4363d8",
+  "Corynebacteriales" = "blue",
+  "Flavobacteriales" = "#f58231",
+  "Gammaproteobacteria_Incertae_Sedis" = "black",
+  "Sneathiellales" = "#42d4f4",
+  "Parvibaculales" = "#f032e6",
+  "Planctomycetales" = "yellow",
+  "Pseudomonadales" = "#fabebe",
+  "Rhizobiales" = "#469990",
+  "Rhodobacterales" = "#000000",
+  "Rhodospirillales" = "#9A6324",
+  "Sphingobacteriales" = "#fffac8",
+  "Sphingomonadales" = "#800000",
+  "Thalassobaculales" = "#a9a9a9")
+
+# biofilm dna area plot
+ggplot(order_sums_dna_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
+  geom_area(stat = "identity") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
+  scale_fill_manual(breaks = levels(order_sums_dna_biofilm$order), values = fill_values2_biofilm_dna) +
+  guides(colour = FALSE, size = FALSE, width = FALSE, fill = guide_legend(ncol = 1,
+    keyheight = 1.5, label.theme = element_text(size = 15, face = "italic",
+    angle = 0), (title = NULL))) +
+  scale_x_continuous(expand = c(0, 0), breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 17),
+    axis.title = element_text(size = 20, face = "bold"),
+    legend.background = element_rect(fill = "grey90", linetype = "solid"),
+    panel.grid.major = element_line(colour = NA, size = 0.2),
+    panel.grid.minor = element_line(colour = NA, size = 0.5)) +
+  labs(x = "Days", y = "Relative abundance [%]")
+
+
+ggsave(file = paste(plot_path, 
+  "Figure_4_relative_community_area_biofilm_dna.png", sep = ""), width = 16, height = 8)
+
+# get data per OTU, setting threshold for samples and clusters
+community_subset_cdna_biofilm <- droplevels(subset(mothur_ra_melt_mean, days > 40
+  & Abundance > 0.15 & habitat == "biofilm" & treatment == "glyph" & nucleic_acid == "cdna"))
+# check required number of colours per order and number of classes
+length(levels(droplevels(community_subset_cdna_biofilm$class)))
+length(levels(droplevels(community_subset_cdna_biofilm$order)))    
+
+# make abundance values per order level unique by summarising per-OTU abundances
+community_subset_cdna_biofilm %>%
+  group_by(new_day, order) %>%
+  summarise(Abundance2 = sum(Abundance)) %>%
+  ungroup() %>%
+  # Replace missing values by 0
+  spread(key = order, value = Abundance2) %>%
+  gather(key = order, value = Abundance2, -new_day) %>%
+  replace_na(list(Abundance2 = 0)) -> order_sums_cdna_biofilm
+
+# rearrange order factors
+order_sums_cdna_biofilm$order <- factor(order_sums_cdna_biofilm$order, 
+  levels = c(
+    # alphaproteos
+    "Caulobacterales",
+    "Rhizobiales",
+    "Rhodobacterales",
+    "Rhodospirillales",
+    "Sneathiellales",
+    "Sphingomonadales",
+    "Thalassobaculales",
+    # gammaproteos
+    "Aeromonadales",
+    "Alteromonadales",
+    "Betaproteobacteriales",
+    "Pseudomonadales",
+    # Actinobacteria
+    "Corynebacteriales",    
+    # Bacteroidia
+    "Chitinophagales",
+    "Flavobacteriales"
+    ))
+
+# assign specific colour to make plot distuingishable
+fill_values2_biofilm_cdna <- c(
+  "Aeromonadales" = "green",
+  "Alteromonadales" = "#e6194B",
+  "Bacteroidia_unclassified" = "red",
+  "Betaproteobacteriales" = "#3cb44b",
+  "Caulobacterales" = "#ffe119",
+  "Chitinophagales" = "#4363d8",
+  "Corynebacteriales" = "blue",
+  "Flavobacteriales" = "#f58231",
+  "Gammaproteobacteria_Incertae_Sedis" = "black",
+  "Sneathiellales" = "#42d4f4",
+  "Parvibaculales" = "#f032e6",
+  "Planctomycetales" = "yellow",
+  "Pseudomonadales" = "#fabebe",
+  "Rhizobiales" = "#469990",
+  "Rhodobacterales" = "#000000",
+  "Rhodospirillales" = "#9A6324",
+  "Sphingobacteriales" = "#fffac8",
+  "Sphingomonadales" = "#800000",
+  "Thalassobaculales" = "#a9a9a9")
+
+# biofilm cdna area plot
+ggplot(order_sums_cdna_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
+  geom_area(stat = "identity") +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
+  scale_fill_manual(breaks = levels(order_sums_cdna_biofilm$order), values = fill_values2_biofilm_cdna) +
+  guides(colour = FALSE, size = FALSE, width = FALSE, fill = guide_legend(ncol = 1,
+    keyheight = 1.5, label.theme = element_text(size = 15, face = "italic",
+    angle = 0), (title = NULL))) +
+  scale_x_continuous(expand = c(0, 0), breaks = scales::pretty_breaks(n = 10)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme_bw() +
+  theme(axis.text = element_text(size = 17),
+    axis.title = element_text(size = 20, face = "bold"),
+    legend.background = element_rect(fill = "grey90", linetype = "solid"),
+    panel.grid.major = element_line(colour = NA, size = 0.2),
+    panel.grid.minor = element_line(colour = NA, size = 0.5)) +
+  labs(x = "Days", y = "Relative abundance [%]")
+
+
+ggsave(file = paste(plot_path, 
+  "Figure_4_relative_community_area_biofilm_cdna.png", sep = ""), width = 16, height = 8)
 
 # Figure 5 and Supplement 5: OTU abundance plots
 # define subset function for specific phyloseq-object
@@ -272,7 +510,7 @@ get_current_otu_data <- function(x) {
 }
 
 # list of OTUs mentioned in paper and supplement
-OTU_list <- c("Otu000011")
+# OTU_list <- c("Otu000011")
 OTU_list <- c("Otu000007",
   "Otu000011",
   "Otu000018",
