@@ -212,7 +212,7 @@ community_plot <- ggplot(community_subset, aes(x = new_day, group = order)) +
     angle = 0, fontface = "bold")
 
 ggsave(community_plot, file = paste(plot_path, 
-  "Figure_4_relative_community_overview.png", sep = ""), width = 16, height = 8)
+  "Figure_2_relative_community_overview.png", sep = ""), width = 16, height = 8)
 
 # get data per OTU, setting threshold for samples and clusters
 community_subset_dna_water <- droplevels(subset(mothur_ra_melt_mean, days > 40
@@ -270,7 +270,7 @@ ggplot(order_sums_dna_water, aes(x = new_day, y = Abundance2, fill = order)) +
   labs(x = "Days", y = "Relative abundance [%]")
 
 ggsave(file = paste(plot_path, 
-  "Figure_4_relative_community_area_water_dna.png", sep = ""), width = 16, height = 8)
+  "Figure_2_relative_community_area_water_dna.png", sep = ""), width = 16, height = 8)
 
 
 # get data per OTU, setting threshold for samples and clusters
@@ -327,7 +327,7 @@ ggplot(order_sums_cdna_water, aes(x = new_day, y = Abundance2, fill = order)) +
 
 
 ggsave(file = paste(plot_path, 
-  "Figure_4_relative_community_area_water_cdna.png", sep = ""), width = 16, height = 8)
+  "Figure_2_relative_community_area_water_cdna.png", sep = ""), width = 16, height = 8)
 
 # get data per OTU, setting threshold for samples and clusters
 community_subset_dna_biofilm <- droplevels(subset(mothur_ra_melt_mean, days > 40
@@ -417,7 +417,7 @@ ggplot(order_sums_dna_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
 
 
 ggsave(file = paste(plot_path, 
-  "Figure_4_relative_community_area_biofilm_dna.png", sep = ""), width = 16, height = 8)
+  "Figure_2_relative_community_area_biofilm_dna.png", sep = ""), width = 16, height = 8)
 
 # get data per OTU, setting threshold for samples and clusters
 community_subset_cdna_biofilm <- droplevels(subset(mothur_ra_melt_mean, days > 40
@@ -501,7 +501,7 @@ ggplot(order_sums_cdna_biofilm, aes(x = new_day, y = Abundance2, fill = order)) 
 
 
 ggsave(file = paste(plot_path, 
-  "Figure_4_relative_community_area_biofilm_cdna.png", sep = ""), width = 16, height = 8)
+  "Figure_2_relative_community_area_biofilm_cdna.png", sep = ""), width = 16, height = 8)
 
 # Figure 5 and Supplement 5: OTU abundance plots
 # define subset function for specific phyloseq-object
