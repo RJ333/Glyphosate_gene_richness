@@ -385,6 +385,11 @@ if(length(nmds_ordination_plots) == 0 & all.equal(counter, 0)) {
     abort to prevend appending..."))
 }
 
+# rotate the last plot to match the orientation of the others
+nmds_ordination_plots[[4]] <- nmds_ordination_plots[[4]] + 
+  scale_x_reverse() +
+  scale_y_reverse()
+  
 # plot the NMDS ordinations in a 2 x 2 array
 do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
 
