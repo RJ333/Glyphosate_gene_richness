@@ -20,10 +20,6 @@ if(!dir.exists(plot_path)) {
   dir.create(plot_path)
 }
 
-# test for sourcing
-source_test <- "/home/centos/scripts/Glyphosate_gene_richness/16S-analysis_phyloseq/source_test_read_mothur.r"
-source(source_test)
-
 # mothur files and additional files that need to be imported from the working dir
 # shared file is the OTU count table
 # constaxonomy contains the taxonomy of the OTUs
@@ -37,12 +33,11 @@ metafile2 <- sample_data(metafile2)
 
 # read OTU representative sequences
 OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
-
-							  format = "fasta",
-							  nrec = -1L,
-							  skip = 0L,
-							  seek.first.rec = FALSE,
-							  use.names = TRUE)
+  format = "fasta",
+  nrec = -1L,
+  skip = 0L,
+  seek.first.rec = FALSE,
+  use.names = TRUE)
 
 # import mothur output into phyloseq
 mothur_phyloseq_object <- import_mothur(mothur_list_file = NULL,
@@ -67,8 +62,19 @@ colnames(tax_table(mothur_phyloseq_object)) <- c(
   "otu_id",
   "wholetax")
                                     
-# add meta data and OTU representative seqs to phyloseq_object
+# phyloseq_object variatons for different analyses
 mothur_full <- merge_phyloseq(mothur_phyloseq_object, metafile2, refseq(OTU_seqs))
+mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
+mothur_full_ra <- transform_sample_counts(mothur_full, function(x) {(x / sum(x)) * 100})
+mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
+mothur_ra_melt <- psmelt(mothur_ra_0.01)
+mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
+  + treatment + nucleic_acid + habitat + disturbance + glyphosate + glyphosate_gone 
+  + condition_diversity + kingdom + phylum + class + order + family + genus + otu_id,
+  data = mothur_ra_melt, mean)
+
+# store phyloseq objects for other scripts
+save.image("glyphosate_mothur_in_phyloseq.RData")
 
 # code for Figure 4: Alpha diversity (including singletons)
 erich_mothur <- estimate_richness(mothur_full, measures = c(
@@ -113,130 +119,6 @@ shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day, y = Shannon, colour =
 
 ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
   sep = ""), height = 10, width = 14)
-
-# Figure 2: treatment community overview bar plot
-# remove singletons
-mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
-
-# transform into relative abundance, displayed in percentage!
-mothur_full_ra <- transform_sample_counts(mothur_full, function(x) {(x / sum(x)) * 100})
-
-# remove low abundant OTUs (you may decrease the threshold, but it will increase melting time)
-mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
-
-# melt into long format for plotting
-mothur_ra_melt <- psmelt(mothur_ra_0.01)
-mothur_1_melt <- psmelt(mothur_1)
-
-# aggregate all columns except for "parallels" to 
-# calculate the mean abundance of technical replicates
-mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
-  + treatment + nucleic_acid + habitat + disturbance + glyphosate + glyphosate_gone 
-  + condition_diversity + kingdom + phylum + class + order + family + genus + otu_id,
-  data = mothur_ra_melt, mean)
-
-# Figure 5 and Supplement 5: OTU abundance plots
-# define subset function for specific phyloseq-object
-get_current_otu_data <- function(x) {
-	subset(mothur_ra_melt, OTU == x)
-}
-
-# list of OTUs mentioned in paper and supplement
-# OTU_list <- c("Otu000011")
-OTU_list <- c("Otu000007",
-  "Otu000011",
-  "Otu000018",
-  "Otu000025",
-  "Otu000032",
-  "Otu000036",
-  "Otu000037",
-  "Otu000038",
-  "Otu000023",
-  "Otu000046",
-  "Otu000049",
-  "Otu000056",
-  "Otu000058",
-  "Otu000059",
-  "Otu000070",
-  "Otu000072",
-  "Otu000078",
-  "Otu000094",
-  "Otu000109",
-  "Otu000129",
-  "Otu000139",
-  "Otu000176",
-  "Otu000191",
-  "Otu000320",
-  "Otu000098",
-  "Otu000042",
-  "Otu000044",
-  "Otu000006",
-  "Otu000001")
-
-Snethiellales_OTUs <- c(
-
-)
-
-Pseudomonas_OTUs <- c(
-  "Otu000006",
-  "Otu000007",
-  "Otu000009",
-  "Otu000019",
-  "Otu000024",
-  "Otu000028",
-  "Otu000029",
-  "Otu000034",
-  "Otu000035",
-  "Otu000036",
-  "Otu000043",
-  "Otu000050",
-  "Otu000069",
-  "Otu000078",
-  "Otu000086"
-  )
-# rename for plotting
-strip_text_habitat <- c("Biofilm", "Free-living")
-
-# run a for loop to plot each OTU in list with own title and file name
-for (i in OTU_list) {
-    current_otu_data <- get_current_otu_data(i)
-    print(paste("OTU is", i))
-
-species_title <- unique(paste(current_otu_data$family, current_otu_data$genus,
-  current_otu_data$OTU, sep = " "))
-
-levels(current_otu_data$habitat) <- strip_text_habitat
-
-current_plot <- ggplot(data = current_otu_data, aes(x = days - 69,
-  y = Abundance, group = nucleic_acid, lty = nucleic_acid)) +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
-  geom_point(data = subset(current_otu_data, treatment == "control"),
-    aes(colour = treatment), alpha = 1) +
-  stat_summary(data = subset(current_otu_data, treatment == "control"),
-    aes(colour = treatment), fun.y = "mean", geom = "line", size = 2, alpha = 1) +
-  stat_summary(data = subset(current_otu_data, treatment == "glyph"),
-    aes(colour = treatment), fun.y = "mean", geom = "line", size = 2) +
-  geom_point(data = subset(current_otu_data, treatment == "glyph"),
-    aes(colour = treatment)) +
-  scale_linetype_manual(values = c("dna" = 1, "cdna" = 6), name = "Nucleic acid  ",
-    breaks = c("cdna", "dna"), labels = c("16S rRNA", "16S rRNA gene")) +
-  scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"),
-    name = "Microcosm  ", breaks = c("glyph", "control"), labels = c("Treatment",
-    "Control")) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  theme_bw() +
-  ggtitle(species_title) +
-  theme(axis.text = element_text(size = 18),
-    axis.title = element_text(size = 20, face = "bold"),
-    panel.grid.major = element_line(colour = NA, size = 0.2),
-    panel.grid.minor = element_line(colour = NA, size = 0.5),
-    strip.text.x = element_text(size = 15, face = "bold")) +
-  labs(x = "Days", y = "Relative abundance [%]") +
-  facet_wrap(~ habitat, scales = "free")
-  ggsave(current_plot, file = paste(plot_path, species_title,".png", sep = ""),
-    width = 13, height = 7)
-  # print(current_plot)
-}
 
 # Figure 3: NMDS plots
 # exclude OTUs with less than 3 reads and transform to relative abundance
