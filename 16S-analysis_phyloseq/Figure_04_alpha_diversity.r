@@ -1,5 +1,4 @@
 #!/usr/bin/env Rscript
-#library(scales)
 library(ggplot2)
 library(phyloseq)
 
