@@ -35,9 +35,6 @@ our_cons_taxonomy_file <- "stability.trim.contigs.trim.good.unique.good.filter.u
 metafile2 <- read.delim("/data/projects/glyphosate/analysis/metadata/metafile2.tsv", row.names = 1, header = TRUE, na.strings = "")
 metafile2 <- sample_data(metafile2)
 
-# read table for cell count plot
-cell_counts_glyph <- read.csv("cell_counts_glyph.csv", sep = ";")
-
 # read OTU representative sequences
 OTU_seqs <- readDNAStringSet(file = "OTU_reps_fasta_002.fasta",
 
@@ -240,48 +237,6 @@ current_plot <- ggplot(data = current_otu_data, aes(x = days - 69,
     width = 13, height = 7)
   # print(current_plot)
 }
-
-# Figure 1: Total cell counts and glyphosate concentration
-cell_counts_glyph_0 <- subset(cell_counts_glyph, new_day >= -7)
-
-cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
-  colour = treatment, linetype = treatment, group = treatment)) +
-  geom_errorbar(aes(ymin = cells_ml - cells_se, ymax = cells_ml + cells_se),
-    linetype = 1, width = 2, size = 1.2, alpha = 0.7) +
-  geom_errorbar(aes(ymin = (glyph_micromol - glyph_se_micromol) * 400000,
-    ymax = (glyph_micromol + glyph_se_micromol) * 400000), linetype = 1, 
-    width = 1, size = 1.0, alpha = 0.6) +
-  geom_line(aes(y = cells_ml, group = treatment, colour = treatment), linetype = 1, 
-    size = 2, alpha = 0.8) +
-  geom_point(aes(y = glyph_theor_micromol * 400000, shape = "glyph"), alpha = 0.5, 
-    size = 5) +
-  geom_point(aes(y = glyph_micromol * 400000, shape = "glyph_deg"), alpha = 0.7, 
-    size = 4) +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.5, alpha = 0.5) +
-  scale_y_continuous(label =  function(x) {ifelse(x == 0, "0", parse(text = 
-    gsub("[+]", "", gsub("e", " %*% 10^", scientific_format()(x)))))},
-    sec.axis = sec_axis(~ . / 400000, name = expression(paste(
-      "Glyphosate concentration  ", bgroup("[",µM,"]"))))) +
-  scale_colour_manual(values = c("control" = "grey70", "glyph" = "black"),
-    name = "Microcosm", breaks = c("control", "glyph"), 
-    labels = c("Control", "Treatment")) +
-  scale_shape_manual(values = c("glyph" = 2, "glyph_deg" = 17), 
-    name = "Glyphosate decrease by", breaks = c("glyph", "glyph_deg"),
-    labels = c("calculated\ndilution", "measured\nconcentration")) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-    theme_bw() +
-	theme(panel.grid.major = element_line(colour = NA, size = 0.2),
-      panel.grid.minor = element_line(colour = NA, size = 0.5),
-      axis.title = element_text(size = 20, face = "bold"),
-      axis.title.y = element_text(angle = 90, vjust = 1),
-      axis.text = element_text(size = 18),
-      legend.title=element_text(size = 14),
-      legend.text=element_text(size = 12)) +
-  labs(x = "Days", y = expression(paste("Total cell count  ",
-    bgroup("[",cells~mL^{-1},"]"))))
-
-ggsave(cell_counts_glyph_plot, file = paste(plot_path, 
-  "Figure_1_cellcounts_glyph.png", sep = ""), width = 14, height = 10)
 
 # Figure 3: NMDS plots
 # exclude OTUs with less than 3 reads and transform to relative abundance
