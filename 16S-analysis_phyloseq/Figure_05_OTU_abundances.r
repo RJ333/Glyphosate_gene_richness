@@ -20,48 +20,55 @@ get_current_otu_data <- function(x) {
 # list of OTUs mentioned in paper and supplement
 OTU_list <- c(
   #DESeq2 OTUs
-  # "Otu000007",
-  # "Otu000011",
-  # "Otu000018",
-  # "Otu000025",
-  # "Otu000032",
-  # "Otu000036",
-  # "Otu000037",
-  # "Otu000038",
-  # "Otu000023",
-  # "Otu000046",
-  # "Otu000049",
-  # "Otu000056",
-  # "Otu000058",
-  # "Otu000059",
-  # "Otu000070",
-  # "Otu000072",
-  # "Otu000078",
-  # "Otu000094",
-  # "Otu000109",
-  # "Otu000129",
-  # "Otu000139",
-  # "Otu000176",
-  # "Otu000191",
-  # "Otu000320",
-  # "Otu000098",
-  # "Otu000042",
+  "Otu000007", # SI 5 h)
+  "Otu000011", # SI 5 b)
+  "Otu000018",
+  "Otu000025", # SI 5 e)
+  "Otu000032",
+  "Otu000036", # SI 5 i)
+  "Otu000037",
+  "Otu000038",
+  "Otu000023", # SI 5 f)
+  "Otu000046", # SI 5 g)
+  "Otu000049",
+  "Otu000056",
+  "Otu000058",
+  "Otu000059", # SI 5 o)
+  "Otu000070",
+  "Otu000072",
+  "Otu000078", # SI 5 j)
+  "Otu000094",
+  "Otu000109", # SI 5 c)
+  "Otu000129", # SI 5 d)
+  "Otu000139",
+  "Otu000176",
+  "Otu000191",
+  "Otu000320",
+  "Otu000098",
+  "Otu000042",
   # 2. Methylotenera 
   "Otu000044",
   # Pseudomonas control increasing
   "Otu000006",
+  # Brevundimonas
+  "Otu000042", # SI 5 l)
+  # Defluviimonas
+  "Otu000098", # SI 5 m)
+  # Pseudolabrys
+  "Otu000038", # SI 5 n)
   # most abundant Rhizobiales
-  "Otu000001")
+  "Otu000001" # SI 5 a)
+  )
 
 Pseudomonas_OTUs <- c(
   # outcommented included above
-  #"Otu000006",
+  "Otu000006",
   "Otu000007",
   "Otu000009",
   "Otu000019",
   "Otu000024",
   "Otu000028",
-  "Otu000029",
+  "Otu000029", # SI 5 k)
   "Otu000034",
   "Otu000035",
   #"Otu000036",

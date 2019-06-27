@@ -5,12 +5,6 @@ library(vegan)
 library(gridExtra)
 
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
-
-plot_path <- "./plots/"
-if(!dir.exists(plot_path)) {
-  dir.create(plot_path)
-}
-
 load("glyphosate_mothur_in_phyloseq.RData")
 
 phyloseq_for_nmds <- filter_taxa(mothur_full, function (x) {sum(x > 2) >= 1}, prune = TRUE)
