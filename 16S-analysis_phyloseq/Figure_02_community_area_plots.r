@@ -1,50 +1,12 @@
 #!/usr/bin/env Rscript
-# load libraries
-library(scales)
+#library(scales)
 library(ggplot2)
 library(phyloseq)
-library(DESeq2)
-library(gridExtra)
-library(vegan)
-library(Biostrings)
 library(tidyverse)
 
-# Set the working dir
-# it should contain shared file, constaxonomy file,
-# meta file, cell count file and OTU_rep fasta file in it
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
+load("glyphosate_mothur_in_phyloseq.RData")
 
-# set path for plots, create directory if not existant
-plot_path <- "./plots/"
-if(!dir.exists(plot_path)) {
-  dir.create(plot_path)
-}
-
-load("full_test.RData")
-
-# add meta data and OTU representative seqs to phyloseq_object
-mothur_full <- merge_phyloseq(mothur_phyloseq_object, metafile2, refseq(OTU_seqs))
-
-# remove singletons
-mothur_1 <- filter_taxa(mothur_full, function (x) {sum(x > 1) >= 1}, prune = TRUE)
-
-# transform into relative abundance, displayed in percentage!
-mothur_full_ra <- transform_sample_counts(mothur_full, function(x) {(x / sum(x)) * 100})
-
-# remove low abundant OTUs (you may decrease the threshold, but it will increase melting time)
-mothur_ra_0.01 <- filter_taxa(mothur_full_ra, function (x) {sum(x > 0.01) >= 1}, prune = TRUE)
-
-# melt into long format for plotting
-mothur_ra_melt <- psmelt(mothur_ra_0.01)
-mothur_1_melt <- psmelt(mothur_1)
-
-# aggregate all columns except for "parallels" to 
-# calculate the mean abundance of technical replicates
-mothur_ra_melt_mean <- aggregate(Abundance ~ OTU + time + days + new_day
-  + treatment + nucleic_acid + habitat + disturbance + glyphosate + glyphosate_gone 
-  + condition_diversity + kingdom + phylum + class + order + family + genus + otu_id,
-  data = mothur_ra_melt, mean)
-  
 # get data per water OTU, setting threshold for samples and clusters
 community_subset_water <- droplevels(subset(mothur_ra_melt_mean, days > 40
   & Abundance > 0.15 & habitat == "water"))
@@ -132,7 +94,7 @@ order_sums_water$nucleic_acid <- factor(order_sums_water$nucleic_acid,
 levels(order_sums_water$nucleic_acid) <- c("16S rRNA gene", "16S rRNA") 
 
 # plot an array of 4 geom_areas
-ggplot(order_sums_water, aes(x = new_day, y = Abundance2, fill = order)) +
+water_areas <- ggplot(order_sums_water, aes(x = new_day, y = Abundance2, fill = order)) +
   geom_area(stat = "identity") +
   geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
   scale_fill_manual(breaks = levels(order_sums_water$order), values = fill_values_water) +
@@ -151,6 +113,8 @@ ggplot(order_sums_water, aes(x = new_day, y = Abundance2, fill = order)) +
   labs(x = "Days", y = "Relative abundance [%]") +
   facet_wrap(~ treatment + nucleic_acid, nrow = 2)
   
+ggsave(water_areas, file = paste(plot_path, "Figure_2_water_communities.png", sep = ""),
+  height = 10, width = 16)
   
 # get data per OTU, setting threshold for samples and clusters
 community_subset_biofilm <- droplevels(subset(mothur_ra_melt_mean, days > 40
@@ -212,7 +176,7 @@ order_sums_biofilm$nucleic_acid <- factor(order_sums_biofilm$nucleic_acid,
 levels(order_sums_biofilm$nucleic_acid) <- c("16S rRNA gene", "16S rRNA") 
 
 # biofilm are plot for SI
-ggplot(order_sums_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
+biofilm_areas <- ggplot(order_sums_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
   geom_area(stat = "identity") +
   geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
   scale_fill_manual(breaks = levels(order_sums_biofilm$order), values = fill_values_biofilm) +
@@ -230,3 +194,6 @@ ggplot(order_sums_biofilm, aes(x = new_day, y = Abundance2, fill = order)) +
     strip.text.x = element_text(size = 15, face = "bold")) +
   labs(x = "Days", y = "Relative abundance [%]") +
   facet_wrap(~ treatment + nucleic_acid, nrow = 2)
+  
+ggsave(biofilm_areas, file = paste(plot_path, "SI_biofilm_communities.png", sep = ""),
+  height = 10, width = 16)
