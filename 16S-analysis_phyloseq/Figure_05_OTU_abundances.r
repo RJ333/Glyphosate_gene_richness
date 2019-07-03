@@ -20,26 +20,26 @@ get_current_otu_data <- function(x) {
 # list of OTUs mentioned in paper and supplement
 OTU_list <- c(
   #DESeq2 OTUs
-  "Otu000007", # SI 5 h)
-  "Otu000011", # SI 5 b)
+  "Otu000007", # SI 5 b)
+  "Otu000011", # SI 5 c)
   "Otu000018",
-  "Otu000025", # SI 5 e)
+  "Otu000025", # SI 5 f)
   "Otu000032",
   "Otu000036", # SI 5 i)
   "Otu000037",
   "Otu000038",
-  "Otu000023", # SI 5 f)
-  "Otu000046", # SI 5 g)
+  "Otu000023", # SI 5 g)
+  "Otu000046", # SI 5 h)
   "Otu000049",
   "Otu000056",
   "Otu000058",
-  "Otu000059", # SI 5 o)
+  "Otu000059", # SI 5 p)
   "Otu000070",
   "Otu000072",
   "Otu000078", # SI 5 j)
   "Otu000094",
-  "Otu000109", # SI 5 c)
-  "Otu000129", # SI 5 d)
+  "Otu000109", # SI 5 d)
+  "Otu000129", # SI 5 e)
   "Otu000139",
   "Otu000176",
   "Otu000191",
@@ -63,7 +63,7 @@ OTU_list <- c(
 Pseudomonas_OTUs <- c(
   # outcommented included above
   "Otu000006",
-  "Otu000007",
+  # "Otu000007", # SI 5 b)
   "Otu000009",
   "Otu000019",
   "Otu000024",
@@ -82,7 +82,7 @@ Pseudomonas_OTUs <- c(
 strip_text_habitat <- c("Biofilm", "Free-living")
 
 # run a for loop to plot each OTU in list with own title and file name
-for (i in OTU_list) {
+for (i in Pseudomonas_OTUs) {
     current_otu_data <- get_current_otu_data(i)
     print(paste("OTU is", i))
 
@@ -117,7 +117,7 @@ current_plot <- ggplot(data = current_otu_data, aes(x = days - 69,
     strip.text.x = element_text(size = 15, face = "bold")) +
   labs(x = "Days", y = "Relative abundance [%]") +
   facet_wrap(~ habitat, scales = "free")
-  # ggsave(current_plot, file = paste(plot_path, species_title,".png", sep = ""),
-    # width = 13, height = 7)
-  print(current_plot)
+  ggsave(current_plot, file = paste(plot_path, species_title,".png", sep = ""),
+    width = 13, height = 7)
+  # print(current_plot)
 }
