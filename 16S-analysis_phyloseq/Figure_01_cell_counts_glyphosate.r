@@ -16,16 +16,16 @@ cell_counts_glyph_0 <- subset(cell_counts_glyph, new_day >= -7)
 cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
   colour = treatment, linetype = treatment, group = treatment)) +
   geom_errorbar(aes(ymin = cells_ml - cells_se, ymax = cells_ml + cells_se),
-    linetype = 1, width = 2, size = 1.2, alpha = 0.7) +
+    linetype = 1, width = 2, size = 1, alpha = 0.7) +
   geom_errorbar(aes(ymin = (glyph_micromol - glyph_se_micromol) * 400000,
     ymax = (glyph_micromol + glyph_se_micromol) * 400000), linetype = 1, 
-    width = 3, size = 0.7, alpha = 0.8) +
+    width = 2, size = 0.7, alpha = 0.8) +
   geom_line(aes(y = cells_ml, group = treatment, colour = treatment), 
-    linetype = 1, size = 1.5, alpha = 0.8) +
+    linetype = 1, size = 1, alpha = 0.8) +
   geom_point(aes(y = glyph_theor_micromol * 400000, shape = "glyph"), 
-    alpha = 0.5, size = 4) +
+    alpha = 0.5, size = 3) +
   geom_point(aes(y = glyph_micromol * 400000, shape = "glyph_deg"), 
-    alpha = 0.7, size = 3) +
+    alpha = 0.7, size = 2) +
   geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.5, alpha = 0.5) +
   scale_y_continuous(label =  function(x) {ifelse(x == 0, "0", parse(text = 
     gsub("[+]", "", gsub("e", " %*% 10^", scientific_format()(x)))))},
@@ -53,4 +53,4 @@ cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
 
 ggsave(cell_counts_glyph_plot, file = paste(plot_path, 
   "Figure_1_cellcounts_glyph.pdf", sep = ""),
-  device = "pdf", width = 18, height = 12, dpi = 300, unit = "cm")
+  device = "pdf", width = 18, height = 14, dpi = 300, unit = "cm")
