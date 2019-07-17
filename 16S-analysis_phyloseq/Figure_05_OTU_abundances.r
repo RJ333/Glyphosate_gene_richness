@@ -17,6 +17,7 @@ get_current_otu_data <- function(x) {
 	subset(mothur_ra_melt, OTU == x)
 }
 
+test4 <- "Otu000011" 
 # list of OTUs mentioned in paper and supplement
 OTU_list <- c(
   #DESeq2 OTUs
@@ -82,7 +83,7 @@ Pseudomonas_OTUs <- c(
 strip_text_habitat <- c("Biofilm", "Free-living")
 
 # run a for loop to plot each OTU in list with own title and file name
-for (i in Pseudomonas_OTUs) {
+for (i in test4) {
     current_otu_data <- get_current_otu_data(i)
     print(paste("OTU is", i))
 
@@ -93,31 +94,36 @@ levels(current_otu_data$habitat) <- strip_text_habitat
 
 current_plot <- ggplot(data = current_otu_data, aes(x = days - 69,
   y = Abundance, group = nucleic_acid, lty = nucleic_acid)) +
-  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1.2) +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1) +
   geom_point(data = subset(current_otu_data, treatment == "control"),
-    aes(colour = treatment), alpha = 1) +
-  stat_summary(data = subset(current_otu_data, treatment == "control"),
-    aes(colour = treatment), fun.y = "mean", geom = "line", size = 2, alpha = 1) +
-  stat_summary(data = subset(current_otu_data, treatment == "glyph"),
-    aes(colour = treatment), fun.y = "mean", geom = "line", size = 2) +
+    aes(colour = treatment), alpha = 1, size = 1) +
   geom_point(data = subset(current_otu_data, treatment == "glyph"),
-    aes(colour = treatment)) +
+    aes(colour = treatment), size = 1) +
+  stat_summary(data = subset(current_otu_data, treatment == "glyph"),
+    aes(colour = treatment), fun.y = "mean", geom = "line", size = 1.5) +
+  stat_summary(data = subset(current_otu_data, treatment == "control"),
+    aes(colour = treatment), fun.y = "mean", geom = "line", size = 1.5, alpha = 1) +
   scale_linetype_manual(values = c("dna" = 1, "cdna" = 6), name = "Nucleic acid  ",
-    breaks = c("cdna", "dna"), labels = c("16S rRNA", "16S rRNA gene")) +
+    breaks = c("cdna", "dna"), labels = c("16S rRNA", "16S rRNA\ngene")) +
   scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"),
     name = "Microcosm  ", breaks = c("glyph", "control"), labels = c("Treatment",
     "Control")) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   theme_bw() +
   ggtitle(species_title) +
-  theme(axis.text = element_text(size = 18),
-    axis.title = element_text(size = 20, face = "bold"),
-    panel.grid.major = element_line(colour = NA, size = 0.2),
+  theme(panel.grid.major = element_line(colour = NA, size = 0.2),
     panel.grid.minor = element_line(colour = NA, size = 0.5),
-    strip.text.x = element_text(size = 15, face = "bold")) +
+    axis.text = element_text(size = 11.8),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.title = element_text(size = 13, face = "bold"),
+    legend.text = element_text(size = 12),
+    strip.text.x = element_text(size = 14, face = "bold")) +
+  theme(legend.position = "bottom", legend.direction = "vertical", 
+    legend.box = "horizontal") +
   labs(x = "Days", y = "Relative abundance [%]") +
   facet_wrap(~ habitat, scales = "free")
-  ggsave(current_plot, file = paste(plot_path, species_title,".png", sep = ""),
-    width = 13, height = 7)
-  # print(current_plot)
+  print(current_plot)
+  
+    ggsave(current_plot, file = paste(plot_path, species_title,".pdf", sep = ""),
+    device = "pdf", width = 18.0, height = 12, dpi = 300, unit = "cm")
 }

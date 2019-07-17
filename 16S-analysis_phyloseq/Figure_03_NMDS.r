@@ -128,7 +128,7 @@ all_NMDS <- ggplot(nmds_mean, aes(x = MDS1, y = MDS2, shape = treatment, colour 
     facet_wrap(~habitat + nucleic_acid)
 
 ggsave(all_NMDS, file = paste(plot_path, "Figure_3_NMDS_facet.pdf", sep = ""),
-   device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
+  device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
 
 # biofilm plots need to be reversed to be in similar direction as water plots
 # copy the code above and paste lower row on old plot (e.g. with Inkscape)
