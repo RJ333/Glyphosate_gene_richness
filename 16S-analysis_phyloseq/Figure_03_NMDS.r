@@ -3,6 +3,8 @@ library(ggplot2)
 library(phyloseq)
 library(vegan)
 library(gridExtra)
+library(grid)
+library(dplyr)
 
 setwd("/data/projects/glyphosate/reads/mothur_processed/")
 load("glyphosate_mothur_in_phyloseq.RData")
@@ -81,48 +83,59 @@ dispersion_list <- list()
 dispersion_list <- lapply(beta_list, permutest)
 
 # generate NMDS plots with distance information from the ordination list
-nmds_ordination_plots <- list()
-counter <- 0
-if(length(nmds_ordination_plots) == 0 & all.equal(counter, 0)) {
-  nmds_ordination_plots <- mapply(function(x,y) {
-    counter <<- counter + 1
-    plot_ordination(x, y, type = "sample", color = "days", shape = "treatment") +
-      geom_polygon(aes(fill = disturbance), alpha = 0.3, size = 0.01) +
-      geom_point(aes(colour = treatment), colour = "black", size = 4, alpha = 0.7) +
-      scale_shape_manual(values = c("glyph" = 16, "control" = 17), name = "Microcosm  ",
-        breaks = c("glyph", "control"), labels = c("Treatment", "Control")) +
-      scale_fill_manual(values = c("high" = "red3", "low" = "darkorange2", "none" = "forestgreen"),
-        name = "Glyphosate\nconcentration", breaks = c("high", "low", "none"),
-        labels = c("> 5 µM", "< 5 µM", "0 µM")) +
-      guides(color = FALSE,
-        shape = FALSE, fill = FALSE) +
-      coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
-      #ggtitle(names(sample_subset_list)[counter]) +
-      geom_text(aes(label = new_day), colour = "white", size = 2.5) +
-      theme_bw() +
-      theme(panel.grid.major = element_line(colour = NA, size = 0.2),
-        panel.grid.minor = element_line(colour = NA, size = 0.5),
-        axis.text = element_text(size = 18),
-        #axis.title = element_text(size = 20, face = "bold"),
-        axis.title = element_blank(),
-        legend.title = element_text(size = 15, face = "bold"),
-        legend.text = element_text(size = 13))
-}, x = sample_subset_list, y = ordination_nmds, SIMPLIFY = FALSE)
-} else {
-  print(paste("list is not empty, or counter not 0 (counter is", counter,"), 
-    abort to prevend appending..."))
-}
+# extract the information from the list for the subsets into one long dataframe for plotting
+nmds_1 <- merge(sample_data(sample_subset_list[[1]]), ordination_nmds[[1]]$points, by = "row.names")
+nmds_2 <- merge(sample_data(sample_subset_list[[2]]), ordination_nmds[[2]]$points, by = "row.names")
+nmds_3 <- merge(sample_data(sample_subset_list[[3]]), ordination_nmds[[3]]$points, by = "row.names")
+nmds_4 <- merge(sample_data(sample_subset_list[[4]]), ordination_nmds[[4]]$points, by = "row.names")
+nmds_df <- rbind(nmds_1, nmds_2, nmds_3, nmds_4)
+row.names(nmds_df) <- nmds_df$Row.names
+nmds_df <- nmds_df[, -c(1:3, 10:14)]
 
-# rotate the last plot to match the orientation of the others
-nmds_ordination_plots[[4]] <- nmds_ordination_plots[[4]] + 
-  scale_x_reverse() +
-  scale_y_reverse()
-  
-# plot the NMDS ordinations in a 2 x 2 array
-do.call("grid.arrange", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
+# calculate center of polygon per triplicate
+nmds_mean <- nmds_df %>%
+  group_by(treatment, habitat, nucleic_acid, new_day) %>%
+  mutate(MDS1_mean = mean(MDS1)) %>% mutate(MDS2_mean = mean(MDS2))
 
-# write the NMDS ordinations array to an object
-NMDS_array <- do.call("arrangeGrob", c(nmds_ordination_plots[c(1, 3, 2, 4)], nrow = 2))
-ggsave(NMDS_array, file = paste(plot_path, "Figure_3_NMDS_size4.png", sep = ""),
-  height = 9, width = 9)
-scp -r -i /drives/d/ssh/denbi.key centos@193.196.20.93:/data/projects/glyphosate/reads/mothur_processed/plots/Figure_3_NMDS*.png /drives/d/denbi/chandler/ordination
+levels(nmds_mean$nucleic_acid) <- c("16S rRNA gene", "16S rRNA") 
+levels(nmds_mean$habitat) <- c("Free-living", "Biofilm")
+
+all_NMDS <- ggplot(nmds_mean, aes(x = MDS1, y = MDS2, shape = treatment, colour = disturbance)) +
+  geom_point(aes(shape = treatment), colour = "black", size = 0.5, alpha = 0.7) +
+  geom_polygon(aes(fill = disturbance, group = interaction(new_day, treatment)), 
+    alpha = 0.5, size = 0.3) +
+  scale_shape_manual(values = c("glyph" = 16, "control" = 17), name = "Microcosm  ",
+    breaks = c("glyph", "control"), labels = c("Treatment", "Control")) +
+  scale_fill_manual(values = c("high" = "red3", "low" = "darkorange2", "none" = "forestgreen"),
+    name = "Glyphosate", breaks = c("high", "low", "none"),
+    labels = c("> 5 µM", "< 5 µM", "0 µM")) +
+  scale_colour_manual(values = c("high" = "red3", "low" = "darkorange2", "none" = "forestgreen"),
+    name = "Glyphosate", breaks = c("high", "low", "none"),
+    labels = c("> 5 µM", "< 5 µM", "0 µM")) +
+  guides(color = FALSE) +
+  guides(shape = guide_legend(override.aes = list(size = 4))) +
+  coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
+  geom_text(aes(x = MDS1_mean, y = MDS2_mean, label = new_day), colour = "black", size = 2, alpha = 0.7) +
+  theme_bw() +
+  theme(panel.grid.major = element_line(colour = NA, size = 0.2),
+    panel.grid.minor = element_line(colour = NA, size = 0.5),
+    axis.text = element_text(size = 13),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.title = element_text(size = 13, face = "bold"),
+    legend.text = element_text(size = 12),
+    strip.text.x = element_text(size = 14, face = "bold")) +
+    labs(x = "NMDS1", y = "NMDS2") +
+    facet_wrap(~habitat + nucleic_acid)
+
+ggsave(all_NMDS, file = paste(plot_path, "Figure_3_NMDS_facet.pdf", sep = ""),
+   device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
+
+# biofilm plots need to be reversed to be in similar direction as water plots
+# copy the code above and paste lower row on old plot (e.g. with Inkscape)
+
+# all_NMDS_reversed <-    
+  # scale_x_reverse() +
+  # scale_y_reverse() +
+
+# ggsave(all_NMDS_reversed, file = paste(plot_path, "Figure_3_NMDS_facet_reversed.pdf", sep = ""),
+   # device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
