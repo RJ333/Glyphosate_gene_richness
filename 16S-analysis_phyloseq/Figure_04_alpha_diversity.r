@@ -31,25 +31,25 @@ levels(erich_mothur_meta$nucleic_acid) <- labels_nucleic_acid
 
 # plotting Alpha diversity
 shannon_plot <- ggplot(erich_mothur_meta, aes(x = new_day, y = Shannon, colour = treatment)) +
-  geom_point(alpha = 0.8, size = 4) +
-  geom_vline(aes(xintercept = 1), linetype = "dashed", size = 1.2) +
+  geom_point(alpha = 0.7, size = 1.5) +
+  geom_vline(aes(xintercept = 0), linetype = "dashed", size = 1, alpha = 0.5) +
   stat_summary(aes(colour = treatment), fun.y = "mean", geom = "line", 
-    alpha = 0.75, size = 2) +
+    alpha = 0.7, size = 1) +
   scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"),
 	name = "Microcosm  ", breaks = c("glyph", "control"), 
     labels = c("Treatment", "Control")) +
   coord_cartesian(ylim = c(1, 3)) +
   theme_bw() +
-  theme(axis.text = element_text(size = 18),
-    axis.title = element_text(size = 20, face = "bold"),
-    legend.title = element_text(size = 15, face = "bold"),
-    legend.text = element_text(size = 13),
-    panel.grid.major = element_line(colour = NA, size = 0.2),
+  theme(panel.grid.major = element_line(colour = NA, size = 0.2),
     panel.grid.minor = element_line(colour = NA, size = 0.5),
-    strip.text.x = element_text(size = 15, face = "bold")) +
-  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    axis.text = element_text(size = 11),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.title = element_text(size = 13, face = "bold"),
+    legend.text = element_text(size = 12),
+    strip.text.x = element_text(size = 14, face = "bold")) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
   labs(x = "Days", y = "Shannon index") +
   facet_wrap(~ habitat + nucleic_acid)
 
-ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.png",
-  sep = ""), height = 10, width = 14)
+ggsave(shannon_plot, file = paste(plot_path, "Figure_4_Shannon_DNA_RNA.pdf", sep = ""),
+  device = "pdf", width = 18.0, height = 15, dpi = 300, unit = "cm")
