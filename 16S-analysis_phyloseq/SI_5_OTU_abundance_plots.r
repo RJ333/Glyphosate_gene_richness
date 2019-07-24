@@ -21,12 +21,14 @@ get_current_otu_data <- function(x) {
 
 # list of OTUs mentioned in paper and supplement
 OTU_list <- c(
-  #DESeq2 OTUs and Pseudomonas examples
+  "Otu000001", # SI 5 a) most abundant Rhizobiales
+  "Otu000006", # Pseudomonas control increasing
   "Otu000007", # SI 5 b)
   "Otu000009",
   "Otu000011", # SI 5 c)
   "Otu000018",
   "Otu000019",
+  "Otu000023", # SI 5 g) 1. Methylotenera
   "Otu000024",
   "Otu000025", # SI 5 f)
   "Otu000028",
@@ -36,9 +38,10 @@ OTU_list <- c(
   "Otu000035",
   "Otu000036", # SI 5 i)
   "Otu000037",
-  "Otu000038",
-  "Otu000023", # SI 5 g) 1. Methylotenera
+  "Otu000038", # SI 5 n) Pseudolabrys
+  "Otu000042", # SI 5 l) Brevundimonas
   "Otu000043",
+  "Otu000044", # 2. Methylotenera 
   "Otu000046", # SI 5 h)
   "Otu000049",
   "Otu000050",
@@ -51,6 +54,7 @@ OTU_list <- c(
   "Otu000078", # SI 5 j)
   "Otu000086",
   "Otu000094",
+  "Otu000098", # SI 5 m) Defluviimonas
   "Otu000109", # SI 5 d)
   "Otu000129", # SI 5 e)
   "Otu000139",
@@ -58,19 +62,7 @@ OTU_list <- c(
   "Otu000191",
   "Otu000320",
   "Otu000098",
-  "Otu000042",
-  # 2. Methylotenera 
-  "Otu000044",
-  # Pseudomonas control increasing
-  "Otu000006",
-  # Brevundimonas
-  "Otu000042", # SI 5 l)
-  # Defluviimonas
-  "Otu000098", # SI 5 m)
-  # Pseudolabrys
-  "Otu000038", # SI 5 n)
-  # most abundant Rhizobiales
-  "Otu000001" # SI 5 a)
+  "Otu000042"
   )
 
 # run a for loop to store each OTU in list with own title and file name
