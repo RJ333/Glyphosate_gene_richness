@@ -115,7 +115,7 @@ all_NMDS <- ggplot(nmds_mean, aes(x = MDS1, y = MDS2, shape = treatment, colour 
   guides(color = FALSE) +
   guides(shape = guide_legend(override.aes = list(size = 4))) +
   coord_cartesian(ylim = c(-0.77, 0.95), xlim = c(-0.9, 0.7)) +
-  geom_text(aes(x = MDS1_mean, y = MDS2_mean, label = new_day), colour = "black", size = 2, alpha = 0.7) +
+  geom_text(aes(x = MDS1_mean - 0.11, y = MDS2_mean, label = new_day), colour = "black", size = 2.5, alpha = 0.7) +
   theme_bw() +
   theme(panel.grid.major = element_line(colour = NA, size = 0.2),
     panel.grid.minor = element_line(colour = NA, size = 0.5),
@@ -127,15 +127,15 @@ all_NMDS <- ggplot(nmds_mean, aes(x = MDS1, y = MDS2, shape = treatment, colour 
     labs(x = "NMDS1", y = "NMDS2") +
     facet_wrap(~habitat + nucleic_acid)
 
-ggsave(all_NMDS, file = paste(plot_path, "Figure_3_NMDS_facet.pdf", sep = ""),
-  device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
+ggsave(all_NMDS, file = paste(plot_path, "Figure_3_NMDS_facet.svg", sep = ""),
+  device = "svg", width = 18.0, height = 16, dpi = 300, unit = "cm")
 
 # biofilm plots need to be reversed to be in similar direction as water plots
 # copy the code above and paste lower row on old plot (e.g. with Inkscape)
 
-# all_NMDS_reversed <-    
-  # scale_x_reverse() +
-  # scale_y_reverse() +
+all_NMDS_reversed <- all_NMDS +   
+  scale_x_reverse() +
+  scale_y_reverse()
 
-# ggsave(all_NMDS_reversed, file = paste(plot_path, "Figure_3_NMDS_facet_reversed.pdf", sep = ""),
-   # device = "pdf", width = 18.0, height = 16, dpi = 300, unit = "cm")
+ggsave(all_NMDS_reversed, file = paste(plot_path, "Figure_3_NMDS_lower_half.svg", sep = ""),
+  device = "svg", width = 18.0, height = 16, dpi = 300, unit = "cm")
