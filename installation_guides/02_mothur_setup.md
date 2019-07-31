@@ -32,7 +32,7 @@ reverse GACTACHVGGGTATCTAATCC
 # additionally you will have to find out where your primers bind (using SINA). This allows you to generate a database for only this region, which reduces the computational effort
 
 # install mothur into conda environment (versions from 1.4* are slow)
-conda env create -f conda_mothur.conf 
+conda env create -f mothur.yml 
 
 # run mothur with
 conda activate mothur_1395

@@ -47,7 +47,7 @@ We are then ready to install `dada2` and `cutadapt` in a `conda` environment
 
 ```bash
 # install Bioconductor and dada2 in conda
-conda env create -f dada2.yml
+conda env create -f environment.yml
 conda activate dada2
 R
 ```
