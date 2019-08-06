@@ -46,7 +46,7 @@ cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
         alpha = c(NA, NA),
         size = c(3, 3)))) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(x = "Days", y = expression(bold(paste("Total cell count  ",
+  labs(x = "Days", y = expression(bold(paste("Total cell counts  ",
     bgroup("[",cells~mL^{-1},"]"))))) +
   theme_bw() +
     theme(panel.grid.major = element_line(colour = NA, size = 0.2),
