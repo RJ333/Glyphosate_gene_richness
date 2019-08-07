@@ -33,12 +33,20 @@ cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
       "Glyphosate  ", bgroup("[",µM,"]")))))) +
   scale_colour_manual(values = c("control" = "grey70", "glyph" = "black"),
     name = "Microcosm", breaks = c("control", "glyph"), 
-    labels = c("Control", "Treatment")) +
+    labels = c("Control", "Treatment"),
+      guide = guide_legend(override.aes = list(
+        colour = c("grey70", "black"),
+        shape = c(NA, NA),
+        linetype = c("solid", "solid")))) +
   scale_shape_manual(values = c("glyph" = 2, "glyph_deg" = 17), 
     name = "Glyphosate decrease by", breaks = c("glyph", "glyph_deg"),
-    labels = c("calculated\ndilution", "measured\nconcentration")) +
+    labels = c("calculated\ndilution", "measured\nconcentration"),
+      guide = guide_legend(override.aes = list(
+        shape = c(2, 17),
+        alpha = c(0.4, NA),
+        size = c(3, 3)))) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-  labs(x = "Days", y = expression(bold(paste("Total cell count  ",
+  labs(x = "Days", y = expression(bold(paste("Total cell counts  ",
     bgroup("[",cells~mL^{-1},"]"))))) +
   theme_bw() +
     theme(panel.grid.major = element_line(colour = NA, size = 0.2),
