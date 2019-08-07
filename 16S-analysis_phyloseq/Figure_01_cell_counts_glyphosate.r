@@ -43,7 +43,7 @@ cell_counts_glyph_plot <- ggplot(cell_counts_glyph_0, aes(x = new_day,
     labels = c("calculated\ndilution", "measured\nconcentration"),
       guide = guide_legend(override.aes = list(
         shape = c(2, 17),
-        alpha = c(NA, NA),
+        alpha = c(0.4, NA),
         size = c(3, 3)))) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   labs(x = "Days", y = expression(bold(paste("Total cell counts  ",
