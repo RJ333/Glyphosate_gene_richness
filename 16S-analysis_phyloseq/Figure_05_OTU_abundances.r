@@ -36,7 +36,11 @@ Gallaeci_plot <- ggplot(data = Gallaeci, aes(x = days - 69, y = Abundance,
     name = "Nucleic acid  ", breaks = c("cdna", "dna"), labels = c("16S rRNA", "16S rRNA gene")) +
   scale_colour_manual(values = c("glyph" = "black", "control" = "grey50"),
     name = "Microcosm  ", breaks = c("glyph", "control"), labels = c("Treatment",
-    "Control")) +
+    "Control"),
+  guide = guide_legend(override.aes = list(
+        shape = c(16, 16),
+        #alpha = c(0.4, NA),
+        size = c(3.5, 2)))) +
   scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
   theme_bw() +
   #ggtitle(Gallaeci_title) +
