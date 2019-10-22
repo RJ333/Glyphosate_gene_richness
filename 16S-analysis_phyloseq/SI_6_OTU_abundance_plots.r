@@ -12,7 +12,7 @@ if(!dir.exists(plot_path)) {
 
 load("glyphosate_mothur_in_phyloseq.RData")
 
-# Supplement 5: OTU abundance plots
+# Supplement 6: OTU abundance plots
 
 # define subset function
 get_current_otu_data <- function(x) {
@@ -21,42 +21,42 @@ get_current_otu_data <- function(x) {
 
 # list of OTUs mentioned in paper and supplement
 OTU_list <- c(
-  "Otu000001", # SI 5 a) most abundant Rhizobiales
+  "Otu000001", # SI 6 a) most abundant Rhizobiales
   "Otu000006", # Pseudomonas control increasing
-  "Otu000007", # SI 5 b)
+  "Otu000007", # SI 6 b)
   "Otu000009",
-  "Otu000011", # SI 5 c)
+  "Otu000011", # SI 6 c)
   "Otu000018",
   "Otu000019",
-  "Otu000023", # SI 5 g) 1. Methylotenera
+  "Otu000023", # SI 6 g) 1. Methylotenera
   "Otu000024",
-  "Otu000025", # SI 5 f)
+  "Otu000025", # SI 6 f)
   "Otu000028",
-  "Otu000029", # SI 5 k)
+  "Otu000029", # SI 6 k)
   "Otu000032",
   "Otu000034",
   "Otu000035",
-  "Otu000036", # SI 5 i)
+  "Otu000036", # SI 6 i)
   "Otu000037",
-  "Otu000038", # SI 5 n) Pseudolabrys
-  "Otu000042", # SI 5 l) Brevundimonas
+  "Otu000038", # SI 6 n) Pseudolabrys
+  "Otu000042", # SI 6 l) Brevundimonas
   "Otu000043",
   "Otu000044", # 2. Methylotenera 
-  "Otu000046", # SI 5 h)
+  "Otu000046", # SI 6 h)
   "Otu000049",
   "Otu000050",
   "Otu000056",
   "Otu000058",
-  "Otu000059", # SI 5 p)
+  "Otu000059", # SI 6 p)
   "Otu000069",
   "Otu000070",
   "Otu000072",
-  "Otu000078", # SI 5 j)
+  "Otu000078", # SI 6 j)
   "Otu000086",
   "Otu000094",
-  "Otu000098", # SI 5 m) Defluviimonas
-  "Otu000109", # SI 5 d)
-  "Otu000129", # SI 5 e)
+  "Otu000098", # SI 6 m) Defluviimonas
+  "Otu000109", # SI 6 d)
+  "Otu000129", # SI 6 e)
   "Otu000139",
   "Otu000176",
   "Otu000191",
